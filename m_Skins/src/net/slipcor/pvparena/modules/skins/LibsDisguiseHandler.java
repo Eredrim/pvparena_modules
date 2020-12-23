@@ -33,7 +33,7 @@ public class LibsDisguiseHandler {
                     DisguiseAPI.undisguiseToAll(player);
                 }
 
-                Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.instance, new LibsDisguiseRunnable(player, pd), 3L);
+                Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new LibsDisguiseRunnable(player, pd), 3L);
             } catch (Exception|Error e2) {
                 e2.printStackTrace();
             }

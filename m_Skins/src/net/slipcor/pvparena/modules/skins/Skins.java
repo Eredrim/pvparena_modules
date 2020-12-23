@@ -213,7 +213,7 @@ public class Skins extends ArenaModule {
                     }
 
                 }
-                Bukkit.getScheduler().runTaskLater(PVPArena.instance, new TempRunnable(), 5L);
+                Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new TempRunnable(), 5L);
             }
             return;
         }
