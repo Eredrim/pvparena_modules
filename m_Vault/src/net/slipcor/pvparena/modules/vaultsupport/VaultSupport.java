@@ -32,6 +32,8 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import java.lang.reflect.Field;
 import java.util.*;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class VaultSupport extends ArenaModule implements Listener {
 
     private static Economy economy;
@@ -73,12 +75,12 @@ public class VaultSupport extends ArenaModule implements Listener {
     }
 
     public boolean checkForBalance(ArenaModule module, CommandSender sender, int amount, boolean notify) {
-        debug.i("module "+module+" tries to check account "+sender.getName(), sender);
+        debug(sender, "module "+module+" tries to check account "+sender.getName());
         if (economy == null) {
             return false;
         }
         if (!economy.hasAccount(sender.getName())) {
-            arena.getDebugger().i("Account not found: " + sender.getName(), sender);
+            debug(sender, "Account not found: " + sender.getName());
             return false;
         }
         if (!economy.has(sender.getName(),
@@ -88,7 +90,7 @@ public class VaultSupport extends ArenaModule implements Listener {
                 module.getArena().msg(sender, Language.parse(MSG.MODULE_VAULT_NOTENOUGH, economy
                         .format(amount)));
             } else {
-                debug.i("Not enough cash!", sender);
+                debug(sender, "Not enough cash!");
             }
             return false;
         }
@@ -96,12 +98,12 @@ public class VaultSupport extends ArenaModule implements Listener {
     }
 
     public boolean tryDeposit(ArenaModule module, CommandSender sender, int amount, boolean notify) {
-        debug.i("module "+module+" tries to deposit "+amount+" to "+sender.getName(), sender);
+        debug(sender, "module "+module+" tries to deposit "+amount+" to "+sender.getName());
         if (economy == null) {
             return false;
         }
         if (!economy.hasAccount(sender.getName())) {
-            arena.getDebugger().i("Account not found: " + sender.getName(), sender);
+            debug(sender, "Account not found: " + sender.getName());
             return false;
         }
         EconomyResponse res = economy.depositPlayer(sender.getName(), amount);
@@ -113,8 +115,8 @@ public class VaultSupport extends ArenaModule implements Listener {
         return false;
     }
 
-    public String tryFormat(ArenaModule module, int amount) {
-        debug.i("module "+module+" tries to format: "+amount);
+    public static String tryFormat(ArenaModule module, int amount) {
+        debug("module {} tries to format: {}", module, amount);
         if (economy == null) {
             return String.valueOf(amount);
         }
@@ -122,12 +124,12 @@ public class VaultSupport extends ArenaModule implements Listener {
     }
 
     public boolean tryRefund(ArenaModule module, CommandSender sender, int amount, boolean notify) {
-        debug.i("module "+module+" tries to refund "+amount+" to "+sender.getName(), sender);
+        debug(sender, "module {} tries to refund {} to {}", module, amount, sender.getName());
         if (economy == null) {
             return false;
         }
         if (!economy.hasAccount(sender.getName())) {
-            arena.getDebugger().i("Account not found: " + sender.getName(), sender);
+            debug(sender, "Account not found: {}", sender.getName());
             return false;
         }
         EconomyResponse res = economy.depositPlayer(sender.getName(), amount);
@@ -140,12 +142,12 @@ public class VaultSupport extends ArenaModule implements Listener {
     }
 
     public boolean tryWithdraw(ArenaModule module, CommandSender sender, int amount, boolean notify) {
-        debug.i("module "+module+" tries to withdraw "+amount+" from "+sender.getName(), sender);
+        debug(sender, "module {} tries to withdraw {} from {}", module, amount, sender.getName());
         if (economy == null) {
             return false;
         }
         if (!economy.hasAccount(sender.getName())) {
-            arena.getDebugger().i("Account not found: " + sender.getName(), sender);
+            debug(sender, "Account not found: {}", sender.getName());
             return false;
         }
         if (!economy.has(sender.getName(),
@@ -155,7 +157,7 @@ public class VaultSupport extends ArenaModule implements Listener {
                 module.getArena().msg(sender, Language.parse(MSG.MODULE_VAULT_NOTENOUGH, economy
                         .format(amount)));
             } else {
-                debug.i("Not enough cash!", sender);
+                debug(sender, "Not enough cash!");
             }
             return false;
         }
@@ -184,7 +186,7 @@ public class VaultSupport extends ArenaModule implements Listener {
         if (arena.getArenaConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE) > 0) {
             if (economy != null) {
                 if (!economy.hasAccount(sender.getName())) {
-                    arena.getDebugger().i("Account not found: " + sender.getName(), sender);
+                    debug(sender, "Account not found: {}", sender.getName());
                     res.setError(this, "account not found: " + sender.getName());
                     return res;
                 }
@@ -251,7 +253,7 @@ public class VaultSupport extends ArenaModule implements Listener {
                 return;
             }
             if (!economy.hasAccount(player.getName())) {
-                arena.getDebugger().i("Account not found: " + player.getName(), sender);
+                debug(sender, "Account not found: " + player.getName());
                 return;
             }
             if (!economy.has(player.getName(), amount)) {
@@ -281,9 +283,9 @@ public class VaultSupport extends ArenaModule implements Listener {
     public boolean commitEnd(final ArenaTeam aTeam) {
 
         if (economy != null) {
-            arena.getDebugger().i("eConomy set, parse bets");
+            debug("eConomy set, parse bets");
             for (final String nKey : getPlayerBetMap().keySet()) {
-                arena.getDebugger().i("bet: " + nKey);
+                debug("bet: " + nKey);
                 final String[] nSplit = nKey.split(":");
 
                 if (arena.getTeam(nSplit[1]) == null
@@ -303,10 +305,10 @@ public class VaultSupport extends ArenaModule implements Listener {
                     final double amount = getPlayerBetMap().get(nKey) * teamFactor;
 
                     if (!economy.hasAccount(nSplit[0])) {
-                        arena.getDebugger().i("Account not found: " + nSplit[0]);
+                        debug("Account not found: {}", nSplit[0]);
                         return true;
                     }
-                    arena.getDebugger().i("1 depositing " + amount + " to " + nSplit[0]);
+                    debug("1 depositing {} to {}", amount, nSplit[0]);
                     if (amount > 0) {
                         economy.depositPlayer(nSplit[0], amount);
                         try {
@@ -324,7 +326,7 @@ public class VaultSupport extends ArenaModule implements Listener {
 
     @Override
     public void configParse(final YamlConfiguration config) {
-        Bukkit.getPluginManager().registerEvents(this, PVPArena.instance);
+        Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
     }
 
     private Map<String, Double> getPermList() {
@@ -339,7 +341,7 @@ public class VaultSupport extends ArenaModule implements Listener {
                     try {
                         list.put(split[0], Double.parseDouble(split[1]));
                     } catch (Exception e) {
-                        PVPArena.instance.getLogger().warning(
+                        PVPArena.getInstance().getLogger().warning(
                                 "string '" + node + "' could not be read in node 'modules.vault.permfactors' in arena " + arena.getName());
                     }
                 }
@@ -380,7 +382,7 @@ public class VaultSupport extends ArenaModule implements Listener {
         final int minPlayTime = arena.getArenaConfig().getInt(CFG.MODULES_VAULT_MINPLAYTIME);
 
         if (minPlayTime > arena.getPlayedSeconds()) {
-            arena.getDebugger().i("no rewards, game too short!");
+            debug("no rewards, game too short!");
             return;
         }
 
@@ -391,7 +393,7 @@ public class VaultSupport extends ArenaModule implements Listener {
             field = arena.getClass().getDeclaredField("startCount");
             field.setAccessible(true);
             if (minPlayers > field.getInt(arena)) {
-                arena.getDebugger().i("no rewards, not enough players!");
+                debug("no rewards, not enough players!");
                 return;
             }
         } catch (final NoSuchFieldException | IllegalAccessException | IllegalArgumentException | SecurityException e1) {
@@ -399,21 +401,21 @@ public class VaultSupport extends ArenaModule implements Listener {
             e1.printStackTrace();
         }
 
-        arena.getDebugger().i("giving rewards to player " + player.getName(), player);
+        debug(player, "giving rewards to player {}", player.getName());
 
-        arena.getDebugger().i("giving Vault rewards to Player " + player, player);
+        debug(player, "giving Vault rewards to Player {}", player);
         int winners = 0;
         for (final ArenaPlayer p : arena.getFighters()) {
-            arena.getDebugger().i("- checking fighter " + p.getName(), p.getName());
+            debug(p.get(), "- checking fighter {}", p.getName());
             if (p.getStatus() != null && p.getStatus() == Status.FIGHT) {
-                arena.getDebugger().i("-- added!", p.getName());
+                debug(p.get(), "-- added!");
                 winners++;
             }
         }
-        arena.getDebugger().i("winners: " + winners, player);
+        debug(player, "winners: " + winners);
 
         if (economy != null) {
-            arena.getDebugger().i("checking on bet amounts!", player);
+            debug(player, "checking on bet amounts!");
             for (final String nKey : getPlayerBetMap().keySet()) {
                 final String[] nSplit = nKey.split(":");
 
@@ -429,7 +431,7 @@ public class VaultSupport extends ArenaModule implements Listener {
 
                     final double amount = getPlayerBetMap().get(nKey) * playerFactor;
 
-                    arena.getDebugger().i("2 depositing " + amount + " to " + nSplit[0]);
+                    debug("2 depositing {} to {}", amount, nSplit[0]);
                     if (amount > 0) {
                         economy.depositPlayer(nSplit[0], amount);
                         try {
@@ -448,7 +450,7 @@ public class VaultSupport extends ArenaModule implements Listener {
             }
 
             if (arena.getArenaConfig().getBoolean(CFG.MODULES_VAULT_WINPOT)) {
-                arena.getDebugger().i("calculating win pot!", player);
+                debug(player, "calculating win pot!");
                 double amount = winners > 0 ? pot / winners : 0;
 
 
@@ -461,7 +463,7 @@ public class VaultSupport extends ArenaModule implements Listener {
 
                 amount *= factor;
 
-                arena.getDebugger().i("3 depositing " + amount + " to " + player.getName());
+                debug("3 depositing {} to {}", amount, player.getName());
                 if (amount > 0) {
                     economy.depositPlayer(player.getName(), amount);
                     arena.msg(player, Language.parse(MSG.NOTICE_AWARDED,
@@ -470,7 +472,7 @@ public class VaultSupport extends ArenaModule implements Listener {
             } else if (arena.getArenaConfig().getInt(CFG.MODULES_VAULT_WINREWARD, 0) > 0) {
 
                 double amount = arena.getArenaConfig().getInt(CFG.MODULES_VAULT_WINREWARD, 0);
-                arena.getDebugger().i("calculating win reward: " + amount, player);
+                debug(player, "calculating win reward: {}", amount);
 
 
                 double factor;
@@ -479,7 +481,7 @@ public class VaultSupport extends ArenaModule implements Listener {
                     factor = Math.pow(arena.getArenaConfig().getDouble(CFG.MODULES_VAULT_WINREWARDPLAYERFACTOR)
                             , field.getInt(arena));
                 } catch (final Exception e) {
-                    PVPArena.instance.getLogger().warning("Failed to get playedPlayers, using winners!");
+                    PVPArena.getInstance().getLogger().warning("Failed to get playedPlayers, using winners!");
                     factor = Math.pow(arena.getArenaConfig().getDouble(CFG.MODULES_VAULT_WINREWARDPLAYERFACTOR)
                             , winners);
                 }
@@ -487,13 +489,13 @@ public class VaultSupport extends ArenaModule implements Listener {
                 for (final String node : getPermList().keySet()) {
                     if (player.hasPermission(node)) {
                         factor = Math.max(factor, getPermList().get(node));
-                        arena.getDebugger().i("has perm '" + node + "'; factor set to " + factor, player);
+                        debug(player, "has perm '{}'; factor set to {}", node, factor);
                     }
                 }
 
                 amount *= factor;
 
-                arena.getDebugger().i("4 depositing " + amount + " to " + player.getName());
+                debug("4 depositing {} to {}", amount, player.getName());
                 if (amount > 0) {
                     economy.depositPlayer(player.getName(), amount);
                     arena.msg(player, Language.parse(MSG.NOTICE_AWARDED,
@@ -519,7 +521,7 @@ public class VaultSupport extends ArenaModule implements Listener {
         }
 
         if (!economy.hasAccount(player.getName())) {
-            arena.getDebugger().i("Account not found: " + player.getName(), player);
+            debug(player, "Account not found: {}", player.getName());
             return;
         }
 
@@ -531,7 +533,7 @@ public class VaultSupport extends ArenaModule implements Listener {
         }
 
         amount *= factor;
-        arena.getDebugger().i("6 depositing " + amount + " to " + player.getName());
+        debug("6 depositing {} to {}", amount, player.getName());
 
         if (amount > 0) {
             economy.depositPlayer(player.getName(), amount);
@@ -586,7 +588,7 @@ public class VaultSupport extends ArenaModule implements Listener {
             setupEconomy();
             setupPermission();
 
-            Bukkit.getPluginManager().registerEvents(this, PVPArena.instance);
+            Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
         }
     }
 
@@ -613,7 +615,7 @@ public class VaultSupport extends ArenaModule implements Listener {
         if (result == null || result.size() == arena.getTeamNames().size()) {
             return;
         }
-        arena.getDebugger().i("Paying winners: " + StringParser.joinSet(result, ", "));
+        debug("Paying winners: {}", StringParser.joinSet(result, ", "));
 
         if (economy == null) {
             return;
@@ -660,14 +662,14 @@ public class VaultSupport extends ArenaModule implements Listener {
                 }
 
                 if (!economy.hasAccount(nSplit[0])) {
-                    arena.getDebugger().i("Account not found: " + nSplit[0]);
+                    debug("Account not found: {}", nSplit[0]);
                     continue;
                 }
 
                 final Player player = Bukkit.getPlayer(nSplit[0]);
 
                 if (player == null) {
-                    arena.getDebugger().i("Player is null!");
+                    debug("Player is null!");
                 } else {
                     double factor = 1.0d;
                     for (final String node : getPermList().keySet()) {
@@ -679,7 +681,7 @@ public class VaultSupport extends ArenaModule implements Listener {
                     amount *= factor;
                 }
 
-                arena.getDebugger().i("7 depositing " + amount + " to " + nSplit[0]);
+                debug("7 depositing {} to {}", amount, nSplit[0]);
                 if (amount > 0) {
                     economy.depositPlayer(nSplit[0], amount);
                     try {
@@ -719,10 +721,10 @@ public class VaultSupport extends ArenaModule implements Listener {
             }
             arena.msg(player, Language.parse(MSG.MODULE_VAULT_REFUNDING, economy.format(entryfee)));
             if (!economy.hasAccount(player.getName())) {
-                arena.getDebugger().i("Account not found: " + player.getName(), player);
+                debug(player, "Account not found: {}", player.getName());
                 return;
             }
-            arena.getDebugger().i("8 depositing " + entryfee + " to " + player.getName());
+            debug("8 depositing {} to {}", entryfee, player.getName());
             economy.depositPlayer(player.getName(), entryfee);
             pot -= entryfee;
 
@@ -786,7 +788,7 @@ public class VaultSupport extends ArenaModule implements Listener {
 
 
         if (event.getArena().equals(arena)) {
-            arena.getDebugger().i("it's us!");
+            debug("it's us!");
             final String[] contents = event.getContents();
             /*
 			* content.length == 1
@@ -836,19 +838,19 @@ public class VaultSupport extends ArenaModule implements Listener {
 
     private void newReward(final String playerName, final String rewardType) {
         if (playerName == null || playerName.length() < 1) {
-            PVPArena.instance.getLogger().warning("winner is empty string in " + arena.getName());
+            PVPArena.getInstance().getLogger().warning("winner is empty string in " + arena.getName());
             return;
         }
-        arena.getDebugger().i("new Reward: " + playerName + " -> " + rewardType);
+        debug("new Reward: {} -> {}", playerName, rewardType);
         newReward(playerName, rewardType, 1);
     }
 
     private void newReward(final String playerName, final String rewardType, final int amount) {
         if (playerName == null || playerName.length() < 1) {
-            PVPArena.instance.getLogger().warning("winner is empty string in " + arena.getName());
+            PVPArena.getInstance().getLogger().warning("winner is empty string in " + arena.getName());
             return;
         }
-        arena.getDebugger().i("new Reward: " + amount + "x " + playerName + " -> " + rewardType);
+        debug("new Reward: {}x {} -> {}", amount, playerName, rewardType);
         try {
 
             double value = arena.getArenaConfig().getDouble(
@@ -858,7 +860,7 @@ public class VaultSupport extends ArenaModule implements Listener {
                     CFG.valueOf("MODULES_VAULT_REWARD_" + rewardType), -1.0d);
 
             if (maybevalue < 0) {
-                PVPArena.instance.getLogger().warning("config value is not set: " + CFG.valueOf("MODULES_VAULT_REWARD_" + rewardType).getNode());
+                PVPArena.getInstance().getLogger().warning("config value is not set: " + CFG.valueOf("MODULES_VAULT_REWARD_" + rewardType).getNode());
             }
             final Player player = Bukkit.getPlayer(playerName);
             if (player != null) {
@@ -872,7 +874,7 @@ public class VaultSupport extends ArenaModule implements Listener {
                 value *= factor;
             }
 
-            arena.getDebugger().i("9 depositing " + value + " to " + playerName);
+            debug("9 depositing {} to {}", value, playerName);
             if (value > 0) {
                 economy.depositPlayer(playerName, value);
                 try {

@@ -9,7 +9,6 @@ import net.slipcor.pvparena.classes.PASpawn;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config;
-import net.slipcor.pvparena.core.Debug;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
@@ -27,7 +26,6 @@ public class BattlefieldManager extends ArenaModule {
 
     public BattlefieldManager() {
         super("BattlefieldManager");
-        debug = new Debug(691);
     }
 
     @Override

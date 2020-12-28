@@ -36,7 +36,7 @@ public class TeamSizeRestrict extends ArenaModule {
 
                 }
 
-                Bukkit.getScheduler().runTaskLater(PVPArena.instance, new RunLater(), 1L);
+                Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 1L);
 
             }
         } catch (final Exception e) {

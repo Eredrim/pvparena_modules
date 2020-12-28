@@ -174,7 +174,7 @@ public class TempPerms extends ArenaModule implements Listener {
                 }
 
                 try {
-                    new RunLater().runTaskLater(PVPArena.instance, 1);
+                    new RunLater().runTaskLater(PVPArena.getInstance(), 1);
                 } catch (IllegalPluginAccessException ex) {
                     new RunLater().run();
                 }
@@ -185,7 +185,7 @@ public class TempPerms extends ArenaModule implements Listener {
     @Override
     public void parseJoin(final CommandSender player, final ArenaTeam team) {
         if (!this.listening) {
-            Bukkit.getPluginManager().registerEvents(this, PVPArena.instance);
+            Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
             this.listening = true;
         }
         final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
@@ -251,7 +251,7 @@ public class TempPerms extends ArenaModule implements Listener {
             return;
         }
 
-        final PermissionAttachment pa = ap.get().addAttachment(PVPArena.instance);
+        final PermissionAttachment pa = ap.get().addAttachment(PVPArena.getInstance());
 
         for (final Map.Entry<String, Boolean> stringBooleanEntry : total.entrySet()) {
             pa.setPermission(stringBooleanEntry.getKey(), stringBooleanEntry.getValue());
@@ -280,7 +280,7 @@ public class TempPerms extends ArenaModule implements Listener {
     @Override
     public void resetPlayer(final Player player, final boolean soft, final boolean force) {
         try {
-            Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.instance, () -> {
+            Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), () -> {
                 this.removePermissions(player);
             }, 5L);
         } catch (final IllegalPluginAccessException e) {

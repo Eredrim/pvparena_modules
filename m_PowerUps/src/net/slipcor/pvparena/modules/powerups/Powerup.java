@@ -1,7 +1,6 @@
 package net.slipcor.pvparena.modules.powerups;
 
 import net.slipcor.pvparena.PVPArena;
-import net.slipcor.pvparena.core.Debug;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -11,11 +10,12 @@ import org.bukkit.event.player.PlayerVelocityEvent;
 import java.util.HashMap;
 import java.util.Map;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 class Powerup {
     public final String name; // PowerUp display name
     public final Material item; // item that triggers this Powerup
     private PowerupEffect[] effects; // Effects the Powerup has
-    private final Debug debug = new Debug(16);
 
     /**
      * construct a powerup instance
@@ -26,15 +26,15 @@ class Powerup {
     @SuppressWarnings("unchecked")
     public Powerup(final String pName, final Map<String, Object> puEffects) {
         name = pName;
-        debug.i("creating powerup " + pName);
+        debug("creating powerup {}", pName);
         item = Material.valueOf((String) puEffects.get("item"));
-        debug.i("item added: " + item);
+        debug("item added: {}", item);
         int count = 0;
         for (final Map.Entry<String, Object> stringObjectEntry1 : puEffects.entrySet()) {
             final PowerupType pec = PowerupEffect.parseClass(stringObjectEntry1.getKey());
             if (pec == null) {
                 if (!"item".equals(stringObjectEntry1.getKey())) {
-                    PVPArena.instance.getLogger().warning("unknown effect class: " + stringObjectEntry1.getKey());
+                    PVPArena.getInstance().getLogger().warning("unknown effect class: " + stringObjectEntry1.getKey());
                 }
                 continue;
             }
@@ -46,7 +46,7 @@ class Powerup {
             }
             count++;
         }
-        debug.i("effects found: " + count);
+        debug("effects found: {}", count);
         if (count < 1) {
             return;
         }
@@ -130,7 +130,7 @@ class Powerup {
      * @param player the player to commit the effect on
      */
     public void activate(final Player player) {
-        debug.i("activating! - " + name, player);
+        debug(player, "activating! - {}", name);
         for (final PowerupEffect pe : effects) {
             if (pe.uses != 0 && pe.duration != 0) {
                 pe.init(player);
@@ -148,8 +148,8 @@ class Powerup {
      */
     public void commit(final Player attacker, final Player defender,
                        final EntityDamageByEntityEvent event, final boolean isAttacker) {
-        debug.i("committing effects:", attacker);
-        debug.i("committing effects:", defender);
+        debug(attacker, "committing effects:");
+        debug(defender, "committing effects:");
         for (final PowerupEffect pe : effects) {
             if (pe.uses != 0 && pe.duration != 0) {
                 pe.commit(attacker, defender, event, isAttacker);

@@ -7,7 +7,6 @@ import net.slipcor.pvparena.classes.PACheck;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config.CFG;
-import net.slipcor.pvparena.core.Debug;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
@@ -38,6 +37,8 @@ import org.bukkit.util.BlockIterator;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class Blocks extends ArenaModule implements Listener {
 
     public Blocks() {
@@ -54,8 +55,6 @@ public class Blocks extends ArenaModule implements Listener {
     private static final Map<Location, ArenaBlock> blocks = new HashMap<>();
 
     private static final Map<ArenaRegion, RestoreContainer> containers = new HashMap<>();
-
-    private static final Debug debug = new Debug(24);
 
     private boolean restoring;
 
@@ -176,7 +175,7 @@ public class Blocks extends ArenaModule implements Listener {
                 !this.arena.getArenaConfig().getBoolean(CFG.MODULES_BLOCKRESTORE_HARD)
                         && this.arena.getArenaConfig().getBoolean(CFG.MODULES_BLOCKRESTORE_RESTOREBLOCKS)) {
             for (final Block b : event.blockList()) {
-                this.saveBlock(b);
+                saveBlock(b);
             }
         }
     }
@@ -184,16 +183,16 @@ public class Blocks extends ArenaModule implements Listener {
 
     @Override
     public void onBlockBreak(final Block block) {
-        debug.i("block break in blockRestore");
+        debug("block break in blockRestore");
         if (this.arena == null || this.arena.getArenaConfig().getBoolean(CFG.MODULES_BLOCKRESTORE_HARD)
                 || !this.arena.getArenaConfig().getBoolean(CFG.MODULES_BLOCKRESTORE_RESTOREBLOCKS)) {
-            debug.i(this.arena + " || blockRestore.hard: " + this.arena.getArenaConfig().getBoolean(CFG.MODULES_BLOCKRESTORE_HARD));
+            debug("{} || blockRestore.hard: {}", this.arena, this.arena.getArenaConfig().getBoolean(CFG.MODULES_BLOCKRESTORE_HARD));
             return;
         }
         if (!this.arena.isLocked()) {
-            this.saveBlock(block);
+            saveBlock(block);
         }
-        debug.i("!arena.isLocked() " + !this.arena.isLocked());
+        debug("arena lock: {}", this.arena.isLocked());
     }
 
     @Override
@@ -201,7 +200,7 @@ public class Blocks extends ArenaModule implements Listener {
         if (!this.arena.isLocked()
                 && !this.arena.getArenaConfig().getBoolean(CFG.MODULES_BLOCKRESTORE_HARD)
                 && this.arena.getArenaConfig().getBoolean(CFG.MODULES_BLOCKRESTORE_RESTOREBLOCKS)) {
-            this.saveBlock(block);
+            saveBlock(block);
         }
     }
 
@@ -210,14 +209,14 @@ public class Blocks extends ArenaModule implements Listener {
         if (!this.arena.isLocked()
                 && !this.arena.getArenaConfig().getBoolean(CFG.MODULES_BLOCKRESTORE_HARD)
                 && this.arena.getArenaConfig().getBoolean(CFG.MODULES_BLOCKRESTORE_RESTOREBLOCKS)) {
-            this.saveBlock(block, mat);
+            saveBlock(block, mat);
         }
     }
 
     @Override
     public void reset(final boolean force) {
         if (this.arena.getArenaConfig().getBoolean(CFG.MODULES_BLOCKRESTORE_RESTOREBLOCKS)) {
-            debug.i("resetting blocks");
+            debug("resetting blocks");
             try {
                 this.restoreArena();
             } catch (final IllegalPluginAccessException e) {
@@ -248,7 +247,7 @@ public class Blocks extends ArenaModule implements Listener {
      */
     private void resetBlocks() {
         if (this.arena.getArenaConfig().getBoolean(CFG.MODULES_BLOCKRESTORE_RESTOREBLOCKS)) {
-            debug.i("resetting blocks");
+            debug("resetting blocks");
             try {
                 this.restoreArena();
             } catch (final IllegalPluginAccessException e) {
@@ -263,24 +262,24 @@ public class Blocks extends ArenaModule implements Listener {
      * restore chests, if wanted and possible
      */
     private void restoreChests() {
-        debug.i("resetting chests");
+        debug("resetting chests");
         final Set<ArenaRegion> bfs = this.arena.getRegionsByType(RegionType.BATTLE);
 
         if (bfs.size() < 1) {
-            debug.i("no battlefield region, skipping restoreChests");
+            debug("no battlefield region, skipping restoreChests");
             return;
         }
 
         if (!this.arena.getArenaConfig().getBoolean(CFG.MODULES_BLOCKRESTORE_RESTORECHESTS)) {
-            debug.i("not restoring chests, skipping restoreChests");
+            debug("not restoring chests, skipping restoreChests");
             return;
         }
 
         for (final ArenaRegion bfRegion : bfs) {
-            debug.i("resetting arena: " + bfRegion.getRegionName());
+            debug("resetting arena: {}", bfRegion.getRegionName());
 
             if (containers.get(bfRegion) != null) {
-                debug.i("container not null!");
+                debug("container not null!");
                 containers.get(bfRegion).restoreChests();
             }
 
@@ -292,8 +291,8 @@ public class Blocks extends ArenaModule implements Listener {
      *
      * @param block the block to save
      */
-    private void saveBlock(final Block block) {
-        debug.i("save block at " + block.getLocation());
+    private static void saveBlock(final Block block) {
+        debug("save block at {}", block.getLocation());
         if (!blocks.containsKey(block.getLocation())) {
             blocks.put(block.getLocation(), new ArenaBlock(block));
         }
@@ -305,9 +304,9 @@ public class Blocks extends ArenaModule implements Listener {
      * @param block the block to save
      * @param type  the material to override
      */
-    private void saveBlock(final Block block, final Material type) {
-        debug.i("save block at " + block.getLocation());
-        debug.i(" - type: " + type);
+    private static void saveBlock(final Block block, final Material type) {
+        debug("save block at {}", block.getLocation());
+        debug(" - type: {}", type);
         if (!blocks.containsKey(block.getLocation())) {
             blocks.put(block.getLocation(), new ArenaBlock(block, type));
         }
@@ -320,12 +319,12 @@ public class Blocks extends ArenaModule implements Listener {
         final Set<ArenaRegion> bfs = this.arena.getRegionsByType(RegionType.BATTLE);
 
         if (bfs.size() < 1) {
-            debug.i("no battlefield region, skipping saveChests");
+            debug("no battlefield region, skipping saveChests");
             return;
         }
 
         if (!this.arena.getArenaConfig().getBoolean(CFG.MODULES_BLOCKRESTORE_RESTORECHESTS)) {
-            debug.i("not restoring chests, skipping saveChests");
+            debug("not restoring chests, skipping saveChests");
             return;
         }
 
@@ -339,13 +338,13 @@ public class Blocks extends ArenaModule implements Listener {
     @Override
     public void parseStart() {
         if (!this.listening) {
-            Bukkit.getPluginManager().registerEvents(this, PVPArena.instance);
+            Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
             this.listening = true;
         }
         final Set<ArenaRegion> bfs = this.arena.getRegionsByType(RegionType.BATTLE);
 
         if (bfs.size() < 1) {
-            debug.i("no battlefield region, skipping restoreChests");
+            debug("no battlefield region, skipping restoreChests");
             return;
         }
 
@@ -383,7 +382,7 @@ public class Blocks extends ArenaModule implements Listener {
         for (int x = min.getX(); x <= max.getX(); x++) {
             for (int y = min.getY(); y <= max.getY(); y++) {
                 for (int z = min.getZ(); z <= max.getZ(); z++) {
-                    this.saveBlock(world.getBlockAt(x, y, z));
+                    saveBlock(world.getBlockAt(x, y, z));
                 }
             }
         }
@@ -395,7 +394,7 @@ public class Blocks extends ArenaModule implements Listener {
             for (final ArenaRegion shape : this.arena.getRegionsByType(RegionType.BATTLE)) {
                 if (shape.getShape().contains(new PABlockLocation(event.getBlock().getLocation()))) {
                     if (event.getBlock().getType() == Material.TNT) {
-                        this.saveBlock(event.getBlock());
+                        saveBlock(event.getBlock());
                     }
                 }
             }
@@ -413,7 +412,7 @@ public class Blocks extends ArenaModule implements Listener {
                         while (bi.hasNext()) {
                             final Block block = bi.next();
                             if (block.getType() == Material.TNT) {
-                                this.saveBlock(block);
+                                saveBlock(block);
                             }
                         }
                     }
@@ -430,7 +429,7 @@ public class Blocks extends ArenaModule implements Listener {
         Block toCheck = event.getBlockClicked().getRelative(event.getBlockFace());
         for (final ArenaRegion shape : this.arena.getRegionsByType(RegionType.BATTLE)) {
             if (shape.getShape().contains(new PABlockLocation(toCheck.getLocation()))) {
-                this.saveBlock(toCheck);
+                saveBlock(toCheck);
             }
         }
     }
@@ -443,7 +442,7 @@ public class Blocks extends ArenaModule implements Listener {
         Block toCheck = event.getBlockClicked().getRelative(event.getBlockFace());
         for (final ArenaRegion shape : this.arena.getRegionsByType(RegionType.BATTLE)) {
             if (shape.getShape().contains(new PABlockLocation(toCheck.getLocation()))) {
-                this.saveBlock(toCheck);
+                saveBlock(toCheck);
             }
         }
     }
@@ -455,7 +454,7 @@ public class Blocks extends ArenaModule implements Listener {
             Location loc = blk.getLocation();
             for (final ArenaRegion shape : this.arena.getRegionsByType(RegionType.BATTLE)) {
                 if (shape.getShape().contains(new PABlockLocation(loc))) {
-                    this.saveBlock(loc.getBlock());
+                    saveBlock(loc.getBlock());
                 }
             }
 
@@ -479,7 +478,7 @@ public class Blocks extends ArenaModule implements Listener {
         this.restoring = true;
         final int delay = this.arena.getArenaConfig().getInt(CFG.MODULES_BLOCKRESTORE_OFFSET);
         BukkitRunnable restoreRunnable = new BlockRestoreRunnable(this, this.getArenaBlocks());
-        restoreRunnable.runTaskTimer(PVPArena.instance, 0, delay);
+        restoreRunnable.runTaskTimer(PVPArena.getInstance(), 0, delay);
     }
 
     /**
@@ -487,7 +486,7 @@ public class Blocks extends ArenaModule implements Listener {
      */
     private void instantlyRestoreArena() {
         this.getArenaBlocks().forEach((location, arenaBlock) -> {
-                debug.i("location: " + location);
+                debug("location: {}", location);
                 arenaBlock.reset();
                 blocks.remove(location);
         });

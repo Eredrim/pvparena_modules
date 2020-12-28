@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class AfterMatch extends ArenaModule {
     private ArenaRunnable afterTask;
     private boolean aftermatch;
@@ -49,7 +51,7 @@ public class AfterMatch extends ArenaModule {
             }
         }
         arena.broadcast(Language.parse(MSG.MODULE_AFTERMATCH_STARTING));
-        PVPArena.instance.getAgm().setPlayerLives(arena, 0);
+        PVPArena.getInstance().getAgm().setPlayerLives(arena, 0);
         aftermatch = true;
         try {
             afterTask.cancel();
@@ -146,7 +148,7 @@ public class AfterMatch extends ArenaModule {
         final String pu = config.getString(CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), "off");
 
         if (!pu.startsWith("death") && !pu.startsWith("time")) {
-            PVPArena.instance.getLogger().warning("error activating aftermatch module");
+            PVPArena.getInstance().getLogger().warning("error activating aftermatch module");
         }
     }
 
@@ -223,11 +225,9 @@ public class AfterMatch extends ArenaModule {
             return;
         }
 
-        debug.i("using aftermatch : "
-                + arena.getArenaConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH) + " : "
-                + i);
+        debug("using aftermatch : {}:{}", arena.getArenaConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH), i);
         if (i > 0) {
-            debug.i("aftermatch time trigger!");
+            debug("aftermatch time trigger!");
             afterTask = new AfterRunnable(this, i);
         }
     }

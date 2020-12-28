@@ -8,7 +8,6 @@ import net.slipcor.pvparena.arena.ArenaTeam;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config;
-import net.slipcor.pvparena.core.Debug;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.loadables.ArenaModule;
@@ -37,7 +36,6 @@ public class Squads extends ArenaModule {
 
     public Squads() {
         super("Squads");
-        debug = new Debug(697);
     }
 
     @Override
@@ -312,7 +310,7 @@ public class Squads extends ArenaModule {
                 for (final ArenaPlayer tap : squad.getPlayers()) {
                     if (--pos <= 0) {
                         try {
-                            Bukkit.getScheduler().runTaskLater(PVPArena.instance, () -> player.teleport(tap.get()), 10);
+                            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), () -> player.teleport(tap.get()), 10);
                         } catch (final Exception ignored) {
 
                         }

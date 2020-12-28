@@ -3,15 +3,15 @@ package net.slipcor.pvparena.modules.factions;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.core.Debug;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 class FactionsListener implements Listener {
-    private final Debug debug = new Debug(66);
     private final FactionsSupport fs;
 
     public FactionsListener(final FactionsSupport fs) {
@@ -28,15 +28,13 @@ class FactionsListener implements Listener {
         Entity p1 = event.getDamager();
         final Entity p2 = event.getEntity();
 
-        debug.i("onEntityDamageByEntity: cause: " + event.getCause().name()
-                + " : " + event.getDamager() + " => "
-                + event.getEntity());
+        debug("onEntityDamageByEntity: cause: {} : {} => {}", event.getCause().name(), event.getDamager(), event.getEntity());
 
 
         if (p1 instanceof Projectile && ((Projectile) p1).getShooter() instanceof LivingEntity) {
-            debug.i("parsing projectile");
+            debug("parsing projectile");
             p1 = (Entity) ((Projectile) p1).getShooter();
-            debug.i("=> " + String.valueOf(p1));
+            debug("=> {}", p1);
         }
 
         if (event.getEntity() instanceof Wolf) {
@@ -52,7 +50,7 @@ class FactionsListener implements Listener {
 
         if ((p1 != null && p2 != null) && p1 instanceof Player
                 && p2 instanceof Player) {
-            if (PVPArena.instance.getConfig().getBoolean("onlyPVPinArena")) {
+            if (PVPArena.getInstance().getConfig().getBoolean("onlyPVPinArena")) {
                 event.setCancelled(true); // cancel events for regular no PVP
                 // servers
             }
@@ -68,14 +66,14 @@ class FactionsListener implements Listener {
             return;
         }
 
-        debug.i("onEntityDamageByEntity: fighting player");
+        debug("onEntityDamageByEntity: fighting player");
 
         if ((!(p1 instanceof Player))) {
             // attacker no player => out!
             return;
         }
 
-        debug.i("both entities are players");
+        debug("both entities are players");
 
         event.setCancelled(false);
     }

@@ -18,6 +18,8 @@ import org.bukkit.entity.Player;
 import java.util.HashSet;
 import java.util.Set;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class RealSpectate extends ArenaModule {
     public RealSpectate() {
         super("RealSpectate");
@@ -51,7 +53,7 @@ public class RealSpectate extends ArenaModule {
 
     @Override
     public void commitSpectate(final Player player) {
-        debug.i("committing REAL spectate", player);
+        debug(player, "committing REAL spectate");
         final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
         ap.setLocation(new PALocation(ap.get().getLocation()));
 
@@ -68,7 +70,7 @@ public class RealSpectate extends ArenaModule {
 
         this.arena.setupScoreboard(ap);
 
-        debug.i("switching:", player);
+        debug(player, "switching:");
         this.getListener().switchPlayer(player, null, true);
     }
 
@@ -135,7 +137,7 @@ public class RealSpectate extends ArenaModule {
     private RealSpectateListener getListener() {
         if (listener == null) {
             listener = new RealSpectateListener(this);
-            Bukkit.getPluginManager().registerEvents(listener, PVPArena.instance);
+            Bukkit.getPluginManager().registerEvents(listener, PVPArena.getInstance());
         }
         return listener;
     }

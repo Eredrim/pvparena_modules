@@ -1,11 +1,11 @@
 package net.slipcor.pvparena.modules.powerups;
 
-import net.slipcor.pvparena.core.Debug;
 import org.bukkit.Bukkit;
+
+import static net.slipcor.pvparena.config.Debugger.trace;
 
 class PowerupRunnable implements Runnable {
     private final PowerupManager pum;
-    private final Debug debug = new Debug(41);
 
     /**
      * construct a powerup spawn runnable
@@ -14,7 +14,7 @@ class PowerupRunnable implements Runnable {
      */
     public PowerupRunnable(final PowerupManager pm) {
         pum = pm;
-        debug.i("PowerupRunnable constructor");
+        trace("PowerupRunnable constructor");
     }
 
     /**
@@ -22,7 +22,7 @@ class PowerupRunnable implements Runnable {
      */
     @Override
     public void run() {
-        debug.i("PowerupRunnable commiting spawn");
+        trace("PowerupRunnable commiting spawn");
         if (pum.getArena().isLocked()) {
             // deactivate the auto saving task
             Bukkit.getServer().getScheduler().cancelTask(pum.SPAWN_ID);

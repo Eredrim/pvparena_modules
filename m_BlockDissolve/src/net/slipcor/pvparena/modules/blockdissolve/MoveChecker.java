@@ -5,7 +5,6 @@ import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.ArenaPlayer.Status;
 import net.slipcor.pvparena.core.Config.CFG;
-import net.slipcor.pvparena.core.Debug;
 import net.slipcor.pvparena.loadables.ArenaModuleManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -22,8 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 class MoveChecker implements Listener {
-    private final Debug debug = new Debug(42);
     private final List<Material> checkMaterialList;
     private final Arena arena;
     private final Map<Block, Runnable> map = new HashMap<>();
@@ -35,9 +35,9 @@ class MoveChecker implements Listener {
     public MoveChecker(final Arena arena, final ItemStack[] items, final int delay) {
         this.checkMaterialList = Arrays.stream(items).map(ItemStack::getType).collect(Collectors.toList());
 
-        this.debug.i("BlockDissolve MoveChecker constructor");
+        debug("BlockDissolve MoveChecker constructor");
         this.arena = arena;
-        Bukkit.getPluginManager().registerEvents(this, PVPArena.instance);
+        Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
         this.delay = delay;
         this.startSeconds = arena.getArenaConfig().getInt(CFG.MODULES_BLOCKDISSOLVE_STARTSECONDS);
         this.offset = arena.getArenaConfig().getDouble(CFG.MODULES_BLOCKDISSOLVE_CALCOFFSET);
@@ -128,7 +128,7 @@ class MoveChecker implements Listener {
 
         }
 
-        Bukkit.getScheduler().runTaskTimer(PVPArena.instance, new RunLater2(), 20L, 20L);
+        Bukkit.getScheduler().runTaskTimer(PVPArena.getInstance(), new RunLater2(), 20L, 20L);
     }
 
     class RunLater implements Runnable {
@@ -137,7 +137,7 @@ class MoveChecker implements Listener {
         RunLater(final Block b) {
             this.block = b;
             ArenaModuleManager.onBlockBreak(MoveChecker.this.arena, b);
-            Bukkit.getScheduler().runTaskLater(PVPArena.instance, this, MoveChecker.this.delay);
+            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), this, MoveChecker.this.delay);
         }
 
         @Override

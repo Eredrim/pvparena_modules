@@ -1,23 +1,23 @@
 package net.slipcor.pvparena.modules.aftermatch;
 
 import net.slipcor.pvparena.PVPArena;
-import net.slipcor.pvparena.core.Debug;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.runnables.ArenaRunnable;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class AfterRunnable extends ArenaRunnable {
     private final AfterMatch pum;
-    private final Debug debug = new Debug(41);
 
     public AfterRunnable(final AfterMatch pm, final int i) {
         super(MSG.MODULE_AFTERMATCH_STARTINGIN.getNode(), i, null, pm.getArena(), false);
         pum = pm;
-        debug.i("AfterRunnable constructor");
+        debug("AfterRunnable constructor");
     }
 
     @Override
     protected void commit() {
-        debug.i("AfterRunnable commiting");
+        debug("AfterRunnable commiting");
         if (!pum.getArena().isLocked()) {
 
             pum.afterMatch();
@@ -26,6 +26,6 @@ public class AfterRunnable extends ArenaRunnable {
 
     @Override
     protected void warn() {
-        PVPArena.instance.getLogger().warning("AfterRunnable not scheduled yet!");
+        PVPArena.getInstance().getLogger().warning("AfterRunnable not scheduled yet!");
     }
 }

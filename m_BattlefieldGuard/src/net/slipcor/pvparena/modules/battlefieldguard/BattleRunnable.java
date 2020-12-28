@@ -1,11 +1,10 @@
 package net.slipcor.pvparena.modules.battlefieldguard;
 
 import net.slipcor.pvparena.PVPArena;
-import net.slipcor.pvparena.api.PVPArenaAPI;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
+import net.slipcor.pvparena.classes.PABlockLocation;
 import net.slipcor.pvparena.core.Config.CFG;
-import net.slipcor.pvparena.core.Debug;
 import net.slipcor.pvparena.managers.ArenaManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -13,14 +12,15 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.scheduler.BukkitRunnable;
 
-class BattleRunnable extends BukkitRunnable {
-    private final Debug debug = new Debug(42);
+import static net.slipcor.pvparena.config.Debugger.debug;
+import static net.slipcor.pvparena.config.Debugger.trace;
 
+class BattleRunnable extends BukkitRunnable {
     /**
      * construct a battle runnable
      */
     public BattleRunnable() {
-        this.debug.i("BattleRunnable constructor");
+        trace("BattleRunnable constructor");
     }
 
     /**
@@ -28,16 +28,14 @@ class BattleRunnable extends BukkitRunnable {
      */
     @Override
     public void run() {
-        if (!Debug.override) {
-            this.debug.i("BattleRunnable commiting");
-        }
+        trace("BattleRunnable commiting");
         try {
             for (final Player p : Bukkit.getServer().getOnlinePlayers()) {
                 final ArenaPlayer ap = ArenaPlayer.parsePlayer(p.getName());
 
-                final String name = PVPArenaAPI.getArenaNameByLocation(p.getLocation());
+                final Arena arena = ArenaManager.getArenaByRegionLocation(new PABlockLocation(p.getLocation()));
 
-                if (name == null || name.isEmpty()) {
+                if (arena == null) {
                     continue; // not physically in an arena
                 }
 
@@ -45,21 +43,18 @@ class BattleRunnable extends BukkitRunnable {
                     continue;
                 }
 
-                if (!Debug.override) {
-                    this.debug.i("arena pos: " + name, p);
-                    this.debug.i("arena IN : " + ap.getArena(), p);
-                }
+                debug(p, "arena pos: {}", arena);
+                debug(p, "arena IN: {}", ap.getArena());
 
                 if(ap.getArena() == null) {
-                    final Arena a = ArenaManager.getArenaByName(name);
-                    if (a.getArenaConfig().getBoolean(CFG.MODULES_BATTLEFIELDGUARD_ENTERDEATH)) {
+                    if (arena.getArenaConfig().getBoolean(CFG.MODULES_BATTLEFIELDGUARD_ENTERDEATH)) {
                         p.setLastDamageCause(new EntityDamageEvent(p, DamageCause.CUSTOM,1000.0));
                         p.setHealth(0);
                         p.damage(1000);
                     } else {
-                        a.tpPlayerToCoordName(ap, "exit");
+                        arena.tpPlayerToCoordName(ap, "exit");
                     }
-                } else if(!ap.getArena().getName().equals(name)) {
+                } else if(!ap.getArena().equals(arena)) {
                     if (ap.getArena().getArenaConfig().getBoolean(CFG.MODULES_BATTLEFIELDGUARD_ENTERDEATH)) {
                         p.setLastDamageCause(new EntityDamageEvent(p, DamageCause.CUSTOM,1000.0));
                         p.setHealth(0);

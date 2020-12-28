@@ -126,7 +126,7 @@ public class StartFreeze extends ArenaModule implements Listener {
     @Override
     public void configParse(final YamlConfiguration config) {
         if (!setup) {
-            Bukkit.getPluginManager().registerEvents(this, PVPArena.instance);
+            Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
             setup = true;
         }
     }

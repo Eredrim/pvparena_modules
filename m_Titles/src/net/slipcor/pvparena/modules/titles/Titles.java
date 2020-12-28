@@ -7,7 +7,6 @@ import net.slipcor.pvparena.arena.ArenaTeam;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config.CFG;
-import net.slipcor.pvparena.core.Debug;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
@@ -22,11 +21,12 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import java.util.Collections;
 import java.util.List;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class Titles extends ArenaModule {
 
     public Titles() {
         super("Titles");
-        debug = new Debug(404);
     }
 
     @Override
@@ -161,7 +161,7 @@ public class Titles extends ArenaModule {
     @Override
     public void parseJoin(final CommandSender sender, final ArenaTeam team) {
 
-        debug.i("parseJoin ... ", sender);
+        debug(sender, "parseJoin ... ");
 
         if (TeamManager.countPlayersInTeams(arena) < 2) {
             final String arenaname =

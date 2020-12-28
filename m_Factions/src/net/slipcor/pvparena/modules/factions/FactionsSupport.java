@@ -23,7 +23,7 @@ public class FactionsSupport extends ArenaModule {
         if (setup) {
             return;
         }
-        Bukkit.getPluginManager().registerEvents(new FactionsListener(this), PVPArena.instance);
+        Bukkit.getPluginManager().registerEvents(new FactionsListener(this), PVPArena.getInstance());
         setup = true;
     }
 }

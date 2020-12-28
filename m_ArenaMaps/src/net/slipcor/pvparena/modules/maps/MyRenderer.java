@@ -56,15 +56,15 @@ class MyRenderer extends MapRenderer {
         colors.put(ChatColor.WHITE, MapPalette.matchColor(255, 255, 255));
         colors.put(ChatColor.YELLOW, MapPalette.matchColor(255, 255, 0));
 
-        PVPArena.instance.getDataFolder().mkdir();
+        PVPArena.getInstance().getDataFolder().mkdir();
 
 
-        final File configFile = new File(PVPArena.instance.getDataFolder(), "maps.yml");
+        final File configFile = new File(PVPArena.getInstance().getDataFolder(), "maps.yml");
         if (!(configFile.exists())) {
             try {
                 configFile.createNewFile();
             } catch (final Exception e) {
-                PVPArena.instance.getLogger().severe(
+                PVPArena.getInstance().getLogger().severe(
                         "Error when creating map file.");
             }
         }
@@ -79,7 +79,7 @@ class MyRenderer extends MapRenderer {
 
     private static void savePlayers() {
         try {
-            playerMaps.save(new File(PVPArena.instance.getDataFolder(), "maps.yml"));
+            playerMaps.save(new File(PVPArena.getInstance().getDataFolder(), "maps.yml"));
         } catch (final IOException e) {
             e.printStackTrace();
         }
@@ -128,7 +128,7 @@ class MyRenderer extends MapRenderer {
             map.setCenterX(loc.getX());
             map.setCenterZ(loc.getZ());
         } else {
-            PVPArena.instance.getLogger().severe("arena null");
+            PVPArena.getInstance().getLogger().severe("arena null");
         }
         final int mapcenterx = map.getCenterX();
         final int mapcenterz = map.getCenterZ();

@@ -180,7 +180,7 @@ public class BetterKillstreaks extends ArenaModule implements Listener {
     @Override
     public void configParse(final YamlConfiguration config) {
         if (!setup) {
-            Bukkit.getPluginManager().registerEvents(this, PVPArena.instance);
+            Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
             setup = true;
         }
     }
@@ -247,7 +247,7 @@ public class BetterKillstreaks extends ArenaModule implements Listener {
                 spe.add(pe);
             }
         } catch (final Exception e) {
-            PVPArena.instance.getLogger().warning("error while parsing POTION EFFECT DEFINITION \"" + s + "\" : " + current);
+            PVPArena.getInstance().getLogger().warning("error while parsing POTION EFFECT DEFINITION \"" + s + "\" : " + current);
         }
 
         return spe;

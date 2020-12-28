@@ -120,7 +120,7 @@ public class BanKick extends ArenaModule {
             tryKick(sender, args[1]);
             final long time = parseStringToSeconds(args[2]);
             final BanRunnable run = new BanRunnable(this, sender, args[1], false);
-            Bukkit.getScheduler().runTaskLaterAsynchronously(PVPArena.instance, run, 20 * time);
+            Bukkit.getScheduler().runTaskLaterAsynchronously(PVPArena.getInstance(), run, 20 * time);
             doBan(sender, args[1]);
         } else if ("ban".equals(cmd)) {
             if (!AbstractArenaCommand.argCountValid(sender, arena, args, new Integer[]{2})) {
@@ -139,7 +139,7 @@ public class BanKick extends ArenaModule {
             }
             final long time = parseStringToSeconds(args[2]);
             final BanRunnable run = new BanRunnable(this, sender, args[1], true);
-            Bukkit.getScheduler().runTaskLaterAsynchronously(PVPArena.instance, run, 20 * time);
+            Bukkit.getScheduler().runTaskLaterAsynchronously(PVPArena.getInstance(), run, 20 * time);
             doUnBan(sender, args[1]);
         }
     }

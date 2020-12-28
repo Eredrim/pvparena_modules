@@ -1,11 +1,10 @@
 package net.slipcor.pvparena.modules.realspectate;
 
-import com.google.common.collect.ImmutableMap;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.classes.PABlockLocation;
 import net.slipcor.pvparena.commands.PAG_Spectate;
-import net.slipcor.pvparena.core.Debug;
+import net.slipcor.pvparena.config.Debugger;
 import net.slipcor.pvparena.events.PADeathEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -22,14 +21,14 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.util.Vector;
 
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+
+import static net.slipcor.pvparena.config.Debugger.debug;
 
 class RealSpectateListener implements Listener {
     final RealSpectate rs;
     final Map<Player, SpectateWrapper> spectated_players = new HashMap<>();
-    private final Debug debug = new Debug(456);
 
     public RealSpectateListener(final RealSpectate realSpectate) {
         rs = realSpectate;
@@ -53,7 +52,7 @@ class RealSpectateListener implements Listener {
     SpectateWrapper createSpectateWrapper(final Player s,
                                           final Player f) {
         //debug.i("createSwapper", s);
-        debug.i("create wrapper: " + s.getName() + '+' + f, s);
+        debug(s, "create wrapper: {} + {}", s.getName(), f);
         if (!spectated_players.containsKey(f)) {
             spectated_players.put(f, new SpectateWrapper(s, f, this));
         }
@@ -65,10 +64,10 @@ class RealSpectateListener implements Listener {
     }
 
     private Player getSpectatedSuspect(final Player p) {
-        rs.getArena().getDebugger().i("getSpecated: " + p.getName());
+        debug(rs.getArena(), "getSpecated: " + p.getName());
         for (final SpectateWrapper sw : spectated_players.values()) {
-            rs.getArena().getDebugger().i("found wrapper: " + sw.getSuspect().getName());
-            sw.debug(rs.getArena().getDebugger());
+            debug(rs.getArena(), "found wrapper: " + sw.getSuspect().getName());
+            sw.debugSpectators(rs.getArena());
             if (sw.hasSpectator(p)) {
                 return sw.getSuspect();
             }
@@ -89,18 +88,18 @@ class RealSpectateListener implements Listener {
         if (rs.getArena() == null || !rs.getArena().equals(aPlayer.getArena())) {
             return;
         }
-        rs.getArena().getDebugger().i("RealSpectateListener oEEDBE");
+        debug(rs.getArena(), "RealSpectateListener oEEDBE");
 
         Player subject = getSpectatedSuspect(player);
 
         if (subject != null) {
             // subject is being spectated
 
-            debug.i("player is spectating and being damaged", subject);
+            debug(subject, "player is spectating and being damaged");
 
             if (event.getDamager() instanceof Projectile) {
 
-                debug.i("relay damage", subject);
+                debug(subject, "relay damage");
                 // Damage is a Projectile that should have hit the subject
                 // --> relay damage to subject
 
@@ -422,7 +421,7 @@ class RealSpectateListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onProjectileLaunch(final ProjectileLaunchEvent event) {
-        debug.i("ProjectileLaunch!");
+        debug("ProjectileLaunch!");
         if (event == null ||
                 event.getEntity() == null ||
                 event.getEntity().getShooter() == null ||
@@ -433,7 +432,7 @@ class RealSpectateListener implements Listener {
         Player subject = getSpectatedSuspect((Player) event.getEntity().getShooter());
 
         if (subject != null) {
-            debug.i("subject != null", subject);
+            debug(subject, "subject != null");
             // subject is being spectated
             // player is spectating
             // --> cancel and out
@@ -444,23 +443,23 @@ class RealSpectateListener implements Listener {
         subject = (Player) event.getEntity().getShooter();
 
         if (!spectated_players.containsKey(subject)) {
-            debug.i("not being spectated", subject);
+            debug(subject, "not being spectated");
             return;
         }
 
-        debug.i("subject is being spectated", subject);
+        debug(subject, "subject is being spectated");
 
         final Projectile projectile = event.getEntity();
         final Location location = subject.getLocation();
 
-        debug.i(String.valueOf(new PABlockLocation(location)), subject);
+        debug(subject, "location: {}", new PABlockLocation(location));
         final Vector direction = location.getDirection();
 
         location.add(direction.normalize().multiply(1));
         //location.setY(subject.getEyeLocation().getY());
         location.setY(location.getY() + 1.4D);
 
-        debug.i(String.valueOf(new PABlockLocation(location)), subject);
+        debug(subject, "location: {}", new PABlockLocation(location));
 
         projectile.teleport(location);
 
@@ -484,7 +483,7 @@ class RealSpectateListener implements Listener {
                     }
 
                 }
-                Bukkit.getScheduler().runTaskLater(PVPArena.instance, new RunLater(), 5L);
+                Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 5L);
             } catch (final Exception e) {
 
             }
@@ -497,29 +496,29 @@ class RealSpectateListener implements Listener {
         }
 
         if (rs.getArena().getFighters().size() < 1) {
-            debug.i("< 1", spectator);
+            debug(spectator, "< 1");
             return;
         }
 
         Player nextPlayer = null;
         for (final ArenaPlayer ap : rs.getArena().getFighters()) {
-            debug.i("checking " + ap.getName(), spectator);
+            debug(spectator, "checking {}", ap.getName());
             final Player p = ap.get();
 
             if (ap.getName().equals(spectator.getName())) {
-                debug.i("we are still in -.-", spectator);
+                debug(spectator, "we are still in -.-");
                 continue;
             }
 
             if (subject == null) {
-                debug.i("subject == null", spectator);
+                debug(spectator, "subject == null");
                 nextPlayer = p;
                 break;
             }
 
 
             if (!p.equals(subject)) {
-                debug.i("||", spectator);
+                debug(spectator, "||");
                 nextPlayer = p;
                 continue;
             }
@@ -527,17 +526,17 @@ class RealSpectateListener implements Listener {
             // p == subject
 
             if (!forward) {
-                debug.i("step back", spectator);
+                debug(spectator, "step back");
                 if (nextPlayer == null) {
-                    debug.i("get last element", spectator);
+                    debug(spectator, "get last element");
                     for (final ArenaPlayer ap2 : rs.getArena().getFighters()) {
-                        debug.i(ap2.getName(), spectator);
+                        debug(spectator, ap2.getName());
                         nextPlayer = ap2.get();
                     }
                     continue;
                 } // else: nextPlayer has content. yay!
 
-                debug.i("==>" + nextPlayer.getName(), spectator);
+                debug(spectator, "==> {}", nextPlayer.getName());
                 break;
             }
         }

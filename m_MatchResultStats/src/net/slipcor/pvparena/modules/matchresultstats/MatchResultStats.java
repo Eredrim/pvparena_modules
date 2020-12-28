@@ -17,6 +17,8 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class MatchResultStats extends ArenaModule {
 
     public MatchResultStats() {
@@ -82,21 +84,21 @@ public class MatchResultStats extends ArenaModule {
     public void configParse(final YamlConfiguration config) {
         if (dbTable == null) {
 
-            PVPArena.instance.getConfig().options().copyDefaults(true);
-            PVPArena.instance.getConfig().addDefault("MySQLhost", "");
-            PVPArena.instance.getConfig().addDefault("MySQLuser", "");
-            PVPArena.instance.getConfig().addDefault("MySQLpass", "");
-            PVPArena.instance.getConfig().addDefault("MySQLdb", "");
-            PVPArena.instance.getConfig().addDefault("MySQLtable", "pvparena_stats");
-            PVPArena.instance.getConfig().addDefault("MySQLport", 3306);
-            PVPArena.instance.saveConfig();
+            PVPArena.getInstance().getConfig().options().copyDefaults(true);
+            PVPArena.getInstance().getConfig().addDefault("MySQLhost", "");
+            PVPArena.getInstance().getConfig().addDefault("MySQLuser", "");
+            PVPArena.getInstance().getConfig().addDefault("MySQLpass", "");
+            PVPArena.getInstance().getConfig().addDefault("MySQLdb", "");
+            PVPArena.getInstance().getConfig().addDefault("MySQLtable", "pvparena_stats");
+            PVPArena.getInstance().getConfig().addDefault("MySQLport", 3306);
+            PVPArena.getInstance().saveConfig();
 
-            dbHost = PVPArena.instance.getConfig().getString("MySQLhost", "");
-            dbUser = PVPArena.instance.getConfig().getString("MySQLuser", "");
-            dbPass = PVPArena.instance.getConfig().getString("MySQLpass", "");
-            dbDatabase = PVPArena.instance.getConfig().getString("MySQLdb", "");
-            dbTable = PVPArena.instance.getConfig().getString("MySQLtable", "pvparena_stats");
-            dbPort = PVPArena.instance.getConfig().getInt("MySQLport", 3306);
+            dbHost = PVPArena.getInstance().getConfig().getString("MySQLhost", "");
+            dbUser = PVPArena.getInstance().getConfig().getString("MySQLuser", "");
+            dbPass = PVPArena.getInstance().getConfig().getString("MySQLpass", "");
+            dbDatabase = PVPArena.getInstance().getConfig().getString("MySQLdb", "");
+            dbTable = PVPArena.getInstance().getConfig().getString("MySQLtable", "pvparena_stats");
+            dbPort = PVPArena.getInstance().getConfig().getInt("MySQLport", 3306);
 
             if (sqlHandler == null) {
                 try {
@@ -106,14 +108,14 @@ public class MatchResultStats extends ArenaModule {
                     e1.printStackTrace();
                 }
 
-                arena.getDebugger().i("MySQL Initializing");
+                debug(arena, "MySQL Initializing");
                 // Initialize MySQL Handler
 
                 if (sqlHandler.connect(true)) {
-                    arena.getDebugger().i("MySQL connection successful");
+                    debug(arena, "MySQL connection successful");
                     // Check if the tables exist, if not, create them
                     if (!sqlHandler.tableExists(dbDatabase, dbTable)) {
-                        arena.getDebugger().i("Creating table " + dbTable);
+                        debug(arena, "Creating table " + dbTable);
                         final String query = "CREATE TABLE `" + dbTable + "` ( " +
                                 "`id` int(16) NOT NULL AUTO_INCREMENT, " +
                                 "`mid` int(8) not null default 0, " +
@@ -139,7 +141,7 @@ public class MatchResultStats extends ArenaModule {
                         }
                     }
                 } else {
-                    PVPArena.instance.getLogger().severe("MySQL connection failed");
+                    PVPArena.getInstance().getLogger().severe("MySQL connection failed");
                 }
                 MRSMySQL.initiate(this);
             }

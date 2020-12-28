@@ -47,7 +47,7 @@ public class Items extends ArenaModule {
             Bukkit.getScheduler().cancelTask(id);
             id = Bukkit.getScheduler()
                     .scheduleSyncRepeatingTask(
-                            PVPArena.instance,
+                            PVPArena.getInstance(),
                             new ItemSpawnRunnable(arena),
                             arena.getArenaConfig().getInt(
                                     CFG.MODULES_ITEMS_INTERVAL) * 20L,

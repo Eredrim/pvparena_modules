@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class Points extends ArenaModule implements Listener {
     private static final Map<String, Double> globalpoints = new HashMap<>();
     private final Map<String, Double> points = new HashMap<>();
@@ -41,14 +43,14 @@ public class Points extends ArenaModule implements Listener {
 
     @Override
     public void configParse(final YamlConfiguration config) {
-        Bukkit.getPluginManager().registerEvents(this, PVPArena.instance);
+        Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
         for (final ArenaClass aClass : arena.getClasses()) {
             config.addDefault("modules.points.classes." + aClass.getName(), 0.0d);
         }
 
         if (arena.getArenaConfig().getBoolean(CFG.MODULES_POINTS_GLOBAL)) {
             if (globalconfig == null) {
-                gcf = new File(PVPArena.instance.getDataFolder(), "points.yml");
+                gcf = new File(PVPArena.getInstance().getDataFolder(), "points.yml");
 
                 if (gcf.exists()) {
                     globalconfig = YamlConfiguration.loadConfiguration(gcf);
@@ -161,7 +163,7 @@ public class Points extends ArenaModule implements Listener {
 
 
         if (event.getArena().equals(arena)) {
-            arena.getDebugger().i("[POINTS] it's us!");
+            debug(arena, "[POINTS] it's us!");
             final String[] contents = event.getContents();
 
             String lastTrigger = "";
@@ -198,19 +200,19 @@ public class Points extends ArenaModule implements Listener {
 
     private void newReward(final String playerName, final String rewardType) {
         if (playerName == null || playerName.length() < 1) {
-            PVPArena.instance.getLogger().warning("winner is empty string in " + arena.getName());
+            PVPArena.getInstance().getLogger().warning("winner is empty string in " + arena.getName());
             return;
         }
-        arena.getDebugger().i("new Reward: " + playerName + " -> " + rewardType);
+        debug(arena, "new Reward: " + playerName + " -> " + rewardType);
         newReward(playerName, rewardType, 1);
     }
 
     private void newReward(final String playerName, final String rewardType, final int amount) {
         if (playerName == null || playerName.length() < 1) {
-            PVPArena.instance.getLogger().warning("winner is empty string in " + arena.getName());
+            PVPArena.getInstance().getLogger().warning("winner is empty string in " + arena.getName());
             return;
         }
-        arena.getDebugger().i("new Reward: " + amount + "x " + playerName + " -> " + rewardType);
+        debug(arena, "new Reward: " + amount + "x " + playerName + " -> " + rewardType);
         try {
 
             final double value = arena.getArenaConfig().getDouble(
@@ -220,10 +222,10 @@ public class Points extends ArenaModule implements Listener {
                     CFG.valueOf("MODULES_POINTS_REWARD_" + rewardType), -1.0d);
 
             if (maybevalue < 0) {
-                PVPArena.instance.getLogger().warning("config value is not set: " + CFG.valueOf("MODULES_POINTS_REWARD_" + rewardType).getNode());
+                PVPArena.getInstance().getLogger().warning("config value is not set: " + CFG.valueOf("MODULES_POINTS_REWARD_" + rewardType).getNode());
             }
 
-            arena.getDebugger().i("9 depositing " + value + " to " + playerName);
+            debug(arena, "9 depositing " + value + " to " + playerName);
             if (value > 0) {
                 add(playerName, value);
                 try {

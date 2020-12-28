@@ -1,10 +1,9 @@
 package net.slipcor.pvparena.modules.arenaboards;
 
-import net.slipcor.pvparena.core.Debug;
+import static net.slipcor.pvparena.config.Debugger.trace;
 
 class BoardRunnable implements Runnable {
     private final ArenaBoardManager abm;
-    private final Debug debug = new Debug(38);
 
     /**
      * create a timed arena runnable
@@ -13,7 +12,7 @@ class BoardRunnable implements Runnable {
      */
     public BoardRunnable(final ArenaBoardManager m) {
         abm = m;
-        debug.i("BoardRunnable constructor");
+        trace("BoardRunnable constructor");
     }
 
     /**
@@ -21,7 +20,7 @@ class BoardRunnable implements Runnable {
      */
     @Override
     public void run() {
-        debug.i("BoardRunnable commiting");
+        trace("BoardRunnable commiting");
         if (abm == null) {
             if (ArenaBoardManager.globalBoard != null) {
                 ArenaBoardManager.globalBoard.update();

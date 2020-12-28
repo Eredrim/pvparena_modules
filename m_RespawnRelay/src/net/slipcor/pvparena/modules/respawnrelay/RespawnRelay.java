@@ -83,7 +83,7 @@ public class RespawnRelay extends ArenaModule {
     public String checkForMissingSpawns(final Set<String> list) {
         if (listener == null) {
             listener = new RelayListener();
-            Bukkit.getPluginManager().registerEvents(listener, PVPArena.instance);
+            Bukkit.getPluginManager().registerEvents(listener, PVPArena.getInstance());
         }
 
         boolean allTeams = true;

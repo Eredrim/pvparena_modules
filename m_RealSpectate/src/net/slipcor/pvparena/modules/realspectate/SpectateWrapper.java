@@ -1,8 +1,8 @@
 package net.slipcor.pvparena.modules.realspectate;
 
 import net.slipcor.pvparena.PVPArena;
+import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.core.Debug;
 import net.slipcor.pvparena.managers.InventoryManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -10,6 +10,8 @@ import org.bukkit.inventory.Inventory;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import static net.slipcor.pvparena.config.Debugger.debug;
 
 class SpectateWrapper {
     private final Player suspect;
@@ -23,9 +25,9 @@ class SpectateWrapper {
         this.listener = listener;
     }
 
-    public void debug(final Debug debugger) {
+    public void debugSpectators(Arena arena) {
         for (final Player spec : spectators) {
-            debugger.i(spec.getName());
+            debug(arena, spec.getName());
         }
     }
 
@@ -50,7 +52,7 @@ class SpectateWrapper {
                     s.hidePlayer(suspect);
                 }
             }
-            Bukkit.getScheduler().runTaskLater(PVPArena.instance, new LaterRun(), 5L);
+            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new LaterRun(), 5L);
         }
     }
 
@@ -80,7 +82,7 @@ class SpectateWrapper {
                     s.hidePlayer(suspect);
                 }
             }
-            Bukkit.getScheduler().runTaskLater(PVPArena.instance, new LaterRun(s), 5L);
+            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new LaterRun(s), 5L);
         }
     }
 
@@ -145,7 +147,7 @@ class SpectateWrapper {
                 }
             }
         }
-        Bukkit.getScheduler().runTaskLater(PVPArena.instance, new LaterRun(), 5L);
+        Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new LaterRun(), 5L);
     }
 
     public void updateInventory() {
@@ -159,7 +161,7 @@ class SpectateWrapper {
                 }
             }
         }
-        Bukkit.getScheduler().runTaskLater(PVPArena.instance, new LaterRun(), 5L);
+        Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new LaterRun(), 5L);
     }
 
     public void updateLocation() {

@@ -3,7 +3,6 @@ package net.slipcor.pvparena.modules.blockrestore;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.commands.PAA_Edit;
 import net.slipcor.pvparena.core.Config.CFG;
-import net.slipcor.pvparena.core.Debug;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -18,17 +17,19 @@ import org.bukkit.inventory.ItemStack;
 import java.util.HashMap;
 import java.util.Map;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+import static net.slipcor.pvparena.config.Debugger.trace;
+
 class RestoreRunner implements Runnable {
     private final Map<Location, ItemStack[]> chests;
     private final HashMap<Location, ItemStack[]> furnaces;
     private final Map<Location, ItemStack[]> dispensers;
     private final Blocks blocks;
-    private final Debug debug = new Debug(66);
 
     public RestoreRunner(final Blocks blocks, final HashMap<Location, ItemStack[]> chests,
                          final HashMap<Location, ItemStack[]> furnaces,
                          final HashMap<Location, ItemStack[]> dispensers) {
-        debug.i("RestoreRunner contructor: " + blocks.getArena().getName());
+        debug("RestoreRunner constructor: {}", blocks.getArena());
 
         this.blocks = blocks;
         this.chests = chests;
@@ -36,13 +37,13 @@ class RestoreRunner implements Runnable {
         this.dispensers = dispensers;
 
         if (chests != null) {
-            debug.i("chests: " + chests.size());
+            debug("chests: {}", chests.size());
         }
         if (furnaces != null) {
-            debug.i("furnaces: " + furnaces.size());
+            debug("furnaces: {}", furnaces.size());
         }
         if (dispensers != null) {
-            debug.i("dispensers: " + dispensers.size());
+            debug("dispensers: {}", dispensers.size());
         }
     }
 
@@ -55,19 +56,19 @@ class RestoreRunner implements Runnable {
                 break;
             }
             try {
-                debug.i("trying to restore chest: " + locationEntry1.getKey());
+                trace("trying to restore chest: {}", locationEntry1.getKey());
                 final Block b = world.getBlockAt(locationEntry1.getKey());
                 if(b.getType() == Material.CHEST) {
                     final Inventory inv = ((Chest) b.getState()).getInventory();
                     inv.clear();
                     int i = 0;
                     for (final ItemStack is : locationEntry1.getValue()) {
-                        debug.i("restoring: " + is);
+                        trace("restoring: {}", is);
                         inv.setItem(i++, is);
                     }
-                    debug.i("success!");
+                    trace("success!");
                     chests.remove(locationEntry1.getKey());
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.instance,
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(),
                             this, blocks.getArena().getArenaConfig().getInt(CFG.MODULES_BLOCKRESTORE_OFFSET) * 1L);
                 }
                 return;
@@ -80,7 +81,7 @@ class RestoreRunner implements Runnable {
                 break;
             }
             try {
-                debug.i("trying to restore dispenser: " + locationEntry.getKey());
+                trace("trying to restore dispenser: {}", locationEntry.getKey());
 
                 final Inventory inv = ((Dispenser) world.getBlockAt(locationEntry.getKey()).getState())
                         .getInventory();
@@ -90,9 +91,9 @@ class RestoreRunner implements Runnable {
                         inv.addItem(is.clone());
                     }
                 }
-                debug.i("success!");
+                trace("success!");
                 dispensers.remove(locationEntry.getKey());
-                Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.instance,
+                Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(),
                         this, blocks.getArena().getArenaConfig().getInt(CFG.MODULES_BLOCKRESTORE_OFFSET) * 1L);
                 return;
             } catch (final Exception e) {
@@ -104,12 +105,12 @@ class RestoreRunner implements Runnable {
                 break;
             }
             try {
-                debug.i("trying to restore furnace: " + loc);
+                trace("trying to restore furnace: {}", loc);
                 ((Furnace) world.getBlockAt(loc).getState()).getInventory()
                         .setContents(RestoreContainer.cloneIS(furnaces.get(loc)));
-                debug.i("success!");
+                trace("success!");
                 furnaces.remove(loc);
-                Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.instance,
+                Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(),
                         this, blocks.getArena().getArenaConfig().getInt(CFG.MODULES_BLOCKRESTORE_OFFSET) * 1L);
                 return;
             } catch (final Exception e) {

@@ -94,7 +94,7 @@ public class ArenaRotate extends ArenaModule {
         }
 
         if (a == null) {
-            PVPArena.instance.getLogger().warning("Rotation resulted in NULL!");
+            PVPArena.getInstance().getLogger().warning("Rotation resulted in NULL!");
 
             return;
         }
@@ -134,12 +134,12 @@ public class ArenaRotate extends ArenaModule {
                     }
 
                 }
-                Bukkit.getScheduler().runTaskLater(PVPArena.instance, new RunLater(), 20L);
+                Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 20L);
                 cancel();
             }
 
         }
-        new TeleportLater().runTaskTimer(PVPArena.instance, 1L, 1L);
+        new TeleportLater().runTaskTimer(PVPArena.getInstance(), 1L, 1L);
 
     }
 
@@ -171,6 +171,6 @@ public class ArenaRotate extends ArenaModule {
             }
 
         }
-        Bukkit.getScheduler().runTaskLater(PVPArena.instance, new RunLater(), 200L);
+        Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 200L);
     }
 }

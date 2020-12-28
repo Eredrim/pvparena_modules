@@ -5,7 +5,6 @@ import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.ArenaPlayer.Status;
 import net.slipcor.pvparena.core.Config.CFG;
-import net.slipcor.pvparena.core.Debug;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.managers.SpawnManager;
 import net.slipcor.pvparena.runnables.ArenaRunnable;
@@ -15,11 +14,12 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class RelayRunnable extends ArenaRunnable {
     private final ArenaPlayer ap;
     private final Player maybePlayer;
     private final List<ItemStack> drops;
-    private final Debug debug = new Debug(77);
     private final RespawnRelay mod;
 
     public RelayRunnable(final RespawnRelay relay, final Arena arena, final ArenaPlayer ap, final List<ItemStack> drops) {
@@ -33,13 +33,13 @@ public class RelayRunnable extends ArenaRunnable {
 
     @Override
     protected void commit() {
-        debug.i("RelayRunnable commiting", ap.getName());
+        debug(ap.get(), "RelayRunnable commiting");
 
         Player maybePlayer = this.maybePlayer;
 
         if (ap.get() == null) {
             if (maybePlayer == null) {
-                PVPArena.instance.getLogger().warning("player null: " + ap.getName());
+                PVPArena.getInstance().getLogger().warning("player null: " + ap.getName());
                 return;
             }
         } else {
@@ -65,6 +65,6 @@ public class RelayRunnable extends ArenaRunnable {
 
     @Override
     protected void warn() {
-        PVPArena.instance.getLogger().warning("RelayRunnable not scheduled yet!");
+        PVPArena.getInstance().getLogger().warning("RelayRunnable not scheduled yet!");
     }
 }

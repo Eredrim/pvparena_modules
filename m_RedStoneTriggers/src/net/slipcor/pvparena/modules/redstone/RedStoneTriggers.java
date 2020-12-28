@@ -1,13 +1,11 @@
 package net.slipcor.pvparena.modules.redstone;
 
-import com.google.common.collect.ImmutableMap;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.ArenaPlayer.Status;
 import net.slipcor.pvparena.arena.ArenaTeam;
 import net.slipcor.pvparena.classes.PABlockLocation;
-import net.slipcor.pvparena.core.Debug;
 import net.slipcor.pvparena.listeners.PlayerListener;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.ArenaManager;
@@ -21,12 +19,11 @@ import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
-import java.util.EnumMap;
+import static net.slipcor.pvparena.config.Debugger.debug;
 
 public class RedStoneTriggers extends ArenaModule implements Listener {
     public RedStoneTriggers() {
         super("RedStoneTriggers");
-        debug = new Debug(403);
     }
 
     private boolean setup;
@@ -39,7 +36,7 @@ public class RedStoneTriggers extends ArenaModule implements Listener {
     @Override
     public void configParse(final YamlConfiguration config) {
         if (!setup) {
-            Bukkit.getPluginManager().registerEvents(this, PVPArena.instance);
+            Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
             setup = true;
         }
     }
@@ -50,7 +47,7 @@ public class RedStoneTriggers extends ArenaModule implements Listener {
         if (arena == null || !arena.equals(this.arena)) {
             return;
         }
-        debug.i("redstone in arena " + arena);
+        debug(arena, "redstone in arena");
 
         final Block block = event.getBlock();
 

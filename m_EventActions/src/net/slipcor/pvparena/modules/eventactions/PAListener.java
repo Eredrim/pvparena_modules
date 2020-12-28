@@ -128,7 +128,7 @@ class PAListener implements Listener {
                             (String) a.getArenaConfig().getUnsafe("spawns." + node)
                     );
                     if (loc.equals(locc.toLocation())) {
-                        PVPArena.instance.getLogger().warning("Block already exists!");
+                        PVPArena.getInstance().getLogger().warning("Block already exists!");
                         return true;
                     }
 

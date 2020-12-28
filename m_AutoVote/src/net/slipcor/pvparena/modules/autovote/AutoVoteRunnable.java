@@ -3,7 +3,7 @@ package net.slipcor.pvparena.modules.autovote;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.core.Debug;
+import net.slipcor.pvparena.config.Debugger;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
@@ -14,29 +14,30 @@ import org.bukkit.Bukkit;
 import java.util.HashSet;
 import java.util.Set;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class AutoVoteRunnable extends ArenaRunnable {
-    private final Debug debug = new Debug(68);
     private final String definition;
     private final AutoVote module;
 
     public AutoVoteRunnable(final Arena a, final int i, final AutoVote mod, final String definition) {
         super(MSG.MODULE_AUTOVOTE_VOTENOW.getNode(), i, null, a, false);
         this.definition = definition;
-        debug.i("AutoVoteRunnable constructor");
+        debug("AutoVoteRunnable constructor");
         module = mod;
     }
 
     @Override
     protected void commit() {
-        debug.i("ArenaVoteRunnable commiting");
+        debug("ArenaVoteRunnable commiting");
         AutoVote.commit(definition, module.players);
-        Bukkit.getScheduler().runTaskLater(PVPArena.instance, new Runnable() {
+        Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new Runnable() {
             @Override
             public void run() {
                 module.vote = null;
-                arena.getDebugger().i("clearing 'AutoVote.players'");
+                debug(arena, "clearing 'AutoVote.players'");
                 for (final String player : AutoVote.votes.keySet()) {
-                    arena.getDebugger().i("removing vote of: " + player);
+                    debug(arena, "removing vote of: " + player);
                 }
                 AutoVote.votes.clear();
                 module.players.clear();
@@ -46,7 +47,7 @@ public class AutoVoteRunnable extends ArenaRunnable {
 
     @Override
     protected void warn() {
-        PVPArena.instance.getLogger().warning("ArenaVoteRunnable not scheduled yet!");
+        PVPArena.getInstance().getLogger().warning("ArenaVoteRunnable not scheduled yet!");
     }
 
     @Override
@@ -56,7 +57,7 @@ public class AutoVoteRunnable extends ArenaRunnable {
         }
         final MSG msg = MSG.getByNode(this.message);
         if (msg == null) {
-            PVPArena.instance.getLogger().warning("MSG not found: " + this.message);
+            PVPArena.getInstance().getLogger().warning("MSG not found: " + this.message);
             return;
         }
 

@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class Handycap extends ArenaModule {
     enum HandycapType {
         HEALTH,
@@ -107,7 +109,7 @@ public class Handycap extends ArenaModule {
     }
 
     private void calculateHandycap() {
-        getArena().getDebugger().i("applying handycap type:" + String.valueOf(type));
+        debug(getArena(), "applying handycap type:" + String.valueOf(type));
 
         max = 0;
         handycapped.clear();
@@ -249,7 +251,7 @@ public class Handycap extends ArenaModule {
 
     @Override
     public void parsePlayerLeave(final Player player, final ArenaTeam team) {
-        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.instance, new Runnable() {
+        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new Runnable() {
             @Override
             public void run() {
                 calculateHandycap();
@@ -274,12 +276,12 @@ public class Handycap extends ArenaModule {
         try {
             type = HandycapType.valueOf(cs.getString("type"));
         } catch (Exception e) {
-            PVPArena.instance.getLogger().warning("Invalid content for \"modules.handycap.type\" for arena "+getArena().getName());
+            PVPArena.getInstance().getLogger().warning("Invalid content for \"modules.handycap.type\" for arena "+getArena().getName());
             final List<String> valids = new ArrayList<>();
             for (HandycapType type : HandycapType.values()) {
                 valids.add(type.name());
             }
-            PVPArena.instance.getLogger().warning("Valid values: " + StringParser.joinList(valids, ","));
+            PVPArena.getInstance().getLogger().warning("Valid values: " + StringParser.joinList(valids, ","));
         }
 
         if (type == HandycapType.POWERUP) {
@@ -303,12 +305,12 @@ public class Handycap extends ArenaModule {
             }
 
             if (!invalids.isEmpty()) {
-                PVPArena.instance.getLogger().warning("Invalid content for these handycap definitions: '"+
+                PVPArena.getInstance().getLogger().warning("Invalid content for these handycap definitions: '"+
                         StringParser.joinList(invalids, ",")+"'");
-                PVPArena.instance.getLogger().warning("Valid values: " + StringParser.joinList(valids, ","));
+                PVPArena.getInstance().getLogger().warning("Valid values: " + StringParser.joinList(valids, ","));
             }
         }
-        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.instance, new Runnable() {
+        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new Runnable() {
             @Override
             public void run() {
                 calculateHandycap();

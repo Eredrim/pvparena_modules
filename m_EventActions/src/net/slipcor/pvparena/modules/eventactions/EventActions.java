@@ -65,7 +65,7 @@ public class EventActions extends ArenaModule {
         if (setup) {
             return;
         }
-        Bukkit.getPluginManager().registerEvents(new PAListener(this), PVPArena.instance);
+        Bukkit.getPluginManager().registerEvents(new PAListener(this), PVPArena.getInstance());
         setup = true;
     }
 
@@ -133,7 +133,7 @@ public class EventActions extends ArenaModule {
 
             final String[] split = item.split("<=>");
             if (split.length < 2) {
-                PVPArena.instance.getLogger().warning("[PE] skipping: [" + a.getName() + "]:event." + string + "=>" + item);
+                PVPArena.getInstance().getLogger().warning("[PE] skipping: [" + a.getName() + "]:event." + string + "=>" + item);
                 continue;
             }
             /*
@@ -166,14 +166,14 @@ public class EventActions extends ArenaModule {
                     @Override
                     public void run() {
                         if (p == null) {
-                            PVPArena.instance.getLogger().warning("Trying to commit command for null player: " + string);
+                            PVPArena.getInstance().getLogger().warning("Trying to commit command for null player: " + string);
                         } else {
                             p.performCommand(split[1]);
                         }
                     }
 
                 }
-                Bukkit.getScheduler().runTaskLater(PVPArena.instance, new RunLater(), 5L);
+                Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 5L);
             } else if ("brc".equalsIgnoreCase(split[0])) {
                 Bukkit.broadcastMessage(split[1]);
             } else if ("abrc".equalsIgnoreCase(split[0])) {
@@ -192,7 +192,7 @@ public class EventActions extends ArenaModule {
                     if (loc.getName().contains("powerup")) {
                         continue;
                     }
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.instance, new EADelay(loc.getLocation()), 1L);
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new EADelay(loc.getLocation()), 1L);
                 }
 
             } else if ("msg".equalsIgnoreCase(split[0]) && p != null) {

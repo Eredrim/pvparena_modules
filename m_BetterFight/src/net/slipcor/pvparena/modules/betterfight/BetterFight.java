@@ -265,7 +265,7 @@ public class BetterFight extends ArenaModule {
                     damagee.playSound(shooter.getLocation(), sound, volume, pitch);
                 }
             } catch (final Exception e) {
-                PVPArena.instance.getLogger().warning("Node " + node + " is not a valid sound in arena " + arena.getName());
+                PVPArena.getInstance().getLogger().warning("Node " + node + " is not a valid sound in arena " + arena.getName());
             }
         }
     }
@@ -299,7 +299,7 @@ public class BetterFight extends ArenaModule {
                     }
 
                 }
-                Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.instance, new RunLater(player.getLocation().getWorld(), player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ()), 2L);
+                Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new RunLater(player.getLocation().getWorld(), player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ()), 2L);
             }
         }
 

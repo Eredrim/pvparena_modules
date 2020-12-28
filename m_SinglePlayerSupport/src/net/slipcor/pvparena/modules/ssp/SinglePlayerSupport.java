@@ -22,6 +22,8 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class SinglePlayerSupport extends ArenaModule {
 
     private static final int PRIORITY = 1666;
@@ -62,7 +64,7 @@ public class SinglePlayerSupport extends ArenaModule {
         final ArenaPlayer aPlayer = ArenaPlayer.parsePlayer(sender.getName());
 
         if (aPlayer.getArena() != null) {
-            aPlayer.getArena().getDebugger().i(getName(), sender);
+            debug(aPlayer.getArena(), sender, getName());
             result.setError(this, Language.parse(arena,
                     MSG.ERROR_ARENA_ALREADY_PART_OF, ArenaManager.getIndirectArenaName(aPlayer.getArena())));
             return result;
@@ -125,7 +127,7 @@ public class SinglePlayerSupport extends ArenaModule {
                 }
             }
         } else {
-            PVPArena.instance.getLogger().warning("Player has a state while joining: " + player.getName());
+            PVPArena.getInstance().getLogger().warning("Player has a state while joining: " + player.getName());
         }
 
         class RunLater implements Runnable {
@@ -134,12 +136,12 @@ public class SinglePlayerSupport extends ArenaModule {
             public void run() {
                 Boolean check = PACheck.handleStart(arena, sender, true);
                 if (check == null || check == false) {
-                    Bukkit.getScheduler().runTaskLater(PVPArena.instance, this, 10L);
+                    Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), this, 10L);
                 }
             }
 
         }
 
-        Bukkit.getScheduler().runTaskLater(PVPArena.instance, new RunLater(), 10L);
+        Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 10L);
     }
 }
