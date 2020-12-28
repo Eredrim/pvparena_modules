@@ -158,7 +158,7 @@ public class DuelManager extends ArenaModule {
                         }
                     }
                 }
-                Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.instance, new LaterRunner(), 1200L);
+                Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new LaterRunner(), 1200L);
             }
         } else if ("accept".equals(args[0].toLowerCase())) {
             if (duelSender != null && !arena.isFightInProgress()) {
@@ -178,7 +178,7 @@ public class DuelManager extends ArenaModule {
                             sup.tryWithdraw(this, p, amount, true);
                         }
                     }
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.instance, new DuelRunnable(this, duelSender, sender.getName()), 500L);
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new DuelRunnable(this, duelSender, sender.getName()), 500L);
                     arena.msg(p, Language.parse(MSG.MODULE_DUEL_ACCEPTED, sender.getName()));
                 }
                 duelSender = null;
@@ -231,7 +231,7 @@ public class DuelManager extends ArenaModule {
                             if (force) {
                                 new RunLater().run();
                             } else {
-                                Bukkit.getScheduler().runTaskLater(PVPArena.instance, new RunLater(), 3L);
+                                Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 3L);
                             }
                         } else {
                             sup.tryDeposit(this, ap.get(), amount*2, true);
@@ -250,7 +250,7 @@ public class DuelManager extends ArenaModule {
                 if (force) {
                     new RunLater().run();
                 } else {
-                    Bukkit.getScheduler().runTaskLater(PVPArena.instance, new RunLater(), 3L);
+                    Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 3L);
                 }
             }
         }

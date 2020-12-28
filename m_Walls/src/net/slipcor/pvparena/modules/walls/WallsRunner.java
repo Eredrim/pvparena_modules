@@ -40,6 +40,6 @@ public class WallsRunner extends ArenaRunnable {
 
     @Override
     protected void warn() {
-        PVPArena.instance.getLogger().warning("WallsRunner not scheduled yet!");
+        PVPArena.getInstance().getLogger().warning("WallsRunner not scheduled yet!");
     }
 }

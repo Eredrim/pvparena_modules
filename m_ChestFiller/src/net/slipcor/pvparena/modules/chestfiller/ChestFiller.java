@@ -26,6 +26,8 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class ChestFiller extends ArenaModule {
     public ChestFiller() {
         super("ChestFiller");
@@ -204,12 +206,12 @@ public class ChestFiller extends ArenaModule {
             final List<String> tempList = arena.getArenaConfig()
                     .getStringList("inventories", null);
 
-            debug.i("reading inventories");
+            debug("reading inventories");
 
             for (final String s : tempList) {
                 final Location loc = parseStringToLocation(s);
                 if (loc == null) {
-                    PVPArena.instance.getLogger().warning("Invalid inventory in "+arena.getName()+": "+s);
+                    PVPArena.getInstance().getLogger().warning("Invalid inventory in "+arena.getName()+": "+s);
                     continue;
                 }
                 fill(loc, clear, cmin, cmax, stacks);
@@ -217,7 +219,7 @@ public class ChestFiller extends ArenaModule {
 
             return;
         }
-        debug.i("NO inventories");
+        debug("NO inventories");
 
         final List<String> result = new ArrayList<>();
 
@@ -225,8 +227,8 @@ public class ChestFiller extends ArenaModule {
             final PABlockLocation min = bfRegion.getShape().getMinimumLocation();
             final PABlockLocation max = bfRegion.getShape().getMaximumLocation();
 
-            debug.i("min: " + min);
-            debug.i("max: " + max);
+            debug("min: {}", min);
+            debug("max: {}", max);
 
             final World world = Bukkit.getWorld(max.getWorldName());
 
@@ -235,7 +237,7 @@ public class ChestFiller extends ArenaModule {
             int y;
             int x;
             if (bfRegion.getShape() instanceof CuboidRegion) {
-                debug.i("cube!");
+                debug("cube!");
 
                 for (x = min.getX(); x <= max.getX(); x++) {
                     for (y = min.getY(); y <= max.getY(); y++) {
@@ -244,14 +246,14 @@ public class ChestFiller extends ArenaModule {
                             if (loc == null) {
                                 continue;
                             }
-                            debug.i("loc not null: " + loc);
+                            debug("loc not null: {}", loc);
                             result.add(parseLocationToString(loc));
                             fill(loc, clear, cmin, cmax, stacks);
                         }
                     }
                 }
             } else if (bfRegion.getShape() instanceof SphericRegion) {
-                debug.i("sphere!");
+                debug("sphere!");
                 for (x = min.getX(); x <= max.getX(); x++) {
                     for (y = min.getY(); y <= max.getY(); y++) {
                         for (z = min.getZ(); z <= max.getZ(); z++) {
@@ -259,7 +261,7 @@ public class ChestFiller extends ArenaModule {
                             if (loc == null) {
                                 continue;
                             }
-                            debug.i("loc not null: " + loc);
+                            debug("loc not null: {}", loc);
                             result.add(parseLocationToString(loc));
                             fill(loc, clear, cmin, cmax, stacks);
                         }

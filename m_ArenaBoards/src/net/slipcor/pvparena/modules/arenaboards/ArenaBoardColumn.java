@@ -1,14 +1,15 @@
 package net.slipcor.pvparena.modules.arenaboards;
 
 import net.slipcor.pvparena.classes.PABlockLocation;
-import net.slipcor.pvparena.core.Debug;
+import net.slipcor.pvparena.config.Debugger;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 
+import static net.slipcor.pvparena.config.Debugger.*;
+
 public class ArenaBoardColumn {
     private final PABlockLocation location;
-    private final Debug debug = new Debug(11);
 
     private final ArenaBoardSign[] signs = new ArenaBoardSign[5];
 
@@ -20,7 +21,7 @@ public class ArenaBoardColumn {
     public ArenaBoardColumn(final PABlockLocation l) {
         location = l;
 
-        debug.i("fetching sign column");
+        debug("fetching sign column");
         fetchSigns();
     }
 
@@ -53,7 +54,7 @@ public class ArenaBoardColumn {
      * @param s the string array to save
      */
     public void write(final String[] s) {
-        debug.i("writing to column at location " + location.toString());
+        debug("writing to column at location {}", location);
         int i = 0;
         for (final ArenaBoardSign abs : signs) {
             if (abs == null) {

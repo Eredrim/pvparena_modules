@@ -30,6 +30,8 @@ import org.bukkit.plugin.IllegalPluginAccessException;
 
 import java.util.*;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class SpecialJoin extends ArenaModule implements Listener {
     public SpecialJoin() {
         super("SpecialJoin");
@@ -93,36 +95,36 @@ public class SpecialJoin extends ArenaModule implements Listener {
     @Override
     public void onThisLoad() {
         if (!setup) {
-            Bukkit.getPluginManager().registerEvents(this, PVPArena.instance);
+            Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
             setup = true;
         }
     }
 
     @EventHandler
-    public void onSpecialJoin(final PlayerInteractEvent event) {
+    public static void onSpecialJoin(final PlayerInteractEvent event) {
         if (event.isCancelled()) {
-            debug.i("PIA cancelled!", event.getPlayer());
+            debug(event.getPlayer(), "PIA cancelled!");
             return;
         }
-        debug.i("PIA!", event.getPlayer());
+        debug(event.getPlayer(), "PIA!");
 
 
         if (event.getHand() == null || event.getHand().equals(EquipmentSlot.OFF_HAND)) {
-            debug.i("exiting: offhand or physical", event.getPlayer());
+            debug(event.getPlayer(), "exiting: offhand or physical");
             return;
         }
 
         if (PAA_Edit.activeEdits.containsKey(event.getPlayer().getName()) ||
                 PAA_Setup.activeSetups.containsKey(event.getPlayer().getName())) {
-            debug.i("edit mode. OUT!", event.getPlayer());
+            debug(event.getPlayer(), "edit mode. OUT!");
             return;
         }
         if (event.getAction() == Action.PHYSICAL) {
 
-            debug.i("Join via pressure plate!", event.getPlayer());
+            debug(event.getPlayer(), "Join via pressure plate!");
 
             if (event.getPlayer() == null) {
-                debug.i("wth?", event.getPlayer());
+                debug(event.getPlayer(), "wth?");
                 return;
             }
             final PABlockLocation loc = new PABlockLocation(event.getPlayer().getLocation());
@@ -137,7 +139,7 @@ public class SpecialJoin extends ArenaModule implements Listener {
             }
 
             if (find == null) {
-                debug.i("not contained!", event.getPlayer());
+                debug(event.getPlayer(), "not contained!");
                 return;
             }
             final PAG_Join j = new PAG_Join();
@@ -146,12 +148,12 @@ public class SpecialJoin extends ArenaModule implements Listener {
         }
 
         if (!event.hasBlock()) {
-            debug.i("not has block, out!", event.getPlayer());
+            debug(event.getPlayer(), "not has block, out!");
             return;
         }
 
         if (selections.containsKey(event.getPlayer().getName())) {
-            debug.i("selection contains!", event.getPlayer());
+            debug(event.getPlayer(), "selection contains!");
 
             final Material mat = event.getClickedBlock().getType();
             final BlockState bState = event.getClickedBlock().getState();
@@ -189,7 +191,7 @@ public class SpecialJoin extends ArenaModule implements Listener {
 
 
         if (find == null) {
-            debug.i("places does not contain!", event.getPlayer());
+            debug(event.getPlayer(), "places does not contain!");
             return;
         }
 
@@ -283,7 +285,7 @@ public class SpecialJoin extends ArenaModule implements Listener {
             }
         }
         try {
-            Bukkit.getScheduler().runTaskLater(PVPArena.instance, new RunLater(), 3L);
+            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 3L);
         } catch (final IllegalPluginAccessException e) {
         }
     }

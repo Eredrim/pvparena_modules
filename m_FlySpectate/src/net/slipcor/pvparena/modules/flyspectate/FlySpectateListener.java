@@ -28,7 +28,7 @@ class FlySpectateListener implements Listener {
 
     void initiate(final ArenaPlayer ap) {
         for (final ArenaPlayer a : flySpectate.getArena().getEveryone()) {
-            a.get().hidePlayer(PVPArena.instance, ap.get());
+            a.get().hidePlayer(PVPArena.getInstance(), ap.get());
         }
     }
 
@@ -156,11 +156,11 @@ class FlySpectateListener implements Listener {
                 public void run() {
 
                     for (final ArenaPlayer ap : flySpectate.getArena().getEveryone()) {
-                        ap.get().hidePlayer(PVPArena.instance, s);
+                        ap.get().hidePlayer(PVPArena.getInstance(), s);
                     }
                 }
             }
-            Bukkit.getScheduler().runTaskLater(PVPArena.instance, new LaterRun(), 5L);
+            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new LaterRun(), 5L);
         }
     }
 
@@ -177,11 +177,11 @@ class FlySpectateListener implements Listener {
                 @Override
                 public void run() {
                     for (final ArenaPlayer ap : flySpectate.getArena().getEveryone()) {
-                        ap.get().hidePlayer(PVPArena.instance, s);
+                        ap.get().hidePlayer(PVPArena.getInstance(), s);
                     }
                 }
             }
-            Bukkit.getScheduler().runTaskLater(PVPArena.instance, new LaterRun(s), 5L);
+            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new LaterRun(s), 5L);
         }
     }
 

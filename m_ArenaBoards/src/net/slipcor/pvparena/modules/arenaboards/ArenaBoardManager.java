@@ -3,6 +3,7 @@ package net.slipcor.pvparena.modules.arenaboards;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.classes.PABlockLocation;
+import net.slipcor.pvparena.config.Debugger;
 import net.slipcor.pvparena.core.Config;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
@@ -24,6 +25,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import java.util.HashMap;
 import java.util.Map;
 
+import static net.slipcor.pvparena.config.Debugger.*;
+
 public class ArenaBoardManager extends ArenaModule implements Listener {
     final Map<PABlockLocation, ArenaBoard> boards = new HashMap<>();
     private int BOARD_ID = -1;
@@ -42,29 +45,29 @@ public class ArenaBoardManager extends ArenaModule implements Listener {
     @Override
     public void configParse(final YamlConfiguration config) {
         if (config.get("spawns") != null) {
-            debug.i("checking for leaderboard");
+            debug("checking for leaderboard");
             if (config.get("spawns.leaderboard") != null) {
-                debug.i("leaderboard exists");
+                debug("leaderboard exists");
                 final PABlockLocation loc = Config.parseBlockLocation(config.getString("spawns.leaderboard"));
 
 
                 boards.put(loc, new ArenaBoard(this, loc, arena));
             }
         }
-        final String leaderboard = PVPArena.instance.getConfig().getString(
+        final String leaderboard = PVPArena.getInstance().getConfig().getString(
                 "leaderboard");
         if (leaderboard != null && GLOBAL_ID < 0 && globalBoard == null) {
             final PABlockLocation lbLoc = Config.parseBlockLocation(leaderboard);
             globalBoard = new ArenaBoard(this, lbLoc, null);
 
             GLOBAL_ID = Bukkit.getScheduler().scheduleSyncRepeatingTask(
-                    PVPArena.instance, new BoardRunnable(null), 100L, 100L);
+                    PVPArena.getInstance(), new BoardRunnable(null), 100L, 100L);
         }
 
         BOARD_ID = Bukkit.getScheduler().scheduleSyncRepeatingTask(
-                PVPArena.instance, new BoardRunnable(this), 100L, 100L);
+                PVPArena.getInstance(), new BoardRunnable(this), 100L, 100L);
 
-        Bukkit.getServer().getPluginManager().registerEvents(this, PVPArena.instance);
+        Bukkit.getServer().getPluginManager().registerEvents(this, PVPArena.getInstance());
     }
 
     @Override
@@ -128,7 +131,7 @@ public class ArenaBoardManager extends ArenaModule implements Listener {
 
         event.setLine(0, headline);
         if (a == null) {
-            debug.i("creating global leaderboard", event.getPlayer());
+            debug(event.getPlayer(), "creating global leaderboard");
             globalBoard = new ArenaBoard(this, new PABlockLocation(event.getBlock().getLocation()), null);
             final Location loc = event.getBlock().getLocation();
             final Integer x = loc.getBlockX();
@@ -139,11 +142,11 @@ public class ArenaBoardManager extends ArenaModule implements Listener {
 
             final String s = loc.getWorld().getName() + ',' + x + ','
                     + y + ',' + z;
-            PVPArena.instance.getConfig().set("leaderboard", s);
-            PVPArena.instance.saveConfig();
+            PVPArena.getInstance().getConfig().set("leaderboard", s);
+            PVPArena.getInstance().saveConfig();
 
             GLOBAL_ID = Bukkit.getScheduler().scheduleSyncRepeatingTask(
-                    PVPArena.instance, new BoardRunnable(null), 100L, 100L);
+                    PVPArena.getInstance(), new BoardRunnable(null), 100L, 100L);
         } else {
             final PABlockLocation loc = new PABlockLocation(event.getBlock().getLocation());
             boards.put(loc, new ArenaBoard(this, loc, a));
@@ -168,7 +171,7 @@ public class ArenaBoardManager extends ArenaModule implements Listener {
     public void parseStart() {
         if (BOARD_ID == -1) {
             this.BOARD_ID = Bukkit.getScheduler().scheduleSyncRepeatingTask(
-                    PVPArena.instance, new BoardRunnable(this), 100L, 100L);
+                    PVPArena.getInstance(), new BoardRunnable(this), 100L, 100L);
         }
     }
 }

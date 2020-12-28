@@ -17,6 +17,8 @@ import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class FlySpectate extends ArenaModule {
     public FlySpectate() {
         super("FlySpectate");
@@ -58,12 +60,12 @@ public class FlySpectate extends ArenaModule {
             }
 
         }
-        Bukkit.getScheduler().runTaskLater(PVPArena.instance, new RunLater(), 3L);
+        Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 3L);
     }
 
     @Override
     public void commitSpectate(final Player player) {
-        debug.i("committing FLY spectate", player);
+        debug(player, "committing FLY spectate");
         final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
         if (arena.equals(ap.getArena())) {
             arena.msg(player, Language.parse(MSG.ERROR_ARENA_ALREADY_PART_OF, arena.getName()));
@@ -76,7 +78,7 @@ public class FlySpectate extends ArenaModule {
 
         ap.setArena(arena);
         ap.setTeleporting(true);
-        debug.i("switching:", player);
+        debug(player, "switching:");
         this.getListener().hidePlayerLater(player);
 
         if (ap.getState() == null) {
@@ -96,7 +98,7 @@ public class FlySpectate extends ArenaModule {
         final long delay = this.arena.getArenaConfig().getBoolean(CFG.PERMS_FLY) ? 6L : 5L;
         this.arena.tpPlayerToCoordNameForJoin(ap, "spectator", false);
 
-        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.instance, () -> {
+        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), () -> {
             if (this.arena.getArenaConfig().getInt(CFG.GENERAL_GAMEMODE) > -1) {
                 player.setGameMode(GameMode.CREATIVE);
             }
@@ -124,7 +126,7 @@ public class FlySpectate extends ArenaModule {
     @Override
     public void unload(final Player player) {
         for (final Player p : Bukkit.getOnlinePlayers()) {
-            p.showPlayer(PVPArena.instance, player);
+            p.showPlayer(PVPArena.getInstance(), player);
         }
 
         listener.removeSpectator(player);
@@ -137,7 +139,7 @@ public class FlySpectate extends ArenaModule {
     private FlySpectateListener getListener() {
         if (listener == null) {
             listener = new FlySpectateListener(this);
-            Bukkit.getPluginManager().registerEvents(listener, PVPArena.instance);
+            Bukkit.getPluginManager().registerEvents(listener, PVPArena.getInstance());
         }
         return listener;
     }

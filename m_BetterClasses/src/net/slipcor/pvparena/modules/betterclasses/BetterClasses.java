@@ -20,6 +20,8 @@ import org.bukkit.potion.PotionEffectType;
 import java.lang.reflect.Field;
 import java.util.*;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class BetterClasses extends ArenaModule {
 
     private final Map<Arena, HashMap<ArenaClass, HashSet<PotionEffect>>> superMap = new HashMap<>();
@@ -39,7 +41,7 @@ public class BetterClasses extends ArenaModule {
     @Override
     public boolean cannotSelectClass(final Player player,
                                      final String className) {
-        arena.getDebugger().i("checking if cannotSelectClass", player);
+        debug(arena, player, "checking if cannotSelectClass");
         if (notEnoughEXP(player, className)) {
             arena.msg(player, Language.parse(MSG.ERROR_CLASS_NOTENOUGHEXP, className));
             return true;
@@ -52,18 +54,18 @@ public class BetterClasses extends ArenaModule {
             max = (Integer) arena.getArenaConfig().getUnsafe("modules.betterclasses.maxPlayers." + className);
             globalmax = (Integer) arena.getArenaConfig().getUnsafe("modules.betterclasses.maxGlobalPlayers." + className);
         } catch (final Exception e) {
-            arena.getDebugger().i("Exception at BetterClasses.class getting " + className +" config:" + e.getMessage() + " at line "+e.getStackTrace()[1].getLineNumber());
+            debug(arena, "Exception at BetterClasses.class getting " + className +" config:" + e.getMessage() + " at line "+e.getStackTrace()[1].getLineNumber());
             max = 0;
             globalmax = 0;
         }
-        arena.getDebugger().i("max: " +max, player);
-        arena.getDebugger().i("gmax: "+globalmax, player);
+        debug(arena, player, "max: " +max);
+        debug(arena, player, "gmax: "+globalmax);
 
         if (!(max < 1 && globalmax < 1)) {
             final ArenaTeam team = ArenaPlayer.parsePlayer(player.getName()).getArenaTeam();
 
             if (team == null) {
-                arena.getDebugger().i("arenaTeam NULL: "+player.getName(), player);
+                debug(arena, player, "arenaTeam NULL: "+player.getName());
                 return true;
             }
             int globalsum = 0;
@@ -81,13 +83,13 @@ public class BetterClasses extends ArenaModule {
                     }
                 }
             }
-            arena.getDebugger().i("sum: " +sum, player);
+            debug(arena, player, "sum: " +sum);
 
             if ((max > 0 && sum >= max) || (globalmax > 0 && globalsum > globalmax)) {
                 if (sum >= max) {
-                    arena.getDebugger().i(sum + ">="+max, player);
+                    debug(arena, player, sum + ">="+max);
                 }   else {
-                    arena.getDebugger().i(globalsum + ">"+globalmax, player);
+                    debug(arena, player, globalsum + ">"+globalmax);
                 }
                 arena.msg(player, Language.parse(MSG.ERROR_CLASS_FULL, className));
                 return true;
@@ -102,7 +104,7 @@ public class BetterClasses extends ArenaModule {
                 arena.msg(player, Language.parse(MSG.MODULE_BETTERCLASSES_CLASSCHANGE_MAXTEAM));
                 return true;
             } else {
-                arena.getDebugger().i("teamswitches of "+at.getName()+": " +teamSwitches.get(at), player);
+                debug(arena, player, "teamswitches of "+at.getName()+": " +teamSwitches.get(at));
             }
         }
 
@@ -112,7 +114,7 @@ public class BetterClasses extends ArenaModule {
                     arena.msg(player, Language.parse(MSG.MODULE_BETTERCLASSES_CLASSCHANGE_MAXPLAYER));
                     return true;
                 } else {
-                    arena.getDebugger().i("playerswitches: " +playerSwitches.get(ap), player);
+                    debug(arena, player, "playerswitches: " +playerSwitches.get(ap));
                 }
             }
         }
@@ -369,10 +371,10 @@ public class BetterClasses extends ArenaModule {
             init_map();
         }
         final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
-        debug.i("respawning player " + ap, player);
+        debug(player, "respawning player " + ap);
         final Map<ArenaClass, HashSet<PotionEffect>> map = superMap.get(arena);
         if (map == null) {
-            PVPArena.instance.getLogger().warning("No superMap entry for arena " + arena);
+            PVPArena.getInstance().getLogger().warning("No superMap entry for arena " + arena);
             return;
         }
 
@@ -380,11 +382,11 @@ public class BetterClasses extends ArenaModule {
 
         final Iterable<PotionEffect> ape = map.get(c);
         if (ape == null) {
-            debug.i("no effects for team " + c, player);
+            debug(player, "no effects for team " + c);
             return;
         }
         for (final PotionEffect pe : ape) {
-            debug.i("adding " + pe.getType(), player);
+            debug(player, "adding " + pe.getType());
             player.addPotionEffect(pe);
         }
     }
@@ -455,7 +457,7 @@ public class BetterClasses extends ArenaModule {
             init_map();
         }
         final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
-        debug.i("respawning player " + ap, player);
+        debug(player, "respawning player " + ap);
 
         final ArenaClass c = ap.getArenaClass();
         if (c != null) {
@@ -470,7 +472,7 @@ public class BetterClasses extends ArenaModule {
 
         final Map<ArenaClass, HashSet<PotionEffect>> map = superMap.get(arena);
         if (map == null) {
-            PVPArena.instance.getLogger().warning("No superMap entry for arena " + arena);
+            PVPArena.getInstance().getLogger().warning("No superMap entry for arena " + arena);
             return;
         }
 
@@ -483,7 +485,7 @@ public class BetterClasses extends ArenaModule {
 
         final Iterable<PotionEffect> ape = map.get(c);
         if (ape == null) {
-            debug.i("no effects for class " + c, player);
+            debug(player, "no effects for class " + c);
             return;
         }
 
@@ -491,28 +493,28 @@ public class BetterClasses extends ArenaModule {
             @Override
             public void run() {
                 for (final PotionEffect pe : ape) {
-                    debug.i("adding " + pe.getType(), player);
+                    debug(player, "adding " + pe.getType());
                     player.addPotionEffect(pe);
                 }
             }
         }
 
         try {
-            Bukkit.getScheduler().runTaskLater(PVPArena.instance, new RunLater(), 20L);
+            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 20L);
         } catch (Exception e) {
-            arena.getDebugger().i("[betterclass] exception when adding potion effects: " + e.getMessage(), player);
+            debug(arena, player, "[betterclass] exception when adding potion effects: " + e.getMessage());
         }
     }
 
     @Override
     public void parseClassChange(Player player, ArenaClass aClass) {
-        arena.getDebugger().i("BetterClass handling class change!");
+        debug(arena, "BetterClass handling class change!");
         ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
         if (playerSwitches.containsKey(ap)) {
             int value = playerSwitches.get(ap);
             if (value-- > 0) {
                 playerSwitches.put(ap, value);
-                arena.getDebugger().i("player " + ap.getName() + ": " + value);
+                debug(arena, "player " + ap.getName() + ": " + value);
             }
         }
         ArenaTeam at = ap.getArenaTeam();
@@ -520,7 +522,7 @@ public class BetterClasses extends ArenaModule {
             int value = teamSwitches.get(at);
             if (value-- > 0) {
                 teamSwitches.put(at, value);
-                arena.getDebugger().i("team " + at.getName() + ": " + value);
+                debug(arena, "team " + at.getName() + ": " + value);
             }
         }
         if (arena.isFightInProgress()) {
@@ -571,7 +573,7 @@ public class BetterClasses extends ArenaModule {
                 spe.add(pe);
             }
         } catch (final Exception e) {
-            PVPArena.instance.getLogger().warning("error while parsing POTION EFFECT DEFINITION \"" + s + "\" : " + current);
+            PVPArena.getInstance().getLogger().warning("error while parsing POTION EFFECT DEFINITION \"" + s + "\" : " + current);
         }
 
         return spe;

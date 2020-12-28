@@ -26,7 +26,7 @@ public class BattlefieldGuard extends ArenaModule {
         if (this.setup) {
             return;
         }
-        new BattleRunnable().runTaskTimer(PVPArena.instance, 20, 20);
+        new BattleRunnable().runTaskTimer(PVPArena.getInstance(), 20, 20);
         this.setup = true;
     }
 

@@ -8,17 +8,17 @@ import net.slipcor.pvparena.core.Config;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
-import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.loadables.ArenaRegion;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static net.slipcor.pvparena.config.Debugger.debug;
 
 public class Walls extends ArenaModule {
     WallsRunner runnable;
@@ -63,12 +63,12 @@ public class Walls extends ArenaModule {
         } catch (final Exception e) {
             mat = Material.SAND;
         }
-        debug.i("material: "+mat.name());
-        debug.i("replacing the wall for the following regions:");
+        debug("material: {}", mat);
+        debug("replacing the wall for the following regions:");
 
         for (final ArenaRegion region : arena.getRegions()) {
             if (region.getRegionName().toLowerCase().contains("wall")) {
-                debug.i(region.getRegionName());
+                debug(region.getRegionName());
                 final World world = region.getWorld();
                 final int x1 = region.getShape().getMinimumLocation().getX();
                 final int y1 = region.getShape().getMinimumLocation().getY();
@@ -128,7 +128,7 @@ public class Walls extends ArenaModule {
             final Material mat;
             try {
                 mat = Material.getMaterial(args[1].toUpperCase());
-                debug.i("wall material: " + mat.name());
+                debug("wall material: {}", mat);
             } catch (final Exception e) {
                 arena.msg(sender, Language.parse(MSG.ERROR_MAT_NOT_FOUND, args[1]));
                 return;
@@ -154,7 +154,7 @@ public class Walls extends ArenaModule {
 
     @Override
     public void reset(final boolean force) {
-        debug.i("resetting WALLS");
+        debug("resetting WALLS");
         if (runnable != null) {
             runnable.cancel();
             if (arena.getArenaConfig().getBoolean(Config.CFG.MODULES_WALLS_SCOREBOARDCOUNTDOWN)) {
@@ -163,7 +163,7 @@ public class Walls extends ArenaModule {
             }
         }
         if (!needsReset) {
-            debug.i("[WorldEdit] we did not start yet, no reset needed!");
+            debug("[WorldEdit] we did not start yet, no reset needed!");
             return;
         }
         needsReset = false;

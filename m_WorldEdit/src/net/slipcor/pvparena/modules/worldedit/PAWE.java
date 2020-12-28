@@ -225,9 +225,9 @@ public class PAWE extends ArenaModule {
 
     @Override
     public void configParse(YamlConfiguration config) {
-        loadPath = config.getString(CFG.MODULES_WORLDEDIT_SCHEMATICPATH.getNode(), PVPArena.instance.getDataFolder().getAbsolutePath());
+        loadPath = config.getString(CFG.MODULES_WORLDEDIT_SCHEMATICPATH.getNode(), PVPArena.getInstance().getDataFolder().getAbsolutePath());
         if (loadPath.equals("")) {
-            loadPath = PVPArena.instance.getDataFolder().getAbsolutePath();
+            loadPath = PVPArena.getInstance().getDataFolder().getAbsolutePath();
         }
     }
 
@@ -293,7 +293,7 @@ public class PAWE extends ArenaModule {
                 editSession.flushSession();
             }
         } catch (IllegalArgumentException e) {
-            PVPArena.instance.getLogger().severe(e.getMessage());
+            PVPArena.getInstance().getLogger().severe(e.getMessage());
         } catch (final IOException | MaxChangedBlocksException e) {
             e.printStackTrace();
         }

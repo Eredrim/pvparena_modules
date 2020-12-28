@@ -20,6 +20,8 @@ import org.bukkit.inventory.EquipmentSlot;
 
 import java.util.*;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class PlayerFinder extends ArenaModule implements Listener {
     public PlayerFinder() {
         super("PlayerFinder");
@@ -35,7 +37,7 @@ public class PlayerFinder extends ArenaModule implements Listener {
     @Override
     public void parseStart() {
         if (!setup) {
-            Bukkit.getPluginManager().registerEvents(this, PVPArena.instance);
+            Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
             setup = true;
         }
     }
@@ -47,22 +49,22 @@ public class PlayerFinder extends ArenaModule implements Listener {
         final ArenaPlayer aPlayer = ArenaPlayer.parsePlayer(player.getName());
 
         if (event.getHand() != null && event.getHand().equals(EquipmentSlot.OFF_HAND)) {
-            debug.i("exiting: offhand", player);
+            debug(player, "exiting: offhand");
             return;
         }
 
         if (aPlayer.getArena() == null) {
-            debug.i("No arena!", player);
+            debug(player, "No arena!");
             return;
         }
 
         if (!aPlayer.getArena().equals(arena)) {
-            debug.i("Wrong arena!", player);
+            debug(player, "Wrong arena!");
             return;
         }
 
         if (player.getInventory().getItemInHand() == null || player.getInventory().getItemInHand().getType() != Material.COMPASS) {
-            debug.i("No compass!", player);
+            debug(player, "No compass!");
             return;
         }
 
@@ -71,7 +73,7 @@ public class PlayerFinder extends ArenaModule implements Listener {
         final List<Entity> list = player.getNearbyEntities(maxRadius, maxRadius, maxRadius);
         final Map<Double, Player> sortMap = new HashMap<>();
 
-        debug.i("ok!", player);
+        debug(player, "ok!");
 
         final boolean teams = !arena.isFreeForAll();
 
@@ -92,27 +94,27 @@ public class PlayerFinder extends ArenaModule implements Listener {
                     continue;
                 }
 
-                debug.i(innerPlayer.getName(), player);
+                debug(player, innerPlayer.getName());
                 sortMap.put(player.getLocation().distance(e.getLocation()), innerPlayer);
 
             }
         }
 
         if (sortMap.isEmpty()) {
-            debug.i("noone there!", player);
+            debug(player, "noone there!");
         }
 
         final SortedMap<Double, Player> sortedMap = new TreeMap<>(sortMap);
 
         if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            debug.i("left");
+            debug("left");
             for (final Player otherPlayer : sortedMap.values()) {
                 player.setCompassTarget(otherPlayer.getLocation().clone());
                 arena.msg(player, Language.parse(MSG.MODULE_PLAYERFINDER_POINT, otherPlayer.getName()));
                 break;
             }
         } else if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            debug.i("right");
+            debug("right");
             for (final double d : sortedMap.keySet()) {
                 arena.msg(player, Language.parse(MSG.MODULE_PLAYERFINDER_NEAR, String.valueOf((int) d)));
                 break;

@@ -142,7 +142,7 @@ public class Maps extends ArenaModule {
         if (setup) {
             return;
         }
-        Bukkit.getPluginManager().registerEvents(new MapListener(this), PVPArena.instance);
+        Bukkit.getPluginManager().registerEvents(new MapListener(this), PVPArena.getInstance());
         setup = true;
     }
 
@@ -221,7 +221,7 @@ public class Maps extends ArenaModule {
                 }
             }
         }
-        Bukkit.getScheduler().runTaskLater(PVPArena.instance, new RunLater(), 5L);
+        Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 5L);
     }
 
     @Override
@@ -244,8 +244,8 @@ public class Maps extends ArenaModule {
             if (value != Short.MIN_VALUE) {
                 final MapView map = Bukkit.getServer().getMap(value);
                 if (map == null) {
-                    PVPArena.instance.getLogger().severe("Map #"+value+" seems to be corrupted, please check the PVP Arena config for this value!");
-                    PVPArena.instance.getLogger().severe("Affected player: "+player.getName());
+                    PVPArena.getInstance().getLogger().severe("Map #"+value+" seems to be corrupted, please check the PVP Arena config for this value!");
+                    PVPArena.getInstance().getLogger().severe("Affected player: "+player.getName());
                     continue;
                 }
                 final MapRenderer mr = new MyRenderer(this);

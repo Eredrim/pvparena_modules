@@ -8,7 +8,6 @@ import net.slipcor.pvparena.arena.ArenaTeam;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config.CFG;
-import net.slipcor.pvparena.core.Debug;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
@@ -29,16 +28,16 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 import java.util.*;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class BetterGears extends ArenaModule {
     private static Map<String, String> defaultColors;
-    private Debug debug;
 
     private Map<ArenaTeam, Short[]> colorMap;
     private Map<ArenaClass, Short> levelMap;
 
     public BetterGears() {
         super("BetterGears");
-        debug = new Debug(600);
     }
 
     @Override
@@ -211,7 +210,7 @@ public class BetterGears extends ArenaModule {
     void equip(final ArenaPlayer ap) {
 
         Player player = ap.get();
-        arena.getDebugger().i("equipping better gear!", player);
+        debug(arena, player, "equipping better gear!");
 
         if (getColorMap().isEmpty()) {
             setup();
@@ -360,8 +359,7 @@ public class BetterGears extends ArenaModule {
         result[1] = 255;
         result[2] = 255;
 
-        debug.i("parsing RGB:");
-        debug.i(String.valueOf(o));
+        debug("parsing RGB: {}", o);
 
         if (!(o instanceof String)) {
             return result;
@@ -410,7 +408,7 @@ public class BetterGears extends ArenaModule {
         }
 
         final String s = defaultColors.get(name);
-        debug.i("team " + name + " : " + s);
+        debug("team {} : {}", name, s);
         return s == null ? "255,255,255" : s;
     }
 
@@ -425,7 +423,7 @@ public class BetterGears extends ArenaModule {
     }
 
     private void setup() {
-        debug.i("Setting up BetterGears");
+        debug("Setting up BetterGears");
 
         for (final ArenaClass c : arena.getClasses()) {
             Short s = 0;
@@ -435,7 +433,7 @@ public class BetterGears extends ArenaModule {
                                 .getUnsafe(
                                         "modules.bettergears.levels."
                                                 + c.getName())));
-                debug.i(c.getName() + " : " + s);
+                debug("{} : {}", c.getName(), s);
             } catch (final Exception e) {
             }
             getLevelMap().put(c, s);
@@ -445,7 +443,7 @@ public class BetterGears extends ArenaModule {
             final Short[] s = parseRGBToShortArray(arena.getArenaConfig().getUnsafe(
                     "modules.bettergears.colors." + t.getName()));
             getColorMap().put(t, s);
-            debug.i(t.getName() + " : " + StringParser.joinArray(s, ","));
+            debug("{} : {}", t.getName(), StringParser.joinArray(s, ","));
         }
     }
 

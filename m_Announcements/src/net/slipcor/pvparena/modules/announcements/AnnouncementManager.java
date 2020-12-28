@@ -7,7 +7,6 @@ import net.slipcor.pvparena.arena.ArenaTeam;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config.CFG;
-import net.slipcor.pvparena.core.Debug;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
@@ -20,15 +19,15 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static net.slipcor.pvparena.config.Debugger.debug;
 
 public class AnnouncementManager extends ArenaModule {
 
     public AnnouncementManager() {
         super("Announcements");
-        debug = new Debug(400);
     }
 
     @Override
@@ -154,10 +153,10 @@ public class AnnouncementManager extends ArenaModule {
     @Override
     public void parseJoin(final CommandSender sender, final ArenaTeam team) {
 
-        debug.i("parseJoin ... ", sender);
+        debug(sender, "parseJoin ... ");
         ArenaPlayer ap = ArenaPlayer.parsePlayer(sender.getName());
         if (ap.getStatus() == ArenaPlayer.Status.WARM || !WarmupJoin.didNotAnnounceYet(arena)) {
-            debug.i("skipping because we already did!", sender);
+            debug(sender, "skipping because we already did!");
             return;
         }
 

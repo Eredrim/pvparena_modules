@@ -24,6 +24,8 @@ import org.bukkit.scoreboard.Team;
 import java.util.*;
 import java.util.Map.Entry;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class AutoVote extends ArenaModule implements Listener {
     static final Map<String, String> votes = new HashMap<>();
 
@@ -204,7 +206,7 @@ public class AutoVote extends ArenaModule implements Listener {
             }
             if (vote == null) {
 
-                arena.getDebugger().i("AutoVote not setup via shortcuts, ignoring");
+                debug(arena, "AutoVote not setup via shortcuts, ignoring");
                 vote = new AutoVoteRunnable(arena,
                         arena.getArenaConfig().getInt(CFG.MODULES_ARENAVOTE_SECONDS), this, null);
             }
@@ -264,22 +266,22 @@ public class AutoVote extends ArenaModule implements Listener {
     public static void commit(final String definition, final Set<ArenaPlayer> players) {
         final Map<String, String> tempVotes = new HashMap<>();
 
-        debug.i("committing definition " + definition + " for " + players.size());
+        debug("committing definition {} for {}", definition, players.size());
 
         final List<String> arenas = ArenaManager.getShortcutDefinitions().get(definition);
 
         if (arenas == null || arenas.size() < 1) {
-            debug.i("this definition has no arenas!");
+            debug("this definition has no arenas!");
             return;
         }
 
-        for (final Entry<String, String> stringStringEntry : votes.entrySet()) {
-            debug.i(stringStringEntry.getKey() + " voted " + stringStringEntry.getValue());
-            if (!arenas.contains(stringStringEntry.getValue())) {
-                debug.i("not our business!");
+        for (final Entry<String, String> voteEntry : votes.entrySet()) {
+            debug("{} voted {}", voteEntry.getKey(), voteEntry.getValue());
+            if (!arenas.contains(voteEntry.getValue())) {
+                debug("not our business!");
                 continue;
             }
-            tempVotes.put(stringStringEntry.getKey(), stringStringEntry.getValue());
+            tempVotes.put(voteEntry.getKey(), voteEntry.getValue());
         }
 
         final HashMap<String, Integer> counts = new HashMap<>();
@@ -300,20 +302,20 @@ public class AutoVote extends ArenaModule implements Listener {
                 voted = name;
             }
         }
-        debug.i("max voted: " + voted);
+        debug("max voted: {}", voted);
 
         Arena a = ArenaManager.getArenaByName(voted);
 
         if (a == null || !ArenaManager.getShortcutDefinitions().get(definition).contains(a.getName())) {
-            PVPArena.instance.getLogger().warning("Vote resulted in NULL for result '" + voted + "'!");
+            PVPArena.getInstance().getLogger().warning("Vote resulted in NULL for result '" + voted + "'!");
 
             ArenaManager.advance(definition);
-            debug.i("getting next definition value");
+            debug("getting next definition value");
             a = ArenaManager.getShortcutValues().get(definition);
         }
 
         if (a == null) {
-            debug.i("this didn't work oO - still null!");
+            debug("this didn't work oO - still null!");
             return;
         }
 
@@ -327,11 +329,11 @@ public class AutoVote extends ArenaModule implements Listener {
         for (final Arena arena : ArenaManager.getArenas()) {
             for (final ArenaModule mod : arena.getMods()) {
                 if (mod.getName().equals(getName())) {
-                    Bukkit.getPluginManager().registerEvents((AutoVote) mod, PVPArena.instance);
+                    Bukkit.getPluginManager().registerEvents((AutoVote) mod, PVPArena.getInstance());
                     if (!arena.getArenaConfig().getBoolean(CFG.MODULES_ARENAVOTE_AUTOSTART)) {
                         continue;
                     }
-                    Bukkit.getPluginManager().registerEvents((AutoVote) mod, PVPArena.instance);
+                    Bukkit.getPluginManager().registerEvents((AutoVote) mod, PVPArena.getInstance());
                     active = true;
                 }
             }
@@ -349,12 +351,12 @@ public class AutoVote extends ArenaModule implements Listener {
             }
 
         }
-        Bukkit.getScheduler().runTaskLater(PVPArena.instance, new RunLater(), 200L);
+        Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 200L);
     }
 
     @Override
     public void parseJoin(final CommandSender sender, final ArenaTeam team) {
-        arena.getDebugger().i("adding autovote player: " + sender.getName());
+        debug(arena, "adding autovote player: " + sender.getName());
         players.add(ArenaPlayer.parsePlayer(sender.getName()));
     }
 
@@ -364,9 +366,9 @@ public class AutoVote extends ArenaModule implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onTryJoin(final PAJoinEvent event) {
-        arena.getDebugger().i("tryJoin " + event.getPlayer().getName());
+        debug(arena, "tryJoin " + event.getPlayer().getName());
         if (vote != null) {
-            arena.getDebugger().i("vote is not null! denying " + event.getPlayer().getName());
+            debug(arena, "vote is not null! denying " + event.getPlayer().getName());
             event.setCancelled(true);
         }
     }

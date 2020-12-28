@@ -3,7 +3,7 @@ package net.slipcor.pvparena.modules.announcements;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.core.Config.CFG;
-import net.slipcor.pvparena.core.Debug;
+import net.slipcor.pvparena.config.Debugger;
 import net.slipcor.pvparena.loadables.ArenaRegion;
 import net.slipcor.pvparena.loadables.ArenaRegion.RegionType;
 import org.bukkit.Bukkit;
@@ -12,8 +12,9 @@ import org.bukkit.entity.Player;
 
 import java.util.Set;
 
+import static net.slipcor.pvparena.config.Debugger.*;
+
 public final class Announcement {
-    private static final Debug debug = new Debug(7);
 
     public enum type {
         JOIN, ADVERT, START, END, WINNER, LOSER, PRIZE, CUSTOM
@@ -34,8 +35,7 @@ public final class Announcement {
         if (!sendCheck(a, t)) {
             return; // do not send the announcement type
         }
-        debug.i("announce [" + a.getName() + "] type: " + t.name() + " : "
-                + message);
+        debug("announce [{}] type: {}:{}", a, t, message);
 
         for (final Player p : Bukkit.getOnlinePlayers()) {
             if (a.hasPlayer(p) || ArenaPlayer.parsePlayer(p.getName()).isIgnoringAnnouncements()) {

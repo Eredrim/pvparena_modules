@@ -5,7 +5,6 @@ import net.slipcor.pvparena.classes.PABlockLocation;
 import net.slipcor.pvparena.classes.PALocation;
 import net.slipcor.pvparena.classes.PASpawn;
 import net.slipcor.pvparena.core.Config.CFG;
-import net.slipcor.pvparena.core.Debug;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockFace;
@@ -24,10 +23,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class Turrets extends ArenaModule implements Listener {
     public Turrets() {
         super("Turrets");
-        debug = new Debug(413);
     }
 
     private boolean setup;
@@ -52,7 +52,7 @@ public class Turrets extends ArenaModule implements Listener {
             return;
         }
         if (!setup) {
-            Bukkit.getPluginManager().registerEvents(this, PVPArena.instance);
+            Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
             setup = true;
         }
 
@@ -70,7 +70,7 @@ public class Turrets extends ArenaModule implements Listener {
                 }
 
                 if (spawns.size() < 1) {
-                    PVPArena.instance.getLogger().warning("No valid turret spawns found!");
+                    PVPArena.getInstance().getLogger().warning("No valid turret spawns found!");
                     return;
                 }
 
@@ -82,7 +82,7 @@ public class Turrets extends ArenaModule implements Listener {
             }
 
         }
-        Bukkit.getScheduler().runTaskLater(PVPArena.instance, new RunLater(), 5L);
+        Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 5L);
 
         minInterval = arena.getArenaConfig().getInt(CFG.MODULES_TURRETS_MININTERVAL);
     }
@@ -94,43 +94,43 @@ public class Turrets extends ArenaModule implements Listener {
             return;
         }
 
-        debug.i("plateTrigger", event.getPlayer());
+        debug(event.getPlayer(), "plateTrigger");
 
         final PABlockLocation loc = new PABlockLocation(event.getClickedBlock().getLocation());
 
         if (turretMap.containsKey(loc)) {
-            debug.i("found. set!", event.getPlayer());
+            debug(event.getPlayer(), "found. set!");
             class RunLater implements Runnable {
 
                 @Override
                 public void run() {
-                    debug.i("set done!", event.getPlayer());
+                    debug(event.getPlayer(), "set done!");
                     shootingPlayers.put(event.getPlayer().getName(), System.currentTimeMillis() + minInterval * 50);
                 }
 
             }
-            Bukkit.getScheduler().runTaskLater(PVPArena.instance, new RunLater(), 5L);
+            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 5L);
         }
     }
 
     @EventHandler
     public void onClick(final PlayerInteractEvent event) {
-        debug.i("click!", event.getPlayer());
+        debug(event.getPlayer(), "click!");
 
         if (arena == null || !arena.isFightInProgress() || !shootingPlayers.containsKey(event.getPlayer().getName())) {
             return;
         }
 
         if (event.getHand().equals(EquipmentSlot.OFF_HAND)) {
-            debug.i("exiting: offhand", event.getPlayer());
+            debug(event.getPlayer(), "exiting: offhand");
             return;
         }
-        debug.i("ok?", event.getPlayer());
+        debug(event.getPlayer(), "ok?");
 
         if (event.getAction() == Action.PHYSICAL || shootingPlayers.get(event.getPlayer().getName()) > System.currentTimeMillis()) {
             return; // no click OR waiting
         }
-        debug.i("ok!", event.getPlayer());
+        debug(event.getPlayer(), "ok!");
 
         final Player player = event.getPlayer();
 
@@ -164,7 +164,7 @@ public class Turrets extends ArenaModule implements Listener {
 
             return;
         }
-        debug.i("new block!", event.getPlayer());
+        debug(event.getPlayer(), "new block!");
 
         shootingPlayers.remove(event.getPlayer().getName());
     }

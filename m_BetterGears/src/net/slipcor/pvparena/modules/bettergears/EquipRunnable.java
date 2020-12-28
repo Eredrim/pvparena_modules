@@ -12,7 +12,7 @@ class EquipRunnable implements Runnable {
     public EquipRunnable(final ArenaPlayer ap, final BetterGears mod) {
         p = ap;
         m = mod;
-        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.instance, this, 65L);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), this, 65L);
     }
 
     @Override

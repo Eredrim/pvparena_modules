@@ -3,7 +3,6 @@ package net.slipcor.pvparena.modules.arenaboards;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.classes.PABlockLocation;
-import net.slipcor.pvparena.core.Debug;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.managers.StatisticsManager;
@@ -19,10 +18,10 @@ import org.bukkit.inventory.EquipmentSlot;
 import java.util.HashMap;
 import java.util.Map;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+import static net.slipcor.pvparena.config.Debugger.trace;
+
 public class ArenaBoard {
-
-    private static final Debug debug = new Debug(10);
-
     private final PABlockLocation location;
     private final ArenaBoardManager abm;
     private final boolean global;
@@ -42,7 +41,7 @@ public class ArenaBoard {
         location = loc;
         global = a == null;
 
-        debug.i("constructing arena board");
+        debug("constructing arena board");
         construct();
     }
 
@@ -54,7 +53,7 @@ public class ArenaBoard {
         try {
             Sign s = (Sign) l.toLocation().getBlock().getState();
             final BlockFace bf = getRightDirection(s);
-            debug.i("parsing signs: ");
+            debug("parsing signs: ");
             int border = 10;
             do {
                 StatisticsManager.Type t = null;
@@ -66,7 +65,7 @@ public class ArenaBoard {
                 }
 
                 columns.put(t, new ArenaBoardColumn(l));
-                debug.i("putting column type " + this);
+                debug("putting column type {}", this);
                 l = new PABlockLocation(l.toLocation().getBlock().getRelative(bf).getLocation());
                 s = (Sign) l.toLocation().getBlock().getState();
             } while (border-- > 0);
@@ -110,13 +109,13 @@ public class ArenaBoard {
      * save arena board statistics to each column
      */
     public void update() {
-        debug.i("ArenaBoard update()");
+        trace("ArenaBoard update()");
         for (final StatisticsManager.Type t : StatisticsManager.Type.values()) {
-            debug.i("checking stat: " + t.name());
+            trace("checking stat: {}", t.name());
             if (!this.columns.containsKey(t)) {
                 continue;
             }
-            debug.i("found! reading!");
+            trace("found! reading!");
             final String[] s =
                     StatisticsManager.getStatsValuesForBoard(this.global ? null : this.abm.getArena(), this.sortBy);
             this.columns.get(t).write(s);
@@ -131,18 +130,18 @@ public class ArenaBoard {
      */
     public static boolean checkInteract(final ArenaBoardManager abm, final PlayerInteractEvent event) {
         final Player player = event.getPlayer();
-        debug.i("checking ArenaBoard interact", player);
+        debug("checking ArenaBoard interact", player);
 
         if (event.getClickedBlock() == null) {
             return false;
         }
 
         if (event.getHand().equals(EquipmentSlot.OFF_HAND)) {
-            debug.i("exiting: offhand", player);
+            debug("exiting: offhand", player);
             return false;
         }
 
-        debug.i("block is not null", player);
+        debug("block is not null", player);
 
         if (!abm.boards.containsKey(new PABlockLocation(event.getClickedBlock().getLocation()))
                 && ArenaBoardManager.globalBoard == null
@@ -151,7 +150,7 @@ public class ArenaBoard {
             return false;
         }
 
-        debug.i("arenaboard exists", player);
+        debug("arenaboard exists", player);
 
         ArenaBoard ab = abm.boards.get(new PABlockLocation(event.getClickedBlock().getLocation()));
 
@@ -160,7 +159,7 @@ public class ArenaBoard {
         }
 
         if (ab.global) {
-            debug.i("global!", player);
+            debug("global!", player);
             if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
                 ab.sortBy = StatisticsManager.Type.next(ab.sortBy);
                 Arena.pmsg(player,
@@ -173,7 +172,7 @@ public class ArenaBoard {
                 return true;
             }
         } else {
-            debug.i("not global!", player);
+            debug("not global!", player);
             if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
                 ab.sortBy = StatisticsManager.Type.next(ab.sortBy);
                 ab.abm.getArena().msg(player,
@@ -193,8 +192,8 @@ public class ArenaBoard {
     public void destroy() {
         // TODO clear signs
         if (global) {
-            PVPArena.instance.getConfig().set("leaderboard", null);
-            PVPArena.instance.saveConfig();
+            PVPArena.getInstance().getConfig().set("leaderboard", null);
+            PVPArena.getInstance().saveConfig();
         } else {
             abm.getArena().getArenaConfig().setManually("spawns.leaderboard", null);
             abm.getArena().getArenaConfig().save();

@@ -3,13 +3,12 @@ package net.slipcor.pvparena.modules.titles;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.core.Config.CFG;
-import net.slipcor.pvparena.core.Debug;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-public final class Title {
-    private static final Debug debug = new Debug(7);
+import static net.slipcor.pvparena.config.Debugger.debug;
 
+public final class Title {
     public enum type {
         JOIN, ADVERT, START, END, WINNER, LOSER, PRIZE, CUSTOM, COUNT
     }
@@ -29,8 +28,7 @@ public final class Title {
         if (!sendCheck(a, t)) {
             return; // do not send the announcement type
         }
-        debug.i("announce [" + a.getName() + "] type: " + t.name() + " : "
-                + message);
+        debug(a, "[announce] type: {} : {}", t.name(), message);
 
         for (ArenaPlayer ap : a.getFighters()) {
             send(a, ap.get(), message.replace(

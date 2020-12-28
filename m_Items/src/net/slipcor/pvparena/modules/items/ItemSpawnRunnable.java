@@ -9,6 +9,8 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Random;
 import java.util.Set;
 
+import static net.slipcor.pvparena.config.Debugger.trace;
+
 class ItemSpawnRunnable implements Runnable {
 
     private final ItemStack[] items;
@@ -17,14 +19,14 @@ class ItemSpawnRunnable implements Runnable {
 
     public ItemSpawnRunnable(final Arena a) {
         arena = a;
-        arena.getDebugger().i("ItemSpawnRunnable constructor");
+        trace(arena, "ItemSpawnRunnable constructor");
         items = arena.getArenaConfig().getItems(CFG.MODULES_ITEMS_ITEMS);
         spawns = SpawnManager.getPASpawnsStartingWith(arena, "item");
     }
 
     @Override
     public void run() {
-        arena.getDebugger().i("ItemSpawnRunnable running");
+        trace(arena, "ItemSpawnRunnable running");
         int i = (new Random()).nextInt(spawns.size());
         for (final PASpawn loc : spawns) {
             if (--i <= 0) {

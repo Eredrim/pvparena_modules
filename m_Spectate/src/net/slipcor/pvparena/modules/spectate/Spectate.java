@@ -19,6 +19,8 @@ import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 public class Spectate extends ArenaModule {
     public Spectate() {
         super("Spectate");
@@ -60,12 +62,12 @@ public class Spectate extends ArenaModule {
             }
 
         }
-        Bukkit.getScheduler().runTaskLater(PVPArena.instance, new RunLater(), 3L);
+        Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 3L);
     }
 
     @Override
     public void commitSpectate(final Player player) {
-        debug.i("committing spectate", player);
+        debug(player, "committing spectate");
 
         final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
         if (arena.equals(ap.getArena())) {
@@ -113,8 +115,8 @@ public class Spectate extends ArenaModule {
                 player.setFlySpeed(0.2f);
             }
         }
-        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.instance, new RunLater(), delay);
-        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.instance, new RunEvenLater(), delay2);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new RunLater(), delay);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new RunEvenLater(), delay2);
     }
 
     @Override
@@ -137,7 +139,7 @@ public class Spectate extends ArenaModule {
     private SpectateListener getListener() {
         if (listener == null) {
             listener = new SpectateListener(this);
-            Bukkit.getPluginManager().registerEvents(listener, PVPArena.instance);
+            Bukkit.getPluginManager().registerEvents(listener, PVPArena.getInstance());
         }
         return listener;
     }

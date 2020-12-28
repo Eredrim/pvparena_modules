@@ -1,13 +1,14 @@
 package net.slipcor.pvparena.modules.arenaboards;
 
-import net.slipcor.pvparena.core.Debug;
+import net.slipcor.pvparena.config.Debugger;
 import org.bukkit.Location;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 
+import static net.slipcor.pvparena.config.Debugger.debug;
+
 class ArenaBoardSign {
     private final BlockState state;
-    private final Debug debug = new Debug(12);
 
     /**
      * create an arena board sign instance
@@ -16,7 +17,7 @@ class ArenaBoardSign {
      */
     public ArenaBoardSign(final Location loc) {
         state = loc.getBlock().getState();
-        debug.i("adding sign at location " + loc.toString());
+        debug("adding sign at location {}",  loc);
     }
 
     /**

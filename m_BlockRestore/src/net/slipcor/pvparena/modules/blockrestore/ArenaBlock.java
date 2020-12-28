@@ -2,7 +2,6 @@ package net.slipcor.pvparena.modules.blockrestore;
 
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.classes.PABlockLocation;
-import net.slipcor.pvparena.core.Debug;
 import net.slipcor.pvparena.managers.ArenaManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -10,9 +9,9 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 
-class ArenaBlock {
-    private final Debug debug = new Debug(9);
+import static net.slipcor.pvparena.config.Debugger.debug;
 
+class ArenaBlock {
     private String arena;
     private final PABlockLocation location;
     private final BlockData blockData;
@@ -27,8 +26,8 @@ class ArenaBlock {
         this.location = new PABlockLocation(block.getLocation());
         this.blockData = block.getBlockData();
 
-        this.debug.i("creating arena block:");
-        this.debug.i("loc: " + this.location + "; mat: " + this.blockData.getMaterial().name());
+        debug("creating arena block:");
+        debug("loc: {} ; mat: {}", this.location, this.blockData.getMaterial());
 
         try {
             this.arena = ArenaManager.getArenaByRegionLocation(this.location).getName();
@@ -58,8 +57,8 @@ class ArenaBlock {
         this.blockData = Bukkit.createBlockData(type);
         this.lines = null;
 
-        this.debug.i("creating arena block:");
-        this.debug.i("loc: " + this.location + "; mat: " + this.blockData.getMaterial());
+        debug("creating arena block:");
+        debug("loc: {} ; mat: {}", this.location, this.blockData.getMaterial());
 
     }
 
@@ -78,7 +77,7 @@ class ArenaBlock {
                     try {
                         ((Sign) b.getState()).setLine(i, s);
                     } catch (final Exception e) {
-                        PVPArena.instance.getLogger().warning(
+                        PVPArena.getInstance().getLogger().warning(
                                 "tried to reset sign at location "
                                         + this.location);
                     }

@@ -31,7 +31,7 @@ class EADelay implements Runnable {
 
         }
 
-        Bukkit.getScheduler().runTaskLater(PVPArena.instance, new OffRunner(), 20L);
+        Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new OffRunner(), 20L);
     }
 
 }

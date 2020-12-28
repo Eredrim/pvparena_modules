@@ -59,7 +59,7 @@ class StartFreezer extends ArenaRunnable {
         }
         final Language.MSG msg = Language.MSG.getByNode(message);
         if (msg == null) {
-            PVPArena.instance.getLogger().warning("MSG not found: " + message);
+            PVPArena.getInstance().getLogger().warning("MSG not found: " + message);
             return;
         }
         final String message = seconds > 5 ? Language.parse(arena, msg, String.valueOf(seconds)) : MESSAGES.get(seconds);

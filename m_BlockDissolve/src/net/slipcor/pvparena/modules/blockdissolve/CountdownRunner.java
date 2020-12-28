@@ -21,7 +21,7 @@ public class CountdownRunner extends ArenaRunnable {
 
     @Override
     protected void warn() {
-        PVPArena.instance.getLogger().warning("CountdownRunner not scheduled yet!");
+        PVPArena.getInstance().getLogger().warning("CountdownRunner not scheduled yet!");
     }
 
 }

@@ -27,7 +27,7 @@ public class Projectiles extends ArenaModule implements Listener {
 
     @Override
     public void configParse(final YamlConfiguration config) {
-        Bukkit.getPluginManager().registerEvents(this, PVPArena.instance);
+        Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
     }
 
     @Override
