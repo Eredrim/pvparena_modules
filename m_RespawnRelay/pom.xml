@@ -25,20 +25,4 @@
             <type>jar</type>
         </dependency>
     </dependencies>
-
-    <build>
-        <defaultGoal>clean package install</defaultGoal>
-        <sourceDirectory>${basedir}/src</sourceDirectory>
-        <finalName>pa_m_respawnrelay</finalName>
-        <resources>
-            <resource>
-                <targetPath>.</targetPath>
-                <filtering>true</filtering>
-                <directory>${basedir}/src</directory>
-                <includes>
-                    <include>path.yml</include>
-                </includes>
-            </resource>
-        </resources>
-        </build>
 </project>

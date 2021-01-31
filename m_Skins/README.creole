@@ -1,6 +1,0 @@
-=== Todo
-
-* Fixes
-** 
-* Features
-** Spout: Adding "skin" key to classes, MobDisguise hooking

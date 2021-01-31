@@ -1,6 +1,0 @@
-=== Todo
-
-* Fixes
-** 
-* Features
-** Maps that display flags/enemies/spawns/lives

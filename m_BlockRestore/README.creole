@@ -1,9 +1,0 @@
-=== Todo
-
-* Fixes
-** 
-* Features
-** leaf decay
-** farmland being trampled
-** popping blocks (seed+water,reed,etc)
-** mushroomspread

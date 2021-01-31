@@ -1,6 +1,0 @@
-=== Todo
-
-* Fixes
-** thorough test
-* Features
-** CHEST powerup placement

@@ -81,7 +81,7 @@
         <module>m_SpecialJoin</module>
         <module>m_Spectate</module>
         <module>m_Squads</module>
-<!--        <module>m_Skins</module>-->
+        <module>m_Skins</module>
         <module>m_StartFreeze</module>
         <module>m_TeamSizeRestrict</module>
         <module>m_TempPerms</module>
@@ -97,6 +97,8 @@
     </modules>
 
     <build>
+        <defaultGoal>clean package install</defaultGoal>
+        <finalName>pa_${project.artifactId}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
