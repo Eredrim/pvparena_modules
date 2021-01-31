@@ -1,0 +1,2 @@
+name: FixInventoryLoss
+main-class: net.slipcor.pvparena.modules.fixes.InventoryLoss

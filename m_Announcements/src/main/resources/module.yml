@@ -1,0 +1,2 @@
+name: Announcements
+main-class: net.slipcor.pvparena.modules.announcements.AnnouncementManager
