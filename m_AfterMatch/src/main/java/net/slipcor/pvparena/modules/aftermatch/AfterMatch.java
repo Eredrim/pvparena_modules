@@ -51,7 +51,7 @@ public class AfterMatch extends ArenaModule {
             }
         }
         arena.broadcast(Language.parse(MSG.MODULE_AFTERMATCH_STARTING));
-        PVPArena.getInstance().getAgm().setPlayerLives(arena, 0);
+        this.arena.getGoal().setPlayerLives(0);
         aftermatch = true;
         try {
             afterTask.cancel();
