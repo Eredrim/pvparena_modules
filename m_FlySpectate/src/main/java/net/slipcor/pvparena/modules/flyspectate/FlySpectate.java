@@ -99,7 +99,7 @@ public class FlySpectate extends ArenaModule {
         this.arena.tpPlayerToCoordNameForJoin(ap, "spectator", false);
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), () -> {
-            if (this.arena.getArenaConfig().getInt(CFG.GENERAL_GAMEMODE) > -1) {
+            if (this.arena.getArenaConfig().getGameMode(CFG.GENERAL_GAMEMODE) != null) {
                 player.setGameMode(GameMode.CREATIVE);
             }
             player.setAllowFlight(true);
