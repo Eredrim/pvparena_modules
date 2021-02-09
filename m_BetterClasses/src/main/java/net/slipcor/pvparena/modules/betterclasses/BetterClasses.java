@@ -552,7 +552,7 @@ public class BetterClasses extends ArenaModule {
     private HashSet<PotionEffect> parseStringToPotionEffects(final String s) {
         final HashSet<PotionEffect> spe = new HashSet<>();
 
-        if (s == null || "none".equals(s) || s != null && s.isEmpty()) {
+        if (s == null || "none".equals(s) || s.isEmpty()) {
             return spe;
         }
 

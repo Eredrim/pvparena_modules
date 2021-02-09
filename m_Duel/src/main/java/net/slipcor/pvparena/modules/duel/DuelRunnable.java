@@ -33,7 +33,7 @@ class DuelRunnable implements Runnable {
     @Override
     public void run() {
         debug(hoster, "DuelRunnable commiting");
-        if (!"none".equals(dm.getArena().getArenaConfig().getString(CFG.READY_AUTOCLASS))
+        if (dm.getArena().getArenaConfig().getDefinedString(CFG.READY_AUTOCLASS) != null
                 && dm.getArena().getArenaConfig().getBoolean(CFG.MODULES_DUEL_FORCESTART)) {
             final PAI_Ready cmd = new PAI_Ready();
             try {
