@@ -207,8 +207,8 @@ public class BetterFight extends ArenaModule {
     @Override
     public void onEntityDamageByEntity(final Player attacker,
                                        final Player defender, final EntityDamageByEntityEvent event) {
-        final String s = arena.getArenaConfig().getString(CFG.MODULES_BETTERFIGHT_ONEHITITEMS);
-        if ("none".equalsIgnoreCase(s)) {
+        final String s = arena.getArenaConfig().getDefinedString(CFG.MODULES_BETTERFIGHT_ONEHITITEMS);
+        if (s == null) {
             return;
         }
 

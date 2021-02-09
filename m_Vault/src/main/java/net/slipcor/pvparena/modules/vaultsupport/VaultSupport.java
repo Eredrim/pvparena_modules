@@ -761,11 +761,9 @@ public class VaultSupport extends ArenaModule implements Listener {
     public void onClassChange(final PAPlayerClassChangeEvent event) {
         if (event.getArena() != null && event.getArena().equals(arena)) {
 
-            final String autoClass = arena.getArenaConfig().getString(CFG.READY_AUTOCLASS);
+            final String autoClass = arena.getArenaConfig().getDefinedString(CFG.READY_AUTOCLASS);
 
-            if (event.getArenaClass() == null ||
-                    !"none".equals(autoClass) ||
-                    !event.getArenaClass().getName().equals(autoClass)) {
+            if (event.getArenaClass() == null || !event.getArenaClass().getName().equals(autoClass)) {
                 return; // class will be removed OR no autoClass OR no>T< autoClass
             }
 

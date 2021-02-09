@@ -174,9 +174,9 @@ public class ChestFiller extends ArenaModule {
         final int cmax = Integer.parseInt(String.valueOf(arena.getArenaConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MAXITEMS)));
         final int cmin = Integer.parseInt(String.valueOf(arena.getArenaConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MINITEMS)));
 
-        String chest = arena.getArenaConfig().getString(Config.CFG.MODULES_CHESTFILLER_CHESTLOCATION);
+        String chest = arena.getArenaConfig().getDefinedString(Config.CFG.MODULES_CHESTFILLER_CHESTLOCATION);
         ItemStack[] contents = new ItemStack[0];
-        if (!"none".equals(chest)) {
+        if (chest != null) {
             try {
                 PABlockLocation loc = new PABlockLocation(chest);
                 Chest c = (Chest) loc.toLocation().getBlock().getState();
