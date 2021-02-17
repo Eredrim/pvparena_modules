@@ -11,6 +11,7 @@ import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
+import net.slipcor.pvparena.goals.AbstractFlagGoal;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -178,7 +179,7 @@ public class Maps extends ArenaModule {
                 }
             }
 
-            if (this.arena.getGoal().getName().contains("Flag")) {
+            if (this.arena.getGoal() instanceof AbstractFlagGoal) {
                 for (final PASpawn spawn : this.arena.getSpawns()) {
                     if (spawn.getName().startsWith(team.getName() + "flag")) {
                         locations.add(new MapItem(new PABlockLocation(spawn.getLocation().toLocation()), team.getColor()));
