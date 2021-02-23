@@ -3,11 +3,11 @@ package net.slipcor.pvparena.modules.duel;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.classes.PACheck;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.commands.PAG_Leave;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
+import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.ArenaManager;
 import net.slipcor.pvparena.modules.vaultsupport.VaultSupport;
@@ -62,13 +62,10 @@ public class DuelManager extends ArenaModule {
     }
 
     @Override
-    public PACheck checkJoin(CommandSender sender, PACheck res, boolean join) {
-        if (join) {
-            if (!sender.getName().equals(this.duelReceiver) && !sender.getName().equals(this.duelSender)) {
-                res.setError(this, Language.parse(arena, MSG.MODULE_DUEL_NODIRECTJOIN, arena.getName()));
-            }
+    public void checkJoin(Player player) throws GameplayException {
+        if (!player.getName().equals(this.duelReceiver) && !player.getName().equals(this.duelSender)) {
+            throw new GameplayException(Language.parse(arena, MSG.MODULE_DUEL_NODIRECTJOIN, this.arena.getName()));
         }
-        return res;
     }
 
     @Override

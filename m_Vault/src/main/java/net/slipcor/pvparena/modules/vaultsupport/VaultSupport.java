@@ -9,7 +9,6 @@ import net.slipcor.pvparena.arena.ArenaClass;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.ArenaPlayer.Status;
 import net.slipcor.pvparena.arena.ArenaTeam;
-import net.slipcor.pvparena.classes.PACheck;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
@@ -17,6 +16,7 @@ import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.events.PAGoalEvent;
 import net.slipcor.pvparena.events.PAPlayerClassChangeEvent;
+import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.loadables.ArenaModuleManager;
 import org.bukkit.Bukkit;
@@ -176,31 +176,20 @@ public class VaultSupport extends ArenaModule implements Listener {
     }
 
     @Override
-    public PACheck checkJoin(final CommandSender sender,
-                             final PACheck res, final boolean join) {
-
-        if (res.hasError() || !join) {
-            return res;
-        }
-
-        if (arena.getArenaConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE) > 0) {
+    public void checkJoin(Player player) throws GameplayException {
+        if (this.arena.getArenaConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE) > 0) {
             if (economy != null) {
-                if (!economy.hasAccount(sender.getName())) {
-                    debug(sender, "Account not found: {}", sender.getName());
-                    res.setError(this, "account not found: " + sender.getName());
-                    return res;
+                if (!economy.hasAccount(player.getName())) {
+                    debug(player, "Account not found: {}", player.getName());
+                    throw new GameplayException("Account not found: " + player.getName());
                 }
-                if (!economy.has(sender.getName(),
-                        arena.getArenaConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE))) {
+                if (!economy.has(player.getName(), this.arena.getArenaConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE))) {
                     // no money, no entry!
-
-                    res.setError(this, Language.parse(MSG.MODULE_VAULT_NOTENOUGH, economy
-                            .format(arena.getArenaConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE))));
-                    return res;
+                    throw new GameplayException(Language.parse(MSG.MODULE_VAULT_NOTENOUGH, economy
+                            .format(this.arena.getArenaConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE))));
                 }
             }
         }
-        return res;
     }
 
     @Override

@@ -3,13 +3,13 @@ package net.slipcor.pvparena.modules.powerups;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.ArenaTeam;
-import net.slipcor.pvparena.classes.PACheck;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.listeners.EntityListener;
 import net.slipcor.pvparena.loadables.ArenaModuleManager;
 import net.slipcor.pvparena.managers.ArenaManager;
+import net.slipcor.pvparena.managers.WorkflowManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.attribute.Attribute;
@@ -216,7 +216,7 @@ class PowerupEffect {
                 return true;
             } else if (type == PowerupType.LIVES) {
                 final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
-                final int lives = PACheck.handleGetLives(ap.getArena(), ap);
+                final int lives = WorkflowManager.handleGetLives(ap.getArena(), ap);
                 if (lives + diff > 0) {
                     ap.get().damage(1000.0d);
                 } else {
