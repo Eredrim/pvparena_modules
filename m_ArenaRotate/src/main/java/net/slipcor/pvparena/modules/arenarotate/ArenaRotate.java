@@ -2,17 +2,15 @@ package net.slipcor.pvparena.modules.arenarotate;
 
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
-import net.slipcor.pvparena.classes.PACheck;
 import net.slipcor.pvparena.commands.PAG_Join;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
+import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.ArenaManager;
 import net.slipcor.pvparena.runnables.StartRunnable;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Team;
@@ -36,34 +34,21 @@ public class ArenaRotate extends ArenaModule {
     }
 
     @Override
-    public PACheck checkJoin(final CommandSender sender,
-                             final PACheck res, final boolean join) {
-        if (res.hasError() || !join) {
-            return res;
+    public void checkJoin(Player player) throws GameplayException {
+        if (a != null && !this.arena.equals(a)) {
+            Bukkit.getServer().dispatchCommand(player, "join " + this.arena.getName());
+            throw new GameplayException(Language.parse(MSG.MODULE_AUTOVOTE_ARENARUNNING, this.arena.getName()));
         }
 
-        if (a != null && !arena.equals(a)) {
-            res.setError(this, Language.parse(MSG.MODULE_AUTOVOTE_ARENARUNNING, arena.getName()));
-            Bukkit.getServer().dispatchCommand(sender, "join " + arena.getName());
-            return res;
-        }
-
-        if (arena.getArenaConfig().getBoolean(CFG.PERMS_JOINWITHSCOREBOARD)) {
-            return res;
-        }
-
-        final Player p = (Player) sender;
-
-        for (final Team team : p.getScoreboard().getTeams()) {
-            for (final OfflinePlayer player : team.getPlayers()) {
-                if (player.getName().equals(p.getName())) {
-                    res.setError(this, Language.parse(MSG.ERROR_COMMAND_BLOCKED, "You already have a scoreboard!"));
-                    return res;
+        if (this.arena.getArenaConfig().getBoolean(CFG.PERMS_JOINWITHSCOREBOARD)) {
+            for (final Team team : player.getScoreboard().getTeams()) {
+                for (final String playerName : team.getEntries()) {
+                    if (player.getName().equals(playerName)) {
+                        throw new GameplayException(Language.parse(MSG.ERROR_COMMAND_BLOCKED, "You already have a scoreboard!"));
+                    }
                 }
             }
         }
-
-        return res;
     }
 
     @Override

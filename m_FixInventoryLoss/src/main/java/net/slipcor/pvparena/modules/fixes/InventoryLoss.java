@@ -2,13 +2,13 @@ package net.slipcor.pvparena.modules.fixes;
 
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
-import net.slipcor.pvparena.classes.PACheck;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
+import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class InventoryLoss extends ArenaModule {
+
+    public static final int PRIORITY = 5;
 
     public InventoryLoss() {
         super("FixInventoryLoss");
@@ -54,30 +56,24 @@ public class InventoryLoss extends ArenaModule {
     }
 
     @Override
-    public PACheck checkJoin(final CommandSender sender,
-                             final PACheck res, final boolean join) {
-        final Player player = (Player) sender;
-        final int priority = 5;
-
-        if (res.hasError() || res.getPriority() > priority) {
-            return res;
-        }
-
-        if (arena.getArenaConfig().getBoolean(CFG.MODULES_FIXINVENTORYLOSS_GAMEMODE)) {
+    public void checkJoin(Player player) throws GameplayException {
+        if (this.arena.getArenaConfig().getBoolean(CFG.MODULES_FIXINVENTORYLOSS_GAMEMODE)) {
             if (player.getGameMode() != GameMode.SURVIVAL) {
-                res.setError(this, Language.parse(MSG.MODULE_FIXINVENTORYLOSS_GAMEMODE));
-                return res;
+                throw new GameplayException(MSG.MODULE_FIXINVENTORYLOSS_GAMEMODE);
             }
         }
-        if (arena.getArenaConfig().getBoolean(CFG.MODULES_FIXINVENTORYLOSS_INVENTORY)) {
+        if (this.arena.getArenaConfig().getBoolean(CFG.MODULES_FIXINVENTORYLOSS_INVENTORY)) {
             for (final ItemStack item : player.getInventory().getContents()) {
                 if (item != null && item.getType() != Material.AIR) {
-                    res.setError(this, Language.parse(MSG.MODULE_FIXINVENTORYLOSS_INVENTORY));
-                    return res;
+                    throw new GameplayException(MSG.MODULE_FIXINVENTORYLOSS_INVENTORY);
                 }
             }
         }
-        return res;
+    }
+
+    @Override
+    public void checkSpectate(Player player) throws GameplayException {
+        this.checkJoin(player);
     }
 
     @Override

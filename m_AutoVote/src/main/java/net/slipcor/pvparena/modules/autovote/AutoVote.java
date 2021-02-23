@@ -4,7 +4,6 @@ import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.ArenaTeam;
-import net.slipcor.pvparena.classes.PACheck;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config.CFG;
@@ -12,6 +11,7 @@ import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.events.PAJoinEvent;
+import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.ArenaManager;
 import org.bukkit.Bukkit;
@@ -71,33 +71,20 @@ public class AutoVote extends ArenaModule implements Listener {
     }
 
     @Override
-    public PACheck checkJoin(final CommandSender sender,
-                             final PACheck res, final boolean join) {
-        if (res.hasError() || !join) {
-            return res;
+    public void checkJoin(Player player) throws GameplayException {
+        if (this.vote != null) {
+            throw new GameplayException("voting");
         }
 
-        if (vote != null) {
-            res.setError(this, "voting");
-            return res;
-        }
-
-        if (arena.getArenaConfig().getBoolean(CFG.PERMS_JOINWITHSCOREBOARD)) {
-            return res;
-        }
-
-        final Player p = (Player) sender;
-
-        for (final Team team : p.getScoreboard().getTeams()) {
-            for (final String playerName : team.getEntries()) {
-                if (playerName.equals(p.getName())) {
-                    res.setError(this, Language.parse(MSG.ERROR_COMMAND_BLOCKED, "You already have a scoreboard!"));
-                    return res;
+        if (!this.arena.getArenaConfig().getBoolean(CFG.PERMS_JOINWITHSCOREBOARD)) {
+            for (final Team team : player.getScoreboard().getTeams()) {
+                for (final String playerName : team.getEntries()) {
+                    if (playerName.equals(player.getName())) {
+                        throw new GameplayException(Language.parse(MSG.ERROR_COMMAND_BLOCKED, "You already have a scoreboard!"));
+                    }
                 }
             }
         }
-
-        return res;
     }
 
     @Override

@@ -3,13 +3,13 @@ package net.slipcor.pvparena.modules.blockrestore;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.classes.PABlockLocation;
-import net.slipcor.pvparena.classes.PACheck;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
+import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.loadables.ArenaRegion;
 import net.slipcor.pvparena.loadables.ArenaRegion.RegionType;
@@ -21,6 +21,7 @@ import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -84,12 +85,15 @@ public class Blocks extends ArenaModule implements Listener {
     }
 
     @Override
-    public PACheck checkJoin(final CommandSender sender,
-                             final PACheck res, final boolean join) {
+    public void checkJoin(Player player) throws GameplayException {
         if (this.restoring) {
-            res.setError(this, "restoring");
+            throw new GameplayException("restoring");
         }
-        return res;
+    }
+
+    @Override
+    public void checkSpectate(Player player) throws GameplayException {
+        this.checkJoin(player);
     }
 
     @Override

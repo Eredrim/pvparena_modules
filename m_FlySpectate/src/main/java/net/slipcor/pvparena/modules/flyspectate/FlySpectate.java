@@ -5,12 +5,12 @@ import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.ArenaTeam;
-import net.slipcor.pvparena.classes.PACheck;
 import net.slipcor.pvparena.classes.PALocation;
 import net.slipcor.pvparena.commands.PAG_Leave;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
+import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -20,13 +20,13 @@ import org.bukkit.entity.Player;
 import static net.slipcor.pvparena.config.Debugger.debug;
 
 public class FlySpectate extends ArenaModule {
+    public static final int PRIORITY = 3;
+
     public FlySpectate() {
         super("FlySpectate");
     }
 
     private FlySpectateListener listener;
-
-    private static final int priority = 3;
 
     @Override
     public String version() {
@@ -34,20 +34,16 @@ public class FlySpectate extends ArenaModule {
     }
 
     @Override
-    public PACheck checkJoin(final CommandSender sender,
-                             final PACheck res, final boolean join) {
-        if (join && (arena.getArenaConfig().getBoolean(CFG.PERMS_JOININBATTLE) || !arena.isFightInProgress())) {
-            return res;
-        }
+    public int getPriority(){
+        return PRIORITY;
+    }
 
-        if (arena.getFighters().size() < 1) {
-            res.setError(this, Language.parse(MSG.ERROR_NOPLAYERFOUND));
+    @Override
+    public boolean handleSpectate(Player player) throws GameplayException {
+        if (this.arena.getFighters().size() < 1) {
+            throw new GameplayException(MSG.ERROR_NOPLAYERFOUND);
         }
-
-        if (res.getPriority() < priority || join && res.hasError()) {
-            res.setPriority(this, priority);
-        }
-        return res;
+        return true;
     }
 
     @Override

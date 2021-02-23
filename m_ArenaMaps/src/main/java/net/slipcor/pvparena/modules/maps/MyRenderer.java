@@ -5,8 +5,8 @@ import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.ArenaTeam;
 import net.slipcor.pvparena.classes.PABlockLocation;
-import net.slipcor.pvparena.classes.PACheck;
 import net.slipcor.pvparena.core.Config.CFG;
+import net.slipcor.pvparena.managers.WorkflowManager;
 import net.slipcor.pvparena.managers.SpawnManager;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -216,7 +216,7 @@ class MyRenderer extends MapRenderer {
                 continue;
             }
             for (final ArenaPlayer ap : team.getTeamMembers()) {
-                lives.put(team.getName(), PACheck.handleGetLives(ap.getArena(), ap));
+                lives.put(team.getName(), WorkflowManager.handleGetLives(ap.getArena(), ap));
                 break;
             }
         }

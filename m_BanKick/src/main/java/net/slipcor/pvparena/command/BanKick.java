@@ -2,12 +2,12 @@ package net.slipcor.pvparena.command;
 
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
-import net.slipcor.pvparena.classes.PACheck;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
+import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -68,15 +68,15 @@ public class BanKick extends ArenaModule {
     }
 
     @Override
-    public PACheck checkJoin(final CommandSender sender,
-                             final PACheck res, final boolean join) {
-        if (res.hasError()) {
-            return res;
+    public void checkJoin(Player player) throws GameplayException {
+        if (this.getBans().contains(player.getName())) {
+            throw new GameplayException(Language.parse(MSG.MODULE_BANVOTE_YOUBANNED, arena.getName()));
         }
-        if (getBans().contains(sender.getName())) {
-            res.setError(this, Language.parse(MSG.MODULE_BANVOTE_YOUBANNED, arena.getName()));
-        }
-        return res;
+    }
+
+    @Override
+    public void checkSpectate(Player player) throws GameplayException {
+        this.checkJoin(player);
     }
 
     @Override

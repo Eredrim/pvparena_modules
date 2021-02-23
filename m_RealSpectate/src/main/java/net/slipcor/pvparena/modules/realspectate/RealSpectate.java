@@ -6,10 +6,9 @@ import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.ArenaPlayer.Status;
 import net.slipcor.pvparena.arena.ArenaTeam;
-import net.slipcor.pvparena.classes.PACheck;
 import net.slipcor.pvparena.classes.PALocation;
-import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
+import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -27,7 +26,7 @@ public class RealSpectate extends ArenaModule {
 
     private RealSpectateListener listener;
 
-    private static final int priority = 2;
+    private static final int PRIORITY = 2;
 
     @Override
     public String version() {
@@ -35,20 +34,16 @@ public class RealSpectate extends ArenaModule {
     }
 
     @Override
-    public PACheck checkJoin(final CommandSender sender,
-                             final PACheck res, final boolean join) {
-        if (join) {
-            return res;
-        }
+    public int getPriority() {
+        return PRIORITY;
+    }
 
-        if (arena.getFighters().size() < 1) {
-            res.setError(this, Language.parse(MSG.ERROR_NOPLAYERFOUND));
+    @Override
+    public boolean handleSpectate(Player p) throws GameplayException {
+        if (this.arena.getFighters().size() < 1) {
+            throw new GameplayException(MSG.ERROR_NOPLAYERFOUND);
         }
-
-        if (res.getPriority() < priority) {
-            res.setPriority(this, priority);
-        }
-        return res;
+        return true;
     }
 
     @Override
