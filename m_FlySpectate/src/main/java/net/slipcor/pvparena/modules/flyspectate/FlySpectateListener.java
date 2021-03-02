@@ -26,9 +26,9 @@ class FlySpectateListener implements Listener {
         this.flySpectate = flySpectate;
     }
 
-    void initiate(final ArenaPlayer ap) {
-        for (final ArenaPlayer a : flySpectate.getArena().getEveryone()) {
-            a.get().hidePlayer(PVPArena.getInstance(), ap.get());
+    void initiate(final ArenaPlayer arenaPlayer) {
+        for (final ArenaPlayer arenaPlayerFly : flySpectate.getArena().getEveryone()) {
+            arenaPlayerFly.getPlayer().hidePlayer(PVPArena.getInstance(), arenaPlayer.getPlayer());
         }
     }
 
@@ -155,8 +155,8 @@ class FlySpectateListener implements Listener {
                 @Override
                 public void run() {
 
-                    for (final ArenaPlayer ap : flySpectate.getArena().getEveryone()) {
-                        ap.get().hidePlayer(PVPArena.getInstance(), s);
+                    for (final ArenaPlayer arenaPlayer : flySpectate.getArena().getEveryone()) {
+                        arenaPlayer.getPlayer().hidePlayer(PVPArena.getInstance(), s);
                     }
                 }
             }
@@ -176,8 +176,8 @@ class FlySpectateListener implements Listener {
 
                 @Override
                 public void run() {
-                    for (final ArenaPlayer ap : flySpectate.getArena().getEveryone()) {
-                        ap.get().hidePlayer(PVPArena.getInstance(), s);
+                    for (final ArenaPlayer arenaPlayer : flySpectate.getArena().getEveryone()) {
+                        arenaPlayer.getPlayer().hidePlayer(PVPArena.getInstance(), s);
                     }
                 }
             }

@@ -46,8 +46,8 @@ class SpectateWrapper {
 
                     s.teleport(suspect.getLocation());
 
-                    for (final ArenaPlayer ap : listener.rs.getArena().getEveryone()) {
-                        ap.get().hidePlayer(s);
+                    for (final ArenaPlayer arenaPlayer : listener.rs.getArena().getEveryone()) {
+                        arenaPlayer.getPlayer().hidePlayer(s);
                     }
                     s.hidePlayer(suspect);
                 }
@@ -76,8 +76,8 @@ class SpectateWrapper {
 
                     s.teleport(suspect.getLocation());
 
-                    for (final ArenaPlayer ap : listener.rs.getArena().getEveryone()) {
-                        ap.get().hidePlayer(s);
+                    for (final ArenaPlayer arenaPlayer : listener.rs.getArena().getEveryone()) {
+                        arenaPlayer.getPlayer().hidePlayer(s);
                     }
                     s.hidePlayer(suspect);
                 }

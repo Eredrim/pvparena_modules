@@ -43,8 +43,8 @@ class RealSpectateListener implements Listener {
     }
 
     void update(final ArenaPlayer spectator, final ArenaPlayer fighter) {
-        final Player s = spectator.get();
-        final Player f = fighter.get();
+        final Player s = spectator.getPlayer();
+        final Player f = fighter.getPlayer();
 
         createSpectateWrapper(s, f);
     }
@@ -503,7 +503,7 @@ class RealSpectateListener implements Listener {
         Player nextPlayer = null;
         for (final ArenaPlayer ap : rs.getArena().getFighters()) {
             debug(spectator, "checking {}", ap.getName());
-            final Player p = ap.get();
+            final Player p = ap.getPlayer();
 
             if (ap.getName().equals(spectator.getName())) {
                 debug(spectator, "we are still in -.-");
@@ -531,7 +531,7 @@ class RealSpectateListener implements Listener {
                     debug(spectator, "get last element");
                     for (final ArenaPlayer ap2 : rs.getArena().getFighters()) {
                         debug(spectator, ap2.getName());
-                        nextPlayer = ap2.get();
+                        nextPlayer = ap2.getPlayer();
                     }
                     continue;
                 } // else: nextPlayer has content. yay!

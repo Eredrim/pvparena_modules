@@ -374,7 +374,7 @@ public class BetterClasses extends ArenaModule {
         debug(player, "respawning player " + ap);
         final Map<ArenaClass, HashSet<PotionEffect>> map = superMap.get(arena);
         if (map == null) {
-            PVPArena.getInstance().getLogger().warning("No superMap entry for arena " + arena);
+            PVPArena.getInstance().getLogger().warning(String.format("No superMap entry for arena %s", arena));
             return;
         }
 
@@ -402,19 +402,19 @@ public class BetterClasses extends ArenaModule {
                 continue;
             }
             final HashSet<PotionEffect> ape = parseStringToPotionEffects(s);
-            if (ape == null || ape.size() < 1) {
+            if (ape.isEmpty()) {
                 continue;
             }
             map.put(c, ape);
         }
 
-        for (final ArenaPlayer ap : arena.getFighters()) {
-            final Iterable<PotionEffect> ape = map.get(ap.getArenaClass());
+        for (final ArenaPlayer arenaPlayer : arena.getFighters()) {
+            final Iterable<PotionEffect> ape = map.get(arenaPlayer.getArenaClass());
             if (ape == null) {
                 continue;
             }
             for (final PotionEffect pe : ape) {
-                ap.get().addPotionEffect(pe);
+                arenaPlayer.getPlayer().addPotionEffect(pe);
             }
         }
     }
@@ -476,10 +476,12 @@ public class BetterClasses extends ArenaModule {
             return;
         }
 
-        if ((team != null || cause != null || damager != null) &&
-                player.getActivePotionEffects() != null && !player.getActivePotionEffects().isEmpty()) {
-            for (final PotionEffect eff : player.getActivePotionEffects()) {
-                player.removePotionEffect(eff.getType());
+        if ((team != null || cause != null || damager != null)) {
+            player.getActivePotionEffects();
+            if (!player.getActivePotionEffects().isEmpty()) {
+                for (final PotionEffect eff : player.getActivePotionEffects()) {
+                    player.removePotionEffect(eff.getType());
+                }
             }
         }
 
@@ -509,15 +511,15 @@ public class BetterClasses extends ArenaModule {
     @Override
     public void parseClassChange(Player player, ArenaClass aClass) {
         debug(arena, "BetterClass handling class change!");
-        ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
-        if (playerSwitches.containsKey(ap)) {
-            int value = playerSwitches.get(ap);
+        ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(player.getName());
+        if (playerSwitches.containsKey(arenaPlayer)) {
+            int value = playerSwitches.get(arenaPlayer);
             if (value-- > 0) {
-                playerSwitches.put(ap, value);
-                debug(arena, "player " + ap.getName() + ": " + value);
+                playerSwitches.put(arenaPlayer, value);
+                debug(arena, "player " + arenaPlayer.getName() + ": " + value);
             }
         }
-        ArenaTeam at = ap.getArenaTeam();
+        ArenaTeam at = arenaPlayer.getArenaTeam();
         if (teamSwitches.containsKey(at) && teamSwitches.get(at) != null) {
             int value = teamSwitches.get(at);
             if (value-- > 0) {
@@ -526,7 +528,7 @@ public class BetterClasses extends ArenaModule {
             }
         }
         if (arena.isFightInProgress()) {
-            parseRespawn(ap.get(), at, null, null);
+            parseRespawn(arenaPlayer.getPlayer(), at, null, null);
         }
     }
 
@@ -535,9 +537,9 @@ public class BetterClasses extends ArenaModule {
         if (!superMap.containsKey(arena)) {
             init_map();
         }
-        for (final ArenaPlayer ap : arena.getFighters()) {
-            parseRespawn(ap.get(), null, null, null);
-            playerSwitches.put(ap,
+        for (final ArenaPlayer arenaPlayer : arena.getFighters()) {
+            parseRespawn(arenaPlayer.getPlayer(), null, null, null);
+            playerSwitches.put(arenaPlayer,
                     (Integer) arena.getArenaConfig()
                             .getUnsafe("modules.betterclasses.maxPlayerSwitches"));
         }

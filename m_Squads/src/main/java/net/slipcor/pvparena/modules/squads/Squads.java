@@ -184,9 +184,9 @@ public class Squads extends ArenaModule {
 
     @Override
     public boolean onPlayerInteract(final PlayerInteractEvent event) {
-        final ArenaPlayer ap = ArenaPlayer.parsePlayer(event.getPlayer().getName());
+        final ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(event.getPlayer().getName());
 
-        if (!this.arena.equals(ap.getArena())) {
+        if (!this.arena.equals(arenaPlayer.getArena())) {
             return false;
         }
 
@@ -200,7 +200,7 @@ public class Squads extends ArenaModule {
         }
 
         List<Status> disabledStatusList = asList(Status.DEAD, Status.LOST, Status.NULL, Status.WARM, Status.WATCH);
-        if (disabledStatusList.contains(ap.getStatus())) {
+        if (disabledStatusList.contains(arenaPlayer.getStatus())) {
             return false;
         }
 
@@ -213,21 +213,21 @@ public class Squads extends ArenaModule {
         for (final ArenaSquad squad : this.getArenaSquads()) {
             if (squad.getName().equals(sign.getLine(0))) {
                 if (squad.getMax() != 0 && squad.getCount() >= squad.getMax()) {
-                    this.arena.msg(ap.get(), Language.parse(MSG.MODULE_SQUADS_FULL));
+                    this.arena.msg(arenaPlayer.getPlayer(), Language.parse(MSG.MODULE_SQUADS_FULL));
                     return false;
                 }
                 for (final ArenaSquad s : this.getArenaSquads()) {
                     if (s.equals(squad)) {
                         continue;
                     }
-                    if (s.contains(ap)) {
-                        s.remove(ap);
-                        this.removePlayerFromSigns(ap);
+                    if (s.contains(arenaPlayer)) {
+                        s.remove(arenaPlayer);
+                        this.removePlayerFromSigns(arenaPlayer);
                         break;
                     }
                 }
-                squad.add(ap);
-                this.addPlayerToSigns(sign, ap);
+                squad.add(arenaPlayer);
+                this.addPlayerToSigns(sign, arenaPlayer);
                 return true;
             }
         }
@@ -310,7 +310,7 @@ public class Squads extends ArenaModule {
                 for (final ArenaPlayer tap : squad.getPlayers()) {
                     if (--pos <= 0) {
                         try {
-                            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), () -> player.teleport(tap.get()), 10);
+                            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), () -> player.teleport(tap.getPlayer()), 10);
                         } catch (final Exception ignored) {
 
                         }

@@ -40,13 +40,13 @@ public class AfterMatch extends ArenaModule {
 
     public void afterMatch() {
         for (final ArenaTeam t : arena.getTeams()) {
-            for (final ArenaPlayer p : t.getTeamMembers()) {
-                if (p.getStatus() != Status.FIGHT) {
+            for (final ArenaPlayer arenaPlayer : t.getTeamMembers()) {
+                if (arenaPlayer.getStatus() != Status.FIGHT) {
                     continue;
                 }
-                final Player player = p.get();
+                final Player player = arenaPlayer.getPlayer();
                 if (player != null) {
-                    this.arena.tpPlayerToCoordName(p, "after");
+                    this.arena.tpPlayerToCoordName(arenaPlayer, "after");
                 }
             }
         }

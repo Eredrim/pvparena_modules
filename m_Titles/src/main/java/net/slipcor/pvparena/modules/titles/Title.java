@@ -30,8 +30,8 @@ public final class Title {
         }
         debug(a, "[announce] type: {} : {}", t.name(), message);
 
-        for (ArenaPlayer ap : a.getFighters()) {
-            send(a, ap.get(), message.replace(
+        for (ArenaPlayer arenaPlayer : a.getFighters()) {
+            send(a, arenaPlayer.getPlayer(), message.replace(
                     ChatColor.WHITE.toString(),
                     ChatColor.valueOf(
                             a.getArenaConfig().getString(

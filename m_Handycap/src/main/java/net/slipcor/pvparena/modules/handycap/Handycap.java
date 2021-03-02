@@ -48,10 +48,10 @@ public class Handycap extends ArenaModule {
                 if (handycapped.get(team) < max) {
                     continue;
                 }
-                for (ArenaPlayer player : team.getTeamMembers()) {
+                for (ArenaPlayer arenaPlayer : team.getTeamMembers()) {
                     for (PotionEffectType pet : effects.keySet()) {
-                        player.get().removePotionEffect(pet);
-                        player.get().addPotionEffect(new PotionEffect(pet, Integer.MAX_VALUE, effects.get(pet), true));
+                        arenaPlayer.getPlayer().removePotionEffect(pet);
+                        arenaPlayer.getPlayer().addPotionEffect(new PotionEffect(pet, Integer.MAX_VALUE, effects.get(pet), true));
                     }
                 }
             }
@@ -62,8 +62,8 @@ public class Handycap extends ArenaModule {
 
         for (ArenaTeam team : handycapped.keySet()) {
             if (handycapped.get(team) == max) {
-                for (ArenaPlayer ap : team.getTeamMembers()) {
-                    maxHealth = ap.get().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+                for (ArenaPlayer arenaPlayer : team.getTeamMembers()) {
+                    maxHealth = arenaPlayer.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
                     break;
                 }
             }
@@ -74,8 +74,8 @@ public class Handycap extends ArenaModule {
                 double ratio = 1.0 - (double) handycapped.get(team) / (double) max;
                 double value = maxHealth * ratio;
 
-                for (ArenaPlayer ap : team.getTeamMembers()) {
-                    ap.get().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(value);
+                for (ArenaPlayer arenaPlayer : team.getTeamMembers()) {
+                    arenaPlayer.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(value);
                 }
             }
         }
@@ -95,8 +95,8 @@ public class Handycap extends ArenaModule {
 
         for (ArenaTeam at : handycapped.keySet()) {
             if (handycapped.get(at) == max) {
-                for (ArenaPlayer ap : at.getTeamMembers()) {
-                    maxHealth = ap.get().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+                for (ArenaPlayer arenaPlayer : at.getTeamMembers()) {
+                    maxHealth = arenaPlayer.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
                     break;
                 }
             }
@@ -137,9 +137,9 @@ public class Handycap extends ArenaModule {
     private void removeEffects() {
         if (type == HandycapType.POWERUP) {
             for (ArenaTeam team : handycapped.keySet()) {
-                for (ArenaPlayer player : team.getTeamMembers()) {
+                for (ArenaPlayer arenaPlayer : team.getTeamMembers()) {
                     for (PotionEffectType pet : effects.keySet()) {
-                        player.get().removePotionEffect(pet);
+                        arenaPlayer.getPlayer().removePotionEffect(pet);
                     }
                 }
             }
@@ -150,8 +150,8 @@ public class Handycap extends ArenaModule {
 
         for (ArenaTeam team : handycapped.keySet()) {
             if (handycapped.get(team) == max) {
-                for (ArenaPlayer ap : team.getTeamMembers()) {
-                    maxHealth = ap.get().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+                for (ArenaPlayer arenaPlayer : team.getTeamMembers()) {
+                    maxHealth = arenaPlayer.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
                     break;
                 }
             }
@@ -159,8 +159,8 @@ public class Handycap extends ArenaModule {
 
         for (ArenaTeam team : handycapped.keySet()) {
             if (handycapped.get(team) < max) {
-                for (ArenaPlayer ap : team.getTeamMembers()) {
-                    ap.get().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
+                for (ArenaPlayer arenaPlayer : team.getTeamMembers()) {
+                    arenaPlayer.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
                 }
             }
         }

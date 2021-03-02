@@ -62,15 +62,15 @@ public class SinglePlayerSupport extends ArenaModule {
     @Override
     public void commitJoin(final Player sender, final ArenaTeam team) {
         // standard join --> fight!
-        final ArenaPlayer player = ArenaPlayer.parsePlayer(sender.getName());
-        player.setLocation(new PALocation(player.get().getLocation()));
+        final ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(sender.getName());
+        arenaPlayer.setLocation(new PALocation(arenaPlayer.getPlayer().getLocation()));
 
-        player.setArena(arena);
-        player.setStatus(Status.FIGHT);
-        team.add(player);
+        arenaPlayer.setArena(arena);
+        arenaPlayer.setStatus(Status.FIGHT);
+        team.add(arenaPlayer);
         final Set<PASpawn> spawns = new HashSet<>();
         if (arena.getArenaConfig().getBoolean(CFG.GENERAL_CLASSSPAWN)) {
-            final String arenaClass = player.getArenaClass().getName();
+            final String arenaClass = arenaPlayer.getArenaClass().getName();
             spawns.addAll(SpawnManager.getPASpawnsStartingWith(arena, team.getName() + arenaClass + "spawn"));
         } else if (arena.isFreeForAll()) {
             if ("free".equals(team.getName())) {
@@ -86,29 +86,29 @@ public class SinglePlayerSupport extends ArenaModule {
 
         for (final PASpawn spawn : spawns) {
             if (--pos < 0) {
-                this.arena.tpPlayerToCoordNameForJoin(player, spawn.getName(), true);
+                this.arena.tpPlayerToCoordNameForJoin(arenaPlayer, spawn.getName(), true);
                 break;
             }
         }
 
-        if (player.getState() == null) {
+        if (arenaPlayer.getState() == null) {
 
-            final Arena arena = player.getArena();
-
-
-            player.createState(player.get());
-            ArenaPlayer.backupAndClearInventory(arena, player.get());
-            player.dump();
+            final Arena arena = arenaPlayer.getArena();
 
 
-            if (player.getArenaTeam() != null && player.getArenaClass() == null) {
+            arenaPlayer.createState(arenaPlayer.getPlayer());
+            ArenaPlayer.backupAndClearInventory(arena, arenaPlayer.getPlayer());
+            arenaPlayer.dump();
+
+
+            if (arenaPlayer.getArenaTeam() != null && arenaPlayer.getArenaClass() == null) {
                 final String autoClass = arena.getArenaConfig().getDefinedString(CFG.READY_AUTOCLASS);
                 if (autoClass != null && arena.getClass(autoClass) != null) {
-                    arena.chooseClass(player.get(), null, autoClass);
+                    arena.chooseClass(arenaPlayer.getPlayer(), null, autoClass);
                 }
             }
         } else {
-            PVPArena.getInstance().getLogger().warning("Player has a state while joining: " + player.getName());
+            PVPArena.getInstance().getLogger().warning("Player has a state while joining: " + arenaPlayer.getName());
         }
 
         class RunLater implements Runnable {
@@ -116,7 +116,7 @@ public class SinglePlayerSupport extends ArenaModule {
             @Override
             public void run() {
                 Boolean check = WorkflowManager.handleStart(arena, sender, true);
-                if (check == null || check == false) {
+                if (check == null || !check) {
                     Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), this, 10L);
                 }
             }

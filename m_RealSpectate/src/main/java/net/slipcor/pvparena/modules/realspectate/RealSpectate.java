@@ -49,21 +49,21 @@ public class RealSpectate extends ArenaModule {
     @Override
     public void commitSpectate(final Player player) {
         debug(player, "committing REAL spectate");
-        final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
-        ap.setLocation(new PALocation(ap.get().getLocation()));
+        final ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(player.getName());
+        arenaPlayer.setLocation(new PALocation(arenaPlayer.getPlayer().getLocation()));
 
-        ap.setArena(arena);
-        ap.setStatus(Status.WATCH);
+        arenaPlayer.setArena(arena);
+        arenaPlayer.setStatus(Status.WATCH);
 
-        if (ap.getState() == null) {
+        if (arenaPlayer.getState() == null) {
 
-            final Arena arena = ap.getArena();
-            ap.createState(player);
+            final Arena arena = arenaPlayer.getArena();
+            arenaPlayer.createState(player);
             ArenaPlayer.backupAndClearInventory(arena, player);
-            ap.dump();
+            arenaPlayer.dump();
         }
 
-        this.arena.setupScoreboard(ap);
+        this.arena.setupScoreboard(arenaPlayer);
 
         debug(player, "switching:");
         this.getListener().switchPlayer(player, null, true);

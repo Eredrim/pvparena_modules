@@ -120,8 +120,8 @@ public class EventActions extends ArenaModule {
                 int pos = 0;
 
                 for (final ArenaTeam team : arena.getTeams()) {
-                    for (final ArenaPlayer player : team.getTeamMembers()) {
-                        players[pos++] = team.colorizePlayer(player.get());
+                    for (final ArenaPlayer arenaPlayer : team.getTeamMembers()) {
+                        players[pos++] = team.colorizePlayer(arenaPlayer.getPlayer());
                     }
                 }
                 item = item.replace("%players%", StringParser.joinArray(players, ChatColor.RESET + ", "));
