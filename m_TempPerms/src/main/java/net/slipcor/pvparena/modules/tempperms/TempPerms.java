@@ -226,14 +226,14 @@ public class TempPerms extends ArenaModule implements Listener {
         return (stringBooleanEntry.getValue() ? "" : "-") + stringBooleanEntry.getKey();
     }
 
-    private void setPermissions(final Arena arena, final ArenaPlayer ap, final Map<String, Boolean> mGlobal, final Map<String, Boolean> mTeam) {
+    private void setPermissions(final Arena arena, final ArenaPlayer arenaPlayer, final Map<String, Boolean> mGlobal, final Map<String, Boolean> mTeam) {
 
         final Map<String, Boolean> mClass;
 
-        if (ap.getArenaClass() == null) {
+        if (arenaPlayer.getArenaClass() == null) {
             mClass = new HashMap<>();
         } else {
-            mClass = this.getTempPerms(arena, ap.getArenaClass().getName());
+            mClass = this.getTempPerms(arena, arenaPlayer.getArenaClass().getName());
         }
 
         final Map<String, Boolean> total = new HashMap<>();
@@ -251,12 +251,12 @@ public class TempPerms extends ArenaModule implements Listener {
             return;
         }
 
-        final PermissionAttachment pa = ap.get().addAttachment(PVPArena.getInstance());
+        final PermissionAttachment pa = arenaPlayer.getPlayer().addAttachment(PVPArena.getInstance());
 
         for (final Map.Entry<String, Boolean> stringBooleanEntry : total.entrySet()) {
             pa.setPermission(stringBooleanEntry.getKey(), stringBooleanEntry.getValue());
         }
-        ap.getTempPermissions().add(pa);
+        arenaPlayer.getTempPermissions().add(pa);
     }
 
     /**

@@ -117,10 +117,10 @@ public class LateLounge extends ArenaModule {
     }
 
     @Override
-    public boolean handleSpecialLeave(final ArenaPlayer player) {
-        if(this.playerList.contains(player.getName())) {
-            this.playerList.remove(player.getName());
-            this.arena.msg(player.get(), Language.parse(MSG.MODULE_LATELOUNGE_LEAVE, this.arena.getName()));
+    public boolean handleSpecialLeave(final ArenaPlayer arenaPlayer) {
+        if(this.playerList.contains(arenaPlayer.getName())) {
+            this.playerList.remove(arenaPlayer.getName());
+            this.arena.msg(arenaPlayer.getPlayer(), Language.parse(MSG.MODULE_LATELOUNGE_LEAVE, this.arena.getName()));
             return true;
         }
         return false;

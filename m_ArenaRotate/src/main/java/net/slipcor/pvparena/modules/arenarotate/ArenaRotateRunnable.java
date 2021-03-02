@@ -70,14 +70,12 @@ public class ArenaRotateRunnable extends ArenaRunnable {
         }
         if (arena != null) {
             final Set<ArenaPlayer> players = arena.getFighters();
-            for (final ArenaPlayer ap : players) {
-                if (sPlayer != null) {
-                    if (ap.getName().equals(sPlayer)) {
-                        continue;
-                    }
+            for (final ArenaPlayer arenaPlayer : players) {
+                if (sPlayer != null && arenaPlayer.getName().equals(sPlayer)) {
+                    continue;
                 }
-                if (ap.get() != null) {
-                    arena.msg(ap.get(), message);
+                if (arenaPlayer.getPlayer() != null) {
+                    arena.msg(arenaPlayer.getPlayer(), message);
                 }
             }
             return;

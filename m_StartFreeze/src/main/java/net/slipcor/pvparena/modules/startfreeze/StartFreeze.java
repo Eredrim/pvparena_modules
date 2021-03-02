@@ -108,9 +108,9 @@ public class StartFreeze extends ArenaModule implements Listener {
         }
         int ticks = arena.getArenaConfig().getInt(Config.CFG.MODULES_STARTFREEZE_TIMER) * 20;
 
-        for (ArenaPlayer ap : arena.getFighters()) {
+        for (ArenaPlayer arenaPlayer : arena.getFighters()) {
             try {
-                if (ap.get().addPotionEffect(new PotionEffect(PotionEffectType.JUMP, ticks, -7, true, true), true));
+                if (arenaPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.JUMP, ticks, -7, true, true), true));
             } catch (Exception e) {
 
             }

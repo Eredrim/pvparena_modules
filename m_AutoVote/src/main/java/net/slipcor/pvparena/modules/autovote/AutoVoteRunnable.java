@@ -3,7 +3,6 @@ package net.slipcor.pvparena.modules.autovote;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.config.Debugger;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
@@ -31,17 +30,14 @@ public class AutoVoteRunnable extends ArenaRunnable {
     protected void commit() {
         debug("ArenaVoteRunnable commiting");
         AutoVote.commit(definition, module.players);
-        Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-                module.vote = null;
-                debug(arena, "clearing 'AutoVote.players'");
-                for (final String player : AutoVote.votes.keySet()) {
-                    debug(arena, "removing vote of: " + player);
-                }
-                AutoVote.votes.clear();
-                module.players.clear();
+        Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), () -> {
+            module.vote = null;
+            debug(arena, "clearing 'AutoVote.players'");
+            for (final String player : AutoVote.votes.keySet()) {
+                debug(arena, "removing vote of: " + player);
             }
+            AutoVote.votes.clear();
+            module.players.clear();
         }, 20L);
     }
 
@@ -67,17 +63,15 @@ public class AutoVoteRunnable extends ArenaRunnable {
             arenastring = ArenaManager.getNames();
         } else {
             final Set<String> arenas = new HashSet<>();
-            for (final String string : ArenaManager.getShortcutDefinitions().get(definition)) {
-                arenas.add(string);
-            }
+            arenas.addAll(ArenaManager.getShortcutDefinitions().get(definition));
             arenastring = StringParser.joinSet(arenas, ", ");
         }
 
         final String message = seconds > 5 ? Language.parse(msg, MESSAGES.get(seconds), arenastring) : MESSAGES.get(seconds);
 
-        for (final ArenaPlayer ap : module.players) {
-            if (!module.hasVoted(ap.getName())) {
-                module.getArena().msg(ap.get(), message);
+        for (final ArenaPlayer arenaPlayer : module.players) {
+            if (!module.hasVoted(arenaPlayer.getName())) {
+                module.getArena().msg(arenaPlayer.getPlayer(), message);
             }
         }
     }

@@ -24,9 +24,9 @@ class StartFreezer extends ArenaRunnable {
                 mod.getArena().getArenaConfig().getInt(Config.CFG.MODULES_STARTFREEZE_TIMER),
                 null, mod.getArena(), false);
         module = mod;
-        for (ArenaPlayer ap : mod.getArena().getFighters()) {
-            speeds.put(ap.getName(), ap.get().getWalkSpeed());
-            ap.get().setWalkSpeed(0);
+        for (ArenaPlayer arenaPlayer : mod.getArena().getFighters()) {
+            speeds.put(arenaPlayer.getName(), arenaPlayer.getPlayer().getWalkSpeed());
+            arenaPlayer.getPlayer().setWalkSpeed(0);
         }
     }
 
@@ -43,8 +43,8 @@ class StartFreezer extends ArenaRunnable {
     protected void commit() {
         if (module != null) {
             module.runnable = null;
-            for (ArenaPlayer ap : module.getArena().getFighters()) {
-                ap.get().setWalkSpeed(0.2f);
+            for (ArenaPlayer arenaPlayer : module.getArena().getFighters()) {
+                arenaPlayer.getPlayer().setWalkSpeed(0.2f);
             }
             module.speed(speeds);
         }
@@ -66,15 +66,15 @@ class StartFreezer extends ArenaRunnable {
         if (global) {
             final Collection<? extends Player> players = Bukkit.getOnlinePlayers();
 
-            for (final Player p : players) {
+            for (final Player player : players) {
                 try {
-                    if (arena != null && arena.hasPlayer(p)) {
+                    if (arena != null && arena.hasPlayer(player)) {
                         continue;
                     }
-                    if (p.getName().equals(sPlayer)) {
+                    if (player.getName().equals(sPlayer)) {
                         continue;
                     }
-                    Arena.pmsg(p, message);
+                    Arena.pmsg(player, message);
                 } catch (final Exception e) {
                 }
             }
@@ -87,19 +87,19 @@ class StartFreezer extends ArenaRunnable {
                 if (ap.getName().equals(sPlayer)) {
                     continue;
                 }
-                if (ap.get() != null) {
-                    arena.msg(ap.get(), message);
+                if (ap.getPlayer() != null) {
+                    arena.msg(ap.getPlayer(), message);
                 }
             }
             return;
         }
 
         if (Bukkit.getPlayer(sPlayer) != null) {
-            final ArenaPlayer aPlayer = ArenaPlayer.parsePlayer(sPlayer);
-            if (aPlayer.getArena() == null) {
+            final ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(sPlayer);
+            if (arenaPlayer.getArena() == null) {
                 Arena.pmsg(Bukkit.getPlayer(sPlayer), message);
             } else {
-                aPlayer.getArena().msg(aPlayer.get(), message);
+                arenaPlayer.getArena().msg(arenaPlayer.getPlayer(), message);
             }
         }
     }

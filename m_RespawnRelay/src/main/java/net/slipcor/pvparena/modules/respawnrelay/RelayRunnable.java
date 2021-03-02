@@ -22,28 +22,28 @@ public class RelayRunnable extends ArenaRunnable {
     private final List<ItemStack> drops;
     private final RespawnRelay mod;
 
-    public RelayRunnable(final RespawnRelay relay, final Arena arena, final ArenaPlayer ap, final List<ItemStack> drops) {
+    public RelayRunnable(final RespawnRelay relay, final Arena arena, final ArenaPlayer arenaPlayer, final List<ItemStack> drops) {
 
-        super(MSG.MODULE_RESPAWNRELAY_RESPAWNING.getNode(), arena.getArenaConfig().getInt(CFG.MODULES_RESPAWNRELAY_INTERVAL), ap.get(), null, false);
+        super(MSG.MODULE_RESPAWNRELAY_RESPAWNING.getNode(), arena.getArenaConfig().getInt(CFG.MODULES_RESPAWNRELAY_INTERVAL), arenaPlayer.getPlayer(), null, false);
         mod = relay;
-        this.ap = ap;
+        this.ap = arenaPlayer;
         this.drops = drops;
-        this.maybePlayer = ap.get();
+        this.maybePlayer = arenaPlayer.getPlayer();
     }
 
     @Override
     protected void commit() {
-        debug(ap.get(), "RelayRunnable commiting");
+        debug(ap.getPlayer(), "RelayRunnable commiting");
 
         Player maybePlayer = this.maybePlayer;
 
-        if (ap.get() == null) {
+        if (ap.getPlayer() == null) {
             if (maybePlayer == null) {
                 PVPArena.getInstance().getLogger().warning("player null: " + ap.getName());
                 return;
             }
         } else {
-            maybePlayer = ap.get();
+            maybePlayer = ap.getPlayer();
         }
 
         if (ap.getArena() == null) {
@@ -57,7 +57,7 @@ public class RelayRunnable extends ArenaRunnable {
         if (ap.getArena() == null) {
             return;
         }
-        ap.getArena().unKillPlayer(ap.get(), maybePlayer.getLastDamageCause() == null ? null : ap.get().getLastDamageCause().getCause(), ap.get().getKiller());
+        ap.getArena().unKillPlayer(ap.getPlayer(), maybePlayer.getLastDamageCause() == null ? null : ap.getPlayer().getLastDamageCause().getCause(), ap.getPlayer().getKiller());
         ap.setStatus(Status.FIGHT);
         mod.getRunnerMap().remove(ap.getName());
         mod.overrideMap.remove(ap.getName());

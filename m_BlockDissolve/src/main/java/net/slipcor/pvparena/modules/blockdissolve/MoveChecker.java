@@ -118,9 +118,9 @@ class MoveChecker implements Listener {
             @Override
             public void run() {
                 if (MoveChecker.this.active) {
-                    for (ArenaPlayer ap : MoveChecker.this.arena.getFighters()) {
-                        if (ap.getStatus() == Status.FIGHT) {
-                            MoveChecker.this.checkBlock(ap.get().getLocation().clone().subtract(0, 1, 0));
+                    for (ArenaPlayer arenaPlayer : MoveChecker.this.arena.getFighters()) {
+                        if (arenaPlayer.getStatus() == Status.FIGHT) {
+                            MoveChecker.this.checkBlock(arenaPlayer.getPlayer().getLocation().clone().subtract(0, 1, 0));
                         }
                     }
                 }

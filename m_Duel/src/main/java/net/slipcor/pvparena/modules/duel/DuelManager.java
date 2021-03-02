@@ -185,9 +185,9 @@ public class DuelManager extends ArenaModule {
                         Language.parse(MSG.ERROR_FIGHT_IN_PROGRESS));
             }
         } else if ("decline".equals(args[0].toLowerCase()) && duelSender != null) {
-            ArenaPlayer p = ArenaPlayer.parsePlayer(duelSender);
-            if (p != null && p.get() != null){
-                arena.msg(p.get(), Language.parse(MSG.MODULE_DUEL_DECLINED_SENDER));
+            ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(duelSender);
+            if (arenaPlayer != null && arenaPlayer.getPlayer() != null){
+                arena.msg(arenaPlayer.getPlayer(), Language.parse(MSG.MODULE_DUEL_DECLINED_SENDER));
             }
             arena.msg(sender, Language.parse(MSG.MODULE_DUEL_DECLINED_RECEIVER));
             duelSender = null;
@@ -207,7 +207,7 @@ public class DuelManager extends ArenaModule {
                 continue;
             }
             if (ArenaPlayer.parsePlayer(player.getName()).getStatus() == ArenaPlayer.Status.LOUNGE) {
-                arena.msg(ap.get(), Language.parse(MSG.MODULE_DUEL_CANCELLED));
+                arena.msg(ap.getPlayer(), Language.parse(MSG.MODULE_DUEL_CANCELLED));
             }
             if (amount > 0) {
                 for (ArenaModule mod : arena.getMods()) {
@@ -215,14 +215,14 @@ public class DuelManager extends ArenaModule {
                         VaultSupport sup = (VaultSupport) mod;
 
                         if (ArenaPlayer.parsePlayer(player.getName()).getStatus() == ArenaPlayer.Status.LOUNGE) {
-                            sup.tryRefund(this, ap.get(), amount, true);
+                            sup.tryRefund(this, ap.getPlayer(), amount, true);
                             sup.tryRefund(this, player, amount, true);
                             amount = 0;
                             class RunLater implements Runnable {
 
                                 @Override
                                 public void run() {
-                                    new PAG_Leave().commit(getArena(), ap.get(), new String[]{});
+                                    new PAG_Leave().commit(getArena(), ap.getPlayer(), new String[]{});
                                 }
                             }
                             if (force) {
@@ -231,7 +231,7 @@ public class DuelManager extends ArenaModule {
                                 Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 3L);
                             }
                         } else {
-                            sup.tryDeposit(this, ap.get(), amount*2, true);
+                            sup.tryDeposit(this, ap.getPlayer(), amount*2, true);
                             amount = 0;
                         }
                     }
@@ -241,7 +241,7 @@ public class DuelManager extends ArenaModule {
 
                     @Override
                     public void run() {
-                        new PAG_Leave().commit(getArena(), ap.get(), new String[]{});
+                        new PAG_Leave().commit(getArena(), ap.getPlayer(), new String[]{});
                     }
                 }
                 if (force) {

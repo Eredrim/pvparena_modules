@@ -63,11 +63,11 @@ public class RedStoneTriggers extends ArenaModule implements Listener {
                     // skip winner
                     continue;
                 }
-                for (final ArenaPlayer ap : team.getTeamMembers()) {
-                    if (ap.getStatus() == Status.FIGHT) {
-                        event.getBlock().getWorld().strikeLightningEffect(ap.get().getLocation());
-                        final EntityDamageEvent e = new EntityDamageEvent(ap.get(), DamageCause.LIGHTNING,10.0);
-                        PlayerListener.finallyKillPlayer(arena, ap.get(), e);
+                for (final ArenaPlayer arenaPlayer : team.getTeamMembers()) {
+                    if (arenaPlayer.getStatus() == Status.FIGHT) {
+                        event.getBlock().getWorld().strikeLightningEffect(arenaPlayer.getPlayer().getLocation());
+                        final EntityDamageEvent e = new EntityDamageEvent(arenaPlayer.getPlayer(), DamageCause.LIGHTNING,10.0);
+                        PlayerListener.finallyKillPlayer(arena, arenaPlayer.getPlayer(), e);
                     }
                 }
             }
@@ -79,9 +79,9 @@ public class RedStoneTriggers extends ArenaModule implements Listener {
                 }
                 for (final ArenaPlayer ap : team.getTeamMembers()) {
                     if (ap.getStatus() == Status.FIGHT) {
-                        event.getBlock().getWorld().strikeLightningEffect(ap.get().getLocation());
-                        final EntityDamageEvent e = new EntityDamageEvent(ap.get(), DamageCause.LIGHTNING, 10.0);
-                        PlayerListener.finallyKillPlayer(arena, ap.get(), e);
+                        event.getBlock().getWorld().strikeLightningEffect(ap.getPlayer().getLocation());
+                        final EntityDamageEvent e = new EntityDamageEvent(ap.getPlayer(), DamageCause.LIGHTNING, 10.0);
+                        PlayerListener.finallyKillPlayer(arena, ap.getPlayer(), e);
                     }
                 }
             }

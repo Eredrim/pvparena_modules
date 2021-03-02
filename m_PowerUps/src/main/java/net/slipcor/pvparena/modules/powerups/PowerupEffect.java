@@ -215,13 +215,13 @@ class PowerupEffect {
                 }
                 return true;
             } else if (type == PowerupType.LIVES) {
-                final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
-                final int lives = WorkflowManager.handleGetLives(ap.getArena(), ap);
+                final ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(player.getName());
+                final int lives = WorkflowManager.handleGetLives(arenaPlayer.getArena(), arenaPlayer);
                 if (lives + diff > 0) {
-                    ap.get().damage(1000.0d);
+                    arenaPlayer.getPlayer().damage(1000.0d);
                 } else {
-                    final ArenaTeam team = ap.getArenaTeam();
-                    final Arena arena = ap.getArena();
+                    final ArenaTeam team = arenaPlayer.getArenaTeam();
+                    final Arena arena = arenaPlayer.getArena();
                     ArenaModuleManager.announce(
                             arena,
                             Language.parse(MSG.FIGHT_KILLED_BY, player.getName(),
@@ -236,7 +236,7 @@ class PowerupEffect {
                     }
                     // needed so player does not get found when dead
                     arena.removePlayer(player, arena.getArenaConfig().getString(CFG.TP_LOSE), true, false);
-                    ap.getArenaTeam().remove(ap);
+                    arenaPlayer.getArenaTeam().remove(arenaPlayer);
 
                     ArenaManager.checkAndCommit(arena, false);
                 }

@@ -64,25 +64,25 @@ public class Spectate extends ArenaModule {
     public void commitSpectate(final Player player) {
         debug(player, "committing spectate");
 
-        final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
-        if (arena.equals(ap.getArena())) {
+        final ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(player.getName());
+        if (arena.equals(arenaPlayer.getArena())) {
             arena.msg(player, Language.parse(MSG.ERROR_ARENA_ALREADY_PART_OF, ArenaManager.getIndirectArenaName(arena)));
             return;
         }
 
-        ap.setLocation(new PALocation(ap.get().getLocation()));
+        arenaPlayer.setLocation(new PALocation(arenaPlayer.getPlayer().getLocation()));
 
-        ap.debugPrint();
+        arenaPlayer.debugPrint();
 
-        ap.setArena(arena);
+        arenaPlayer.setArena(arena);
         this.getListener().addSpectator(player);
 
-        if (ap.getState() == null) {
-            final Arena arena = ap.getArena();
+        if (arenaPlayer.getState() == null) {
+            final Arena arena = arenaPlayer.getArena();
 
-            ap.createState(player);
+            arenaPlayer.createState(player);
             ArenaPlayer.backupAndClearInventory(arena, player);
-            ap.dump();
+            arenaPlayer.dump();
         } else {
             new PAG_Leave().commit(arena, player, new String[0]);
             return;
@@ -95,9 +95,9 @@ public class Spectate extends ArenaModule {
 
             @Override
             public void run() {
-                arena.tpPlayerToCoordNameForJoin(ap, "spectator", false);
+                arena.tpPlayerToCoordNameForJoin(arenaPlayer, "spectator", false);
                 arena.msg(player, Language.parse(MSG.NOTICE_WELCOME_SPECTATOR));
-                ap.setStatus(Status.WATCH);
+                arenaPlayer.setStatus(Status.WATCH);
             }
         }
         class RunEvenLater implements Runnable {

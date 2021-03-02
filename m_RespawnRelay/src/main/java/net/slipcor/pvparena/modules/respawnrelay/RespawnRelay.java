@@ -129,24 +129,24 @@ public class RespawnRelay extends ArenaModule {
     }
 
     @Override
-    public boolean tryDeathOverride(final ArenaPlayer ap, List<ItemStack> drops) {
-        ap.setStatus(Status.DEAD);
+    public boolean tryDeathOverride(final ArenaPlayer arenaPlayer, List<ItemStack> drops) {
+        arenaPlayer.setStatus(Status.DEAD);
 
         if (drops == null) {
             drops = new ArrayList<>();
         }
-        if (SpawnManager.getSpawnByExactName(arena, ap.getArenaTeam().getName()+"relay") == null) {
-            SpawnManager.respawn(arena, ap, "relay");
+        if (SpawnManager.getSpawnByExactName(arena, arenaPlayer.getArenaTeam().getName()+"relay") == null) {
+            SpawnManager.respawn(arena, arenaPlayer, "relay");
         } else {
-            SpawnManager.respawn(arena, ap, ap.getArenaTeam().getName()+"relay");
+            SpawnManager.respawn(arena, arenaPlayer, arenaPlayer.getArenaTeam().getName()+"relay");
         }
-        arena.unKillPlayer(ap.get(), ap.get().getLastDamageCause() == null ? null : ap.get().getLastDamageCause().getCause(), ap.get().getKiller());
+        arena.unKillPlayer(arenaPlayer.getPlayer(), arenaPlayer.getPlayer().getLastDamageCause() == null ? null : arenaPlayer.getPlayer().getLastDamageCause().getCause(), arenaPlayer.getPlayer().getKiller());
 
-        if (getRunnerMap().containsKey(ap.getName())) {
+        if (getRunnerMap().containsKey(arenaPlayer.getName())) {
             return true;
         }
 
-        getRunnerMap().put(ap.getName(), new RelayRunnable(this, arena, ap, drops));
+        getRunnerMap().put(arenaPlayer.getName(), new RelayRunnable(this, arena, arenaPlayer, drops));
 
         return true;
     }

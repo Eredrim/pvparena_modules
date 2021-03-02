@@ -207,9 +207,9 @@ public class BetterGears extends ArenaModule {
         }
     }
 
-    void equip(final ArenaPlayer ap) {
+    void equip(final ArenaPlayer arenaPlayer) {
 
-        Player player = ap.get();
+        Player player = arenaPlayer.getPlayer();
         debug(arena, player, "equipping better gear!");
 
         if (getColorMap().isEmpty()) {
@@ -225,9 +225,9 @@ public class BetterGears extends ArenaModule {
             g = (short) new Random().nextInt(256);
             b = (short) new Random().nextInt(256);
         } else {
-            r = getColorMap().get(ap.getArenaTeam())[0];
-            g = getColorMap().get(ap.getArenaTeam())[1];
-            b = getColorMap().get(ap.getArenaTeam())[2];
+            r = getColorMap().get(arenaPlayer.getArenaTeam())[0];
+            g = getColorMap().get(arenaPlayer.getArenaTeam())[1];
+            b = getColorMap().get(arenaPlayer.getArenaTeam())[2];
         }
 
 
@@ -245,7 +245,7 @@ public class BetterGears extends ArenaModule {
             isArmor[i].setItemMeta(lam);
         }
 
-        Short s = getLevelMap().get(ap.getArenaClass());
+        Short s = getLevelMap().get(arenaPlayer.getArenaClass());
 
         if (s == null) {
             final String autoClass = getArena().getArenaConfig().getString(CFG.READY_AUTOCLASS);

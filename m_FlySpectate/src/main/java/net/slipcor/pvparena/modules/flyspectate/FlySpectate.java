@@ -62,28 +62,28 @@ public class FlySpectate extends ArenaModule {
     @Override
     public void commitSpectate(final Player player) {
         debug(player, "committing FLY spectate");
-        final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
-        if (arena.equals(ap.getArena())) {
+        final ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(player.getName());
+        if (arena.equals(arenaPlayer.getArena())) {
             arena.msg(player, Language.parse(MSG.ERROR_ARENA_ALREADY_PART_OF, arena.getName()));
             return;
         }
 
-        ap.setLocation(new PALocation(ap.get().getLocation()));
+        arenaPlayer.setLocation(new PALocation(arenaPlayer.getPlayer().getLocation()));
 
-        ap.debugPrint();
+        arenaPlayer.debugPrint();
 
-        ap.setArena(arena);
-        ap.setTeleporting(true);
+        arenaPlayer.setArena(arena);
+        arenaPlayer.setTeleporting(true);
         debug(player, "switching:");
         this.getListener().hidePlayerLater(player);
 
-        if (ap.getState() == null) {
+        if (arenaPlayer.getState() == null) {
 
-            final Arena arena = ap.getArena();
+            final Arena arena = arenaPlayer.getArena();
 
-            ap.createState(player);
+            arenaPlayer.createState(player);
             ArenaPlayer.backupAndClearInventory(arena, player);
-            ap.dump();
+            arenaPlayer.dump();
 
         } else {
             new PAG_Leave().commit(arena, player, new String[0]);
@@ -92,7 +92,7 @@ public class FlySpectate extends ArenaModule {
 
 
         final long delay = this.arena.getArenaConfig().getBoolean(CFG.PERMS_FLY) ? 6L : 5L;
-        this.arena.tpPlayerToCoordNameForJoin(ap, "spectator", false);
+        this.arena.tpPlayerToCoordNameForJoin(arenaPlayer, "spectator", false);
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), () -> {
             if (this.arena.getArenaConfig().getGameMode(CFG.GENERAL_GAMEMODE) != null) {
@@ -102,8 +102,8 @@ public class FlySpectate extends ArenaModule {
             player.setFlying(true);
             player.setCollidable(false);
             this.arena.msg(player, Language.parse(MSG.NOTICE_WELCOME_SPECTATOR));
-            ap.setStatus(ArenaPlayer.Status.WATCH);
-            ap.setTeleporting(false);
+            arenaPlayer.setStatus(ArenaPlayer.Status.WATCH);
+            arenaPlayer.setTeleporting(false);
         }, delay);
     }
 
