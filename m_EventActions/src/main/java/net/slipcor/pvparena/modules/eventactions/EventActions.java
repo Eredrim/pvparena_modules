@@ -11,7 +11,7 @@ import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.loadables.ArenaModule;
-import net.slipcor.pvparena.loadables.ArenaRegion;
+import net.slipcor.pvparena.regions.ArenaRegion;
 import net.slipcor.pvparena.managers.SpawnManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

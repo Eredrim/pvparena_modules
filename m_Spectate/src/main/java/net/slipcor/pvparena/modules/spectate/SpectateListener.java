@@ -1,7 +1,7 @@
 package net.slipcor.pvparena.modules.spectate;
 
 import net.slipcor.pvparena.classes.PABlockLocation;
-import net.slipcor.pvparena.loadables.ArenaRegion;
+import net.slipcor.pvparena.regions.ArenaRegion;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import static net.slipcor.pvparena.loadables.ArenaRegion.RegionType;
+import net.slipcor.pvparena.regions.RegionType;
 import static org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.SPECTATE;
 
 class SpectateListener implements Listener {

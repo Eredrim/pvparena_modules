@@ -12,7 +12,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import static net.slipcor.pvparena.config.Debugger.debug;
 import static net.slipcor.pvparena.config.Debugger.trace;
 
 class BattleRunnable extends BukkitRunnable {
@@ -43,8 +42,8 @@ class BattleRunnable extends BukkitRunnable {
                     continue;
                 }
 
-                debug(p, "arena pos: {}", arena);
-                debug(p, "arena IN: {}", ap.getArena());
+                trace(p, "arena pos: {}", arena);
+                trace(p, "arena IN: {}", ap.getArena());
 
                 if(ap.getArena() == null) {
                     if (arena.getArenaConfig().getBoolean(CFG.MODULES_BATTLEFIELDGUARD_ENTERDEATH)) {

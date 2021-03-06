@@ -2,9 +2,9 @@ package net.slipcor.pvparena.modules.blockrestore;
 
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.classes.PABlockLocation;
-import net.slipcor.pvparena.loadables.ArenaRegion;
-import net.slipcor.pvparena.regions.CuboidRegion;
-import net.slipcor.pvparena.regions.SphericRegion;
+import net.slipcor.pvparena.regions.ArenaRegion;
+import net.slipcor.pvparena.regionshapes.CuboidRegion;
+import net.slipcor.pvparena.regionshapes.SphericRegion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
