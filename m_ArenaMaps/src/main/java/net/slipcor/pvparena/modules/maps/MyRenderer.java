@@ -95,7 +95,7 @@ class MyRenderer extends MapRenderer {
             if (maps.hasCustomMap(player.getName()) && !done.contains(map.getId())) {
 
                 playerName = player.getName();
-                arena = ArenaPlayer.parsePlayer(playerName).getArena();
+                arena = ArenaPlayer.fromPlayer(playerName).getArena();
                 if ((playerMaps.get(player.getName()) == null)) {
                     playerMaps.set(player.getName(), map.getId());
                     savePlayers();

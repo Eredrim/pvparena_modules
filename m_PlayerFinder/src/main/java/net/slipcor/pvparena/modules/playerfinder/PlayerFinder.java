@@ -46,7 +46,7 @@ public class PlayerFinder extends ArenaModule implements Listener {
     public void onPlayerFind(final PlayerInteractEvent event) {
         final Player player = event.getPlayer();
 
-        final ArenaPlayer aPlayer = ArenaPlayer.parsePlayer(player.getName());
+        final ArenaPlayer aPlayer = ArenaPlayer.fromPlayer(player);
 
         if (event.getHand() != null && event.getHand().equals(EquipmentSlot.OFF_HAND)) {
             debug(player, "exiting: offhand");
@@ -84,7 +84,7 @@ public class PlayerFinder extends ArenaModule implements Listener {
                 }
 
                 final Player innerPlayer = (Player) e;
-                final ArenaPlayer ap = ArenaPlayer.parsePlayer(innerPlayer.getName());
+                final ArenaPlayer ap = ArenaPlayer.fromPlayer(innerPlayer);
 
                 if (ap.getStatus() != Status.FIGHT) {
                     continue;

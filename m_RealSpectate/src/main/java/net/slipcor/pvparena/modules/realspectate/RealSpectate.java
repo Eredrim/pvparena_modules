@@ -11,7 +11,6 @@ import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.HashSet;
@@ -49,7 +48,7 @@ public class RealSpectate extends ArenaModule {
     @Override
     public void commitSpectate(final Player player) {
         debug(player, "committing REAL spectate");
-        final ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(player.getName());
+        final ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
         arenaPlayer.setLocation(new PALocation(arenaPlayer.getPlayer().getLocation()));
 
         arenaPlayer.setArena(arena);
@@ -70,7 +69,7 @@ public class RealSpectate extends ArenaModule {
     }
 
     @Override
-    public void parseJoin(final CommandSender sender, final ArenaTeam team) {
+    public void parseJoin(final Player player, final ArenaTeam team) {
         for (final SpectateWrapper sw : this.getListener().spectated_players.values()) {
             sw.update();
         }

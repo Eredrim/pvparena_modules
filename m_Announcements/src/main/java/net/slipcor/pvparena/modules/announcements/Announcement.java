@@ -37,7 +37,7 @@ public final class Announcement {
         debug("announce [{}] type: {}:{}", a, t, message);
 
         for (final Player p : Bukkit.getOnlinePlayers()) {
-            if (a.hasPlayer(p) || ArenaPlayer.parsePlayer(p.getName()).isIgnoringAnnouncements()) {
+            if (a.hasPlayer(p) || ArenaPlayer.fromPlayer(p).isIgnoringAnnouncements()) {
                 continue;
             }
             send(a, p, message.replace(

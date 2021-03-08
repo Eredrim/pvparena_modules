@@ -182,7 +182,7 @@ public class Skins extends ArenaModule {
     @Override
     public void tpPlayerToCoordName(final Player player, final String place) {
         if (ldHandler == null) {
-            final ArenaTeam team = ArenaPlayer.parsePlayer(player.getName()).getArenaTeam();
+            final ArenaTeam team = ArenaPlayer.fromPlayer(player).getArenaTeam();
             if (team != null) {
                 final ItemStack is = new ItemStack(Material.PLAYER_HEAD, 1);
                 final String disguise = (String) arena.getArenaConfig().getUnsafe("skins." + team.getName());
@@ -222,13 +222,13 @@ public class Skins extends ArenaModule {
             return;
         }
 
-        final ArenaTeam team = ArenaPlayer.parsePlayer(player.getName()).getArenaTeam();
+        final ArenaTeam team = ArenaPlayer.fromPlayer(player).getArenaTeam();
         if (team == null) {
             return;
         }
         String disguise = (String) arena.getArenaConfig().getUnsafe("skins." + team.getName());
 
-        final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
+        final ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
 
         if (ap.getArenaClass() != null && (disguise == null || "none".equals(disguise))) {
             disguise = (String) arena.getArenaConfig().getUnsafe("skins." + ap.getArenaClass().getName());

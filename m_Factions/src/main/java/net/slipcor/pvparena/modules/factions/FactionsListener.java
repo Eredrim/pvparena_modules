@@ -60,7 +60,7 @@ class FactionsListener implements Listener {
             return;
         }
 
-        Arena arena = ArenaPlayer.parsePlayer(((Player) p2).getName()).getArena();
+        Arena arena = ArenaPlayer.fromPlayer((Player) p2).getArena();
         if (arena == null || !arena.equals(fs.getArena())) {
             // defender not part of our arena => out
             return;

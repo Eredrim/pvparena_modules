@@ -213,7 +213,7 @@ public class PAWE extends ArenaModule {
             return;
         }
 
-        final ArenaPlayer ap = ArenaPlayer.parsePlayer(p.getName());
+        final ArenaPlayer ap = ArenaPlayer.fromPlayer(p);
         ap.setSelection(calculateBukkitLocation(p, selection.getMinimumPoint()), false);
         ap.setSelection(calculateBukkitLocation(p, selection.getMaximumPoint()), true);
 

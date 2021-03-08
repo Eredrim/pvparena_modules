@@ -108,7 +108,7 @@ public class EventActions extends ArenaModule {
 
             if (p != null) {
                 item = item.replace("%player%", p.getName());
-                final ArenaPlayer aplayer = ArenaPlayer.parsePlayer(p.getName());
+                final ArenaPlayer aplayer = ArenaPlayer.fromPlayer(p);
                 if (aplayer.getArenaTeam() != null) {
                     item = item.replace("%team%", aplayer.getArenaTeam().getName());
                     item = item.replace("%color%", aplayer.getArenaTeam().getColor().toString());

@@ -49,7 +49,7 @@ public class SinglePlayerSupport extends ArenaModule {
             throw new GameplayException(Language.parse(this.arena, MSG.ERROR_DISABLED));
         }
 
-        final ArenaPlayer aPlayer = ArenaPlayer.parsePlayer(player.getName());
+        final ArenaPlayer aPlayer = ArenaPlayer.fromPlayer(player);
 
         if (aPlayer.getArena() != null) {
             debug(aPlayer.getArena(), player, this.getName());
@@ -60,9 +60,9 @@ public class SinglePlayerSupport extends ArenaModule {
     }
 
     @Override
-    public void commitJoin(final Player sender, final ArenaTeam team) {
+    public void commitJoin(final Player player, final ArenaTeam team) {
         // standard join --> fight!
-        final ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(sender.getName());
+        final ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
         arenaPlayer.setLocation(new PALocation(arenaPlayer.getPlayer().getLocation()));
 
         arenaPlayer.setArena(arena);
@@ -115,7 +115,7 @@ public class SinglePlayerSupport extends ArenaModule {
 
             @Override
             public void run() {
-                Boolean check = WorkflowManager.handleStart(arena, sender, true);
+                Boolean check = WorkflowManager.handleStart(arena, player, true);
                 if (check == null || !check) {
                     Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), this, 10L);
                 }

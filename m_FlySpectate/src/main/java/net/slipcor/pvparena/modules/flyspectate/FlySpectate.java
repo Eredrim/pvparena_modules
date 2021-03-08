@@ -14,7 +14,6 @@ import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import static net.slipcor.pvparena.config.Debugger.debug;
@@ -62,7 +61,7 @@ public class FlySpectate extends ArenaModule {
     @Override
     public void commitSpectate(final Player player) {
         debug(player, "committing FLY spectate");
-        final ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(player.getName());
+        final ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
         if (arena.equals(arenaPlayer.getArena())) {
             arena.msg(player, Language.parse(MSG.ERROR_ARENA_ALREADY_PART_OF, arena.getName()));
             return;
@@ -108,7 +107,7 @@ public class FlySpectate extends ArenaModule {
     }
 
     @Override
-    public void parseJoin(final CommandSender sender, final ArenaTeam team) {
+    public void parseJoin(final Player player, final ArenaTeam team) {
         this.getListener().hideAllSpectatorsLater();
     }
 

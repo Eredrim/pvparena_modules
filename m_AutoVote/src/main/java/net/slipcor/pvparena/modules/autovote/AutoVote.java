@@ -342,9 +342,9 @@ public class AutoVote extends ArenaModule implements Listener {
     }
 
     @Override
-    public void parseJoin(final CommandSender sender, final ArenaTeam team) {
-        debug(arena, "adding autovote player: " + sender.getName());
-        players.add(ArenaPlayer.parsePlayer(sender.getName()));
+    public void parseJoin(final Player player, final ArenaTeam team) {
+        debug(arena, "adding autovote player: " + player.getName());
+        players.add(ArenaPlayer.fromPlayer(player));
     }
 
     public boolean hasVoted(final String name) {

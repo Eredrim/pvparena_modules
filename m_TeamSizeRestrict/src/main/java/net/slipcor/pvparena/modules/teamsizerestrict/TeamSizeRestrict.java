@@ -9,7 +9,7 @@ import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 public class TeamSizeRestrict extends ArenaModule {
     public TeamSizeRestrict() {
@@ -22,7 +22,7 @@ public class TeamSizeRestrict extends ArenaModule {
     }
 
     @Override
-    public void parseJoin(final CommandSender sender, final ArenaTeam team) {
+    public void parseJoin(final Player player, final ArenaTeam team) {
         try {
             final Integer i = Integer.parseInt(arena.getArenaConfig().getUnsafe("modules.teamsize." + team.getName()).toString());
             if (team.getTeamMembers().size() > i) {
@@ -30,8 +30,8 @@ public class TeamSizeRestrict extends ArenaModule {
 
                     @Override
                     public void run() {
-                        arena.msg(sender, ChatColor.RED + Language.parse(MSG.ERROR_JOIN_TEAM_FULL, team.getName()));
-                        new PAG_Leave().commit(arena, sender, new String[0]);
+                        arena.msg(player, ChatColor.RED + Language.parse(MSG.ERROR_JOIN_TEAM_FULL, team.getName()));
+                        new PAG_Leave().commit(arena, player, new String[0]);
                     }
 
                 }

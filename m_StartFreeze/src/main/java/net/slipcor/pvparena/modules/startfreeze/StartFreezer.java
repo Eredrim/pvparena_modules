@@ -94,10 +94,11 @@ class StartFreezer extends ArenaRunnable {
             return;
         }
 
-        if (Bukkit.getPlayer(sPlayer) != null) {
-            final ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(sPlayer);
+        Player player = Bukkit.getPlayer(sPlayer);
+        if (player != null) {
+            final ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
             if (arenaPlayer.getArena() == null) {
-                Arena.pmsg(Bukkit.getPlayer(sPlayer), message);
+                Arena.pmsg(player, message);
             } else {
                 arenaPlayer.getArena().msg(arenaPlayer.getPlayer(), message);
             }

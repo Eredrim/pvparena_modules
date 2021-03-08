@@ -161,7 +161,7 @@ public class TempPerms extends ArenaModule implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onClassChange(final PAPlayerClassChangeEvent event) {
         if (event.getArena() != null && event.getArena().equals(this.arena)) {
-            final ArenaPlayer aPlayer = ArenaPlayer.parsePlayer(event.getPlayer().getName());
+            final ArenaPlayer aPlayer = ArenaPlayer.fromPlayer(event.getPlayer());
             if (this.arena != null && this.arena.getEveryone().contains(aPlayer)) {
                 this.removePermissions(event.getPlayer());
 
@@ -183,12 +183,12 @@ public class TempPerms extends ArenaModule implements Listener {
     }
 
     @Override
-    public void parseJoin(final CommandSender player, final ArenaTeam team) {
+    public void parseJoin(final Player player, final ArenaTeam team) {
         if (!this.listening) {
             Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
             this.listening = true;
         }
-        final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
+        final ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
         this.setPermissions(this.arena, ap, this.getTempPerms(this.arena, DEFAULT_NODE), this.getTempPerms(this.arena, ap.getArenaTeam().getName()));
     }
 
@@ -265,7 +265,7 @@ public class TempPerms extends ArenaModule implements Listener {
      * @param p the player to reset
      */
     void removePermissions(final Player p) {
-        final ArenaPlayer player = ArenaPlayer.parsePlayer(p.getName());
+        final ArenaPlayer player = ArenaPlayer.fromPlayer(p);
         if (player == null || player.getTempPermissions() == null) {
             return;
         }

@@ -83,7 +83,7 @@ class RealSpectateListener implements Listener {
         }
 
         final Player player = (Player) event.getEntity();
-        final ArenaPlayer aPlayer = ArenaPlayer.parsePlayer(player.getName());
+        final ArenaPlayer aPlayer = ArenaPlayer.fromPlayer(player);
 
         if (rs.getArena() == null || !rs.getArena().equals(aPlayer.getArena())) {
             return;

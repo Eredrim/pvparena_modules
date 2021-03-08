@@ -47,7 +47,7 @@ class MoveChecker implements Listener {
     public void onMove(final PlayerMoveEvent event) {
 
         if (this.active && this.arena.isFightInProgress()) {
-            final ArenaPlayer player = ArenaPlayer.parsePlayer(event.getPlayer().getName());
+            final ArenaPlayer player = ArenaPlayer.fromPlayer(event.getPlayer());
             if (this.arena != player.getArena()) {
                 return;
             }

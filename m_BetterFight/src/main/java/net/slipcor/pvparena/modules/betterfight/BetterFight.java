@@ -317,8 +317,7 @@ public class BetterFight extends ArenaModule {
         final String msg = (String) arena.getArenaConfig().getUnsafe("modules.betterfight.messages.m" + killcount);
 
         final PAGoalEvent scoreEvent = new PAGoalEvent(arena, null, "BetterFight",
-                "score:" + p.getName() + ':' + ArenaPlayer.parsePlayer(p.getName()).getArenaTeam().getName() +
-                        ':' + killcount);
+                String.format("score:%s:%s:%d", p.getName(), ArenaPlayer.fromPlayer(p).getArenaTeam().getName(), killcount));
         Bukkit.getPluginManager().callEvent(scoreEvent);
 
         // content[X].contains(score) => "score:player:team:value"

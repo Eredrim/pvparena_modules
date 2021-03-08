@@ -147,9 +147,8 @@ public class Maps extends ArenaModule {
     }
 
     @Override
-    public void parseJoin(final CommandSender sender, final ArenaTeam team) {
+    public void parseJoin(final Player player, final ArenaTeam team) {
         trySetup();
-        final Player player = (Player) sender;
         final HashSet<String> maps;
         if (mappings.isEmpty()) {
             maps = new HashSet<>();

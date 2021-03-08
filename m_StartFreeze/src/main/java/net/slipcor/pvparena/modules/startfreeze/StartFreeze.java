@@ -134,7 +134,7 @@ public class StartFreeze extends ArenaModule implements Listener {
     @EventHandler
     public void onPlayerMove(final PlayerMoveEvent event) {
         final Player p = event.getPlayer();
-        final ArenaPlayer ap = ArenaPlayer.parsePlayer(p.getName());
+        final ArenaPlayer ap = ArenaPlayer.fromPlayer(p);
         if (ap.getArena() == null || !arena.equals(ap.getArena())) {
             return;
         }

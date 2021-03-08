@@ -30,7 +30,7 @@ class BattleRunnable extends BukkitRunnable {
         trace("BattleRunnable commiting");
         try {
             for (final Player p : Bukkit.getServer().getOnlinePlayers()) {
-                final ArenaPlayer ap = ArenaPlayer.parsePlayer(p.getName());
+                final ArenaPlayer ap = ArenaPlayer.fromPlayer(p);
 
                 final Arena arena = ArenaManager.getArenaByRegionLocation(new PABlockLocation(p.getLocation()));
 

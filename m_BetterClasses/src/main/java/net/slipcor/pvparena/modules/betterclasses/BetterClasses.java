@@ -62,10 +62,10 @@ public class BetterClasses extends ArenaModule {
         debug(arena, player, "gmax: "+globalmax);
 
         if (!(max < 1 && globalmax < 1)) {
-            final ArenaTeam team = ArenaPlayer.parsePlayer(player.getName()).getArenaTeam();
+            final ArenaTeam team = ArenaPlayer.fromPlayer(player).getArenaTeam();
 
             if (team == null) {
-                debug(arena, player, "arenaTeam NULL: "+player.getName());
+                debug(arena, player, "arenaTeam NULL");
                 return true;
             }
             int globalsum = 0;
@@ -370,7 +370,7 @@ public class BetterClasses extends ArenaModule {
         if (!superMap.containsKey(arena)) {
             init_map();
         }
-        final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
+        final ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
         debug(player, "respawning player " + ap);
         final Map<ArenaClass, HashSet<PotionEffect>> map = superMap.get(arena);
         if (map == null) {
@@ -425,7 +425,7 @@ public class BetterClasses extends ArenaModule {
 
         try {
             needed = (Integer) arena.getArenaConfig().getUnsafe("modules.betterclasses.neededEXPLevel." + className);
-            final PlayerState state = ArenaPlayer.parsePlayer(player.getName()).getState();
+            final PlayerState state = ArenaPlayer.fromPlayer(player).getState();
 
             final Field value = state.getClass().getDeclaredField("explevel");
             value.setAccessible(true);
@@ -456,7 +456,7 @@ public class BetterClasses extends ArenaModule {
         if (!superMap.containsKey(arena)) {
             init_map();
         }
-        final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
+        final ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
         debug(player, "respawning player " + ap);
 
         final ArenaClass c = ap.getArenaClass();
@@ -511,7 +511,7 @@ public class BetterClasses extends ArenaModule {
     @Override
     public void parseClassChange(Player player, ArenaClass aClass) {
         debug(arena, "BetterClass handling class change!");
-        ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(player.getName());
+        ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
         if (playerSwitches.containsKey(arenaPlayer)) {
             int value = playerSwitches.get(arenaPlayer);
             if (value-- > 0) {

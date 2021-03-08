@@ -100,7 +100,7 @@ public class DuelManager extends ArenaModule {
                     return;
                 }
 
-                ArenaPlayer ap = ArenaPlayer.parsePlayer(p.getName());
+                ArenaPlayer ap = ArenaPlayer.fromPlayer(p);
                 if (ap.getArena() != null) {
                     arena.msg(sender, Language.parse(MSG.MODULE_DUEL_BUSY, args[1]));
                     return;
@@ -185,7 +185,7 @@ public class DuelManager extends ArenaModule {
                         Language.parse(MSG.ERROR_FIGHT_IN_PROGRESS));
             }
         } else if ("decline".equals(args[0].toLowerCase()) && duelSender != null) {
-            ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(duelSender);
+            ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(duelSender);
             if (arenaPlayer != null && arenaPlayer.getPlayer() != null){
                 arena.msg(arenaPlayer.getPlayer(), Language.parse(MSG.MODULE_DUEL_DECLINED_SENDER));
             }
@@ -206,7 +206,7 @@ public class DuelManager extends ArenaModule {
             if (ap == null || ap.getName().equals(player.getName())) {
                 continue;
             }
-            if (ArenaPlayer.parsePlayer(player.getName()).getStatus() == ArenaPlayer.Status.LOUNGE) {
+            if (ArenaPlayer.fromPlayer(player).getStatus() == ArenaPlayer.Status.LOUNGE) {
                 arena.msg(ap.getPlayer(), Language.parse(MSG.MODULE_DUEL_CANCELLED));
             }
             if (amount > 0) {
@@ -214,7 +214,7 @@ public class DuelManager extends ArenaModule {
                     if (mod instanceof VaultSupport) {
                         VaultSupport sup = (VaultSupport) mod;
 
-                        if (ArenaPlayer.parsePlayer(player.getName()).getStatus() == ArenaPlayer.Status.LOUNGE) {
+                        if (ArenaPlayer.fromPlayer(player).getStatus() == ArenaPlayer.Status.LOUNGE) {
                             sup.tryRefund(this, ap.getPlayer(), amount, true);
                             sup.tryRefund(this, player, amount, true);
                             amount = 0;

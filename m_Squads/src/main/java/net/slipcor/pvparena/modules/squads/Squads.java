@@ -184,7 +184,7 @@ public class Squads extends ArenaModule {
 
     @Override
     public boolean onPlayerInteract(final PlayerInteractEvent event) {
-        final ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(event.getPlayer().getName());
+        final ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(event.getPlayer());
 
         if (!this.arena.equals(arenaPlayer.getArena())) {
             return false;
@@ -286,14 +286,14 @@ public class Squads extends ArenaModule {
     }
 
     @Override
-    public void parseJoin(final CommandSender sender, final ArenaTeam team) {
+    public void parseJoin(final Player player, final ArenaTeam team) {
         String autoSquadName = this.arena.getArenaConfig().getString(Config.CFG.MODULES_SQUADS_AUTOSQUAD);
         try {
             ArenaSquad autoSquad = this.getArenaSquads().stream()
                     .filter(sq -> sq.getName().equalsIgnoreCase(autoSquadName))
                     .findFirst()
                     .orElseThrow(IllegalArgumentException::new);
-            autoSquad.add(ArenaPlayer.parsePlayer(sender.getName()));
+            autoSquad.add(ArenaPlayer.fromPlayer(player));
         } catch (Exception ignored) {
 
         }
@@ -303,7 +303,7 @@ public class Squads extends ArenaModule {
     public void parseRespawn(final Player player, final ArenaTeam team,
                              final DamageCause cause, final Entity damager) {
 
-        final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
+        final ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
         for (final ArenaSquad squad : this.getArenaSquads()) {
             if (squad.contains(ap) && squad.getCount() > 1) {
                 int pos = new Random().nextInt(squad.getCount() - 1);

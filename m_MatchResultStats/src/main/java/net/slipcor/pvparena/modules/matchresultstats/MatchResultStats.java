@@ -156,11 +156,11 @@ public class MatchResultStats extends ArenaModule {
     }
 
     @Override
-    public void parseJoin(final CommandSender sender, final ArenaTeam team) {
+    public void parseJoin(final Player player, final ArenaTeam team) {
         if (data == null) {
             data = new PVPData(arena);
         }
-        data.join(sender.getName(), team.getName());
+        data.join(player.getName(), team.getName());
     }
 
     @Override

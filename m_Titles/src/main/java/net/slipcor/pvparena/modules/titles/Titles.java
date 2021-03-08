@@ -159,13 +159,13 @@ public class Titles extends ArenaModule {
     }
 
     @Override
-    public void parseJoin(final CommandSender sender, final ArenaTeam team) {
+    public void parseJoin(final Player player, final ArenaTeam team) {
 
-        debug(sender, "parseJoin ... ");
+        debug(player, "parseJoin ... ");
 
         if (TeamManager.countPlayersInTeams(arena) < 2) {
             final String arenaname =
-                    PVPArena.hasOverridePerms(sender) ? arena.getName() : ArenaManager.getIndirectArenaName(arena);
+                    PVPArena.hasOverridePerms(player) ? arena.getName() : ArenaManager.getIndirectArenaName(arena);
             Title.announce(arena, Title.type.ADVERT, Language
                     .parse(arena, CFG.MSG_STARTING, arenaname +
                             ChatColor.valueOf(arena.getArenaConfig().getString(
@@ -175,7 +175,7 @@ public class Titles extends ArenaModule {
         if (arena.isFreeForAll()) {
             Title.announce(arena, Title.type.JOIN,
                     arena.getArenaConfig().getString(CFG.MSG_PLAYERJOINED)
-                            .replace("%1%", sender.getName() +
+                            .replace("%1%", player.getName() +
                                     ChatColor.valueOf(arena.getArenaConfig().getString(
                                             CFG.MODULES_TITLES_COLOR))));
         } else {
@@ -183,7 +183,7 @@ public class Titles extends ArenaModule {
                     arena,
                     Title.type.JOIN,
                     arena.getArenaConfig().getString(CFG.MSG_PLAYERJOINEDTEAM)
-                            .replace("%1%", sender.getName() +
+                            .replace("%1%", player.getName() +
                                     ChatColor.valueOf(arena.getArenaConfig().getString(
                                             CFG.MODULES_TITLES_COLOR)))
                             .replace("%2%", team.getColoredName() +

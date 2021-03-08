@@ -22,7 +22,7 @@ public class RespawnRelay extends ArenaModule {
     private class RelayListener implements Listener {
         @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
         public void onAsyncChat(final AsyncPlayerChatEvent event) {
-            final ArenaPlayer player = ArenaPlayer.parsePlayer(event.getPlayer().getName());
+            final ArenaPlayer player = ArenaPlayer.fromPlayer(event.getPlayer());
 
             if (player.getArena() == null) {
                 return;

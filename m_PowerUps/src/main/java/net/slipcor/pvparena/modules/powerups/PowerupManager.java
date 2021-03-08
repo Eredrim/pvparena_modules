@@ -346,7 +346,7 @@ public class PowerupManager extends ArenaModule implements Listener {
             return;
         }
         final Player player = (Player) event.getEntity();
-        final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
+        final ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
         if (!arena.equals(ap.getArena())) {
             return;
         }

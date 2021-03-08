@@ -201,7 +201,7 @@ public class VaultSupport extends ArenaModule implements Listener {
 
         final Player player = (Player) sender;
 
-        ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
+        ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
 
         // /pa bet [name] [amount]
         if (ap.getArenaTeam() != null) {
@@ -224,7 +224,7 @@ public class VaultSupport extends ArenaModule implements Listener {
 
             final Player p = Bukkit.getPlayer(args[1]);
             if (p != null) {
-                ap = ArenaPlayer.parsePlayer(p.getName());
+                ap = ArenaPlayer.fromPlayer(p);
             }
             if (p == null && arena.getTeam(args[1]) == null
                     && ap.getArenaTeam() == null) {
@@ -582,12 +582,12 @@ public class VaultSupport extends ArenaModule implements Listener {
     }
 
     @Override
-    public void parseJoin(final CommandSender sender, final ArenaTeam team) {
+    public void parseJoin(final Player player, final ArenaTeam team) {
         final int entryfee = arena.getArenaConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE, 0);
         if (entryfee > 0) {
             if (economy != null) {
-                economy.withdrawPlayer(sender.getName(), entryfee);
-                arena.msg(sender,
+                economy.withdrawPlayer(player.getName(), entryfee);
+                arena.msg(player,
                         Language.parse(MSG.MODULE_VAULT_JOINPAY, economy.format(entryfee)));
                 pot += entryfee;
             }
@@ -695,7 +695,7 @@ public class VaultSupport extends ArenaModule implements Listener {
         if (player == null) {
             return;
         }
-        final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
+        final ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
         if (ap == null) {
             return;
         }

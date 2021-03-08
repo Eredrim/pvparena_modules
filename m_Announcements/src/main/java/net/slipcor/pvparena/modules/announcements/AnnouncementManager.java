@@ -151,18 +151,18 @@ public class AnnouncementManager extends ArenaModule {
     }
 
     @Override
-    public void parseJoin(final CommandSender sender, final ArenaTeam team) {
+    public void parseJoin(final Player player, final ArenaTeam team) {
 
-        debug(sender, "parseJoin ... ");
-        ArenaPlayer ap = ArenaPlayer.parsePlayer(sender.getName());
+        debug(player, "parseJoin ... ");
+        ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
         if (ap.getStatus() == ArenaPlayer.Status.WARM || !WarmupJoin.didNotAnnounceYet(arena)) {
-            debug(sender, "skipping because we already did!");
+            debug(player, "skipping because we already did!");
             return;
         }
 
         if (TeamManager.countPlayersInTeams(arena) < 2) {
             final String arenaname =
-                    PVPArena.hasOverridePerms(sender) ? arena.getName() : ArenaManager.getIndirectArenaName(arena);
+                    PVPArena.hasOverridePerms(player) ? arena.getName() : ArenaManager.getIndirectArenaName(arena);
             Announcement.announce(arena, Announcement.type.ADVERT, Language
                     .parse(arena, CFG.MSG_STARTING, arenaname +
                             ChatColor.valueOf(arena.getArenaConfig().getString(
@@ -172,7 +172,7 @@ public class AnnouncementManager extends ArenaModule {
         if (arena.isFreeForAll()) {
             Announcement.announce(arena, Announcement.type.JOIN,
                     arena.getArenaConfig().getString(CFG.MSG_PLAYERJOINED)
-                            .replace("%1%", sender.getName() +
+                            .replace("%1%", player.getName() +
                                     ChatColor.valueOf(arena.getArenaConfig().getString(
                                             CFG.MODULES_ANNOUNCEMENTS_COLOR))));
         } else {
@@ -180,7 +180,7 @@ public class AnnouncementManager extends ArenaModule {
                     arena,
                     Announcement.type.JOIN,
                     arena.getArenaConfig().getString(CFG.MSG_PLAYERJOINEDTEAM)
-                            .replace("%1%", sender.getName() +
+                            .replace("%1%", player.getName() +
                                     ChatColor.valueOf(arena.getArenaConfig().getString(
                                             CFG.MODULES_ANNOUNCEMENTS_COLOR)))
                             .replace("%2%", team.getColoredName() +

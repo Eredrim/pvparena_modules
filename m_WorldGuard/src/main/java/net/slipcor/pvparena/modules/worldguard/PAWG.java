@@ -107,7 +107,7 @@ public class PAWG extends ArenaModule {
                 region.getMaximumPoint().getBlockY(),
                 region.getMaximumPoint().getBlockZ());
 
-        final ArenaPlayer ap = ArenaPlayer.parsePlayer(p.getName());
+        final ArenaPlayer ap = ArenaPlayer.fromPlayer(p);
         ap.setSelection(loc1, false);
         ap.setSelection(loc2, true);
 

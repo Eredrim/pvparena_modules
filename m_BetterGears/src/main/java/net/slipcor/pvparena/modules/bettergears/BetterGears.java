@@ -301,7 +301,7 @@ public class BetterGears extends ArenaModule {
 
     @Override
     public void lateJoin(final Player player) {
-        equip(ArenaPlayer.parsePlayer(player.getName()));
+        equip(ArenaPlayer.fromPlayer(player));
     }
 
     @Override
@@ -312,7 +312,7 @@ public class BetterGears extends ArenaModule {
 
     @Override
     public void parseClassChange(Player player, ArenaClass arenaClass) {
-        equip(ArenaPlayer.parsePlayer(player.getName()));
+        equip(ArenaPlayer.fromPlayer(player));
     }
 
     @Override
@@ -347,7 +347,7 @@ public class BetterGears extends ArenaModule {
     @Override
     public void parseRespawn(final Player player, final ArenaTeam team, final DamageCause cause,
                              final Entity damager) {
-        final ArenaPlayer ap = ArenaPlayer.parsePlayer(player.getName());
+        final ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
         if (arena.getArenaConfig().getBoolean(CFG.PLAYER_REFILLINVENTORY)) {
             new EquipRunnable(ap, this);
         }

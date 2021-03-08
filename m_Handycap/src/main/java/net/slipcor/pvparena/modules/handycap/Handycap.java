@@ -91,7 +91,7 @@ public class Handycap extends ArenaModule {
         }
 
         double maxHealth = 0;
-        ArenaTeam team = ArenaPlayer.parsePlayer(player.getName()).getArenaTeam();
+        ArenaTeam team = ArenaPlayer.fromPlayer(player).getArenaTeam();
 
         for (ArenaTeam at : handycapped.keySet()) {
             if (handycapped.get(at) == max) {

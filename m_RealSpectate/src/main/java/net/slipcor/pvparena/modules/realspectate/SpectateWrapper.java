@@ -21,7 +21,7 @@ class SpectateWrapper {
     public SpectateWrapper(final Player spectator, final Player fighter, final RealSpectateListener listener) {
         suspect = fighter;
         spectators.add(spectator);
-        ArenaPlayer.parsePlayer(spectator.getName()).setTelePass(true);
+        ArenaPlayer.fromPlayer(spectator).setTelePass(true);
         this.listener = listener;
     }
 

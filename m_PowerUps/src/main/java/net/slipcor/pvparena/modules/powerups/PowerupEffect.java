@@ -215,7 +215,7 @@ class PowerupEffect {
                 }
                 return true;
             } else if (type == PowerupType.LIVES) {
-                final ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(player.getName());
+                final ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
                 final int lives = WorkflowManager.handleGetLives(arenaPlayer.getArena(), arenaPlayer);
                 if (lives + diff > 0) {
                     arenaPlayer.getPlayer().damage(1000.0d);

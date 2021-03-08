@@ -64,7 +64,7 @@ public class Spectate extends ArenaModule {
     public void commitSpectate(final Player player) {
         debug(player, "committing spectate");
 
-        final ArenaPlayer arenaPlayer = ArenaPlayer.parsePlayer(player.getName());
+        final ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
         if (arena.equals(arenaPlayer.getArena())) {
             arena.msg(player, Language.parse(MSG.ERROR_ARENA_ALREADY_PART_OF, ArenaManager.getIndirectArenaName(arena)));
             return;

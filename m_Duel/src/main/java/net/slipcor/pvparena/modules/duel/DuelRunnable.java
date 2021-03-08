@@ -37,8 +37,8 @@ class DuelRunnable implements Runnable {
                 && dm.getArena().getArenaConfig().getBoolean(CFG.MODULES_DUEL_FORCESTART)) {
             final PAI_Ready cmd = new PAI_Ready();
             try {
-                if (dm.getArena().equals(ArenaPlayer.parsePlayer(hoster).getArena()) &&
-                        dm.getArena().equals(ArenaPlayer.parsePlayer(player).getArena())) {
+                if (dm.getArena().equals(ArenaPlayer.fromPlayer(hoster).getArena()) &&
+                        dm.getArena().equals(ArenaPlayer.fromPlayer(player).getArena())) {
                     cmd.commit(dm.getArena(), Bukkit.getPlayer(hoster), new String[0]);
                     cmd.commit(dm.getArena(), Bukkit.getPlayer(player), new String[0]);
                     dm.getArena().countDown();
