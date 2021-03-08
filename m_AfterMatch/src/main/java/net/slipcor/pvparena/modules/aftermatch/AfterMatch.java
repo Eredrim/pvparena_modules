@@ -35,11 +35,11 @@ public class AfterMatch extends ArenaModule {
 
     @Override
     public String version() {
-        return getClass().getPackage().getImplementationVersion();
+        return this.getClass().getPackage().getImplementationVersion();
     }
 
     public void afterMatch() {
-        for (final ArenaTeam t : arena.getTeams()) {
+        for (final ArenaTeam t : this.arena.getTeams()) {
             for (final ArenaPlayer arenaPlayer : t.getTeamMembers()) {
                 if (arenaPlayer.getStatus() != Status.FIGHT) {
                     continue;
@@ -50,15 +50,17 @@ public class AfterMatch extends ArenaModule {
                 }
             }
         }
-        arena.broadcast(Language.parse(MSG.MODULE_AFTERMATCH_STARTING));
-        this.arena.getGoal().setPlayerLives(0);
-        aftermatch = true;
+
+        this.arena.broadcast(Language.parse(MSG.MODULE_AFTERMATCH_STARTING));
+        this.arena.getGoal().setPlayersLives(0);
+        this.aftermatch = true;
+
         try {
-            afterTask.cancel();
+            this.afterTask.cancel();
         } catch (final Exception e) {
 
         }
-        afterTask = null;
+        this.afterTask = null;
     }
 
     @Override
@@ -101,45 +103,45 @@ public class AfterMatch extends ArenaModule {
         // !am death 4
 
         if (!PVPArena.hasAdminPerms(sender)
-                && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(
+                && !PVPArena.hasCreatePerms(sender, this.arena)) {
+            this.arena.msg(
                     sender,
                     Language.parse(MSG.ERROR_NOPERM,
                             Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
             return;
         }
 
-        if (!AbstractArenaCommand.argCountValid(sender, arena, args, new Integer[]{2, 3})) {
+        if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2, 3})) {
             return;
         }
 
         if ("!am".equals(args[0]) || "aftermatch".equals(args[0])) {
             if (args.length == 2) {
                 if ("off".equals(args[1])) {
-                    arena.getArenaConfig().set(CFG.MODULES_AFTERMATCH_AFTERMATCH, args[1]);
-                    arena.getArenaConfig().save();
-                    arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), args[1]));
+                    this.arena.getArenaConfig().set(CFG.MODULES_AFTERMATCH_AFTERMATCH, args[1]);
+                    this.arena.getArenaConfig().save();
+                    this.arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), args[1]));
                     return;
                 }
-                arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[1], "off"));
+                this.arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[1], "off"));
                 return;
             }
             final int i;
             try {
                 i = Integer.parseInt(args[2]);
             } catch (final Exception e) {
-                arena.msg(sender,
+                this.arena.msg(sender,
                         Language.parse(MSG.ERROR_NOT_NUMERIC, args[2]));
                 return;
             }
             if ("time".equals(args[1]) || "death".equals(args[1])) {
-                arena.getArenaConfig().set(CFG.MODULES_AFTERMATCH_AFTERMATCH, args[1] + ':' + i);
-                arena.getArenaConfig().save();
-                arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), args[1] + ':' + i));
+                this.arena.getArenaConfig().set(CFG.MODULES_AFTERMATCH_AFTERMATCH, args[1] + ':' + i);
+                this.arena.getArenaConfig().save();
+                this.arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), args[1] + ':' + i));
                 return;
             }
 
-            arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[1], "time | death"));
+            this.arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[1], "time | death"));
         }
     }
 
@@ -155,9 +157,9 @@ public class AfterMatch extends ArenaModule {
     @Override
     public void displayInfo(final CommandSender player) {
         player.sendMessage("active: "
-                + StringParser.colorVar(!"off".equals(arena.getArenaConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH)))
+                + StringParser.colorVar(!"off".equals(this.arena.getArenaConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH)))
                 + '('
-                + StringParser.colorVar(arena.getArenaConfig()
+                + StringParser.colorVar(this.arena.getArenaConfig()
                 .getString(CFG.MODULES_AFTERMATCH_AFTERMATCH)) + ')');
     }
 
@@ -169,20 +171,20 @@ public class AfterMatch extends ArenaModule {
     @Override
     public void parsePlayerDeath(final Player player,
                                  final EntityDamageEvent cause) {
-        final String pu = arena.getArenaConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH);
+        final String pu = this.arena.getArenaConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH);
 
-        if ("off".equals(pu) || aftermatch) {
+        if ("off".equals(pu) || this.aftermatch) {
             return;
         }
 
         final String[] ss = pu.split(":");
-        if (pu.startsWith("time") || afterTask != null) {
+        if (pu.startsWith("time") || this.afterTask != null) {
             return;
         }
 
         int i = Integer.parseInt(ss[1]);
 
-        for (final ArenaTeam t : arena.getTeams()) {
+        for (final ArenaTeam t : this.arena.getTeams()) {
             for (final ArenaPlayer p : t.getTeamMembers()) {
                 if (p.getStatus() != Status.FIGHT) {
                     continue;
@@ -193,27 +195,27 @@ public class AfterMatch extends ArenaModule {
             }
         }
 
-        afterTask = null;
+        this.afterTask = null;
 
-        afterMatch();
+        this.afterMatch();
     }
 
     @Override
     public void reset(final boolean force) {
-        if (afterTask != null) {
-            afterTask.cancel();
-            afterTask = null;
+        if (this.afterTask != null) {
+            this.afterTask.cancel();
+            this.afterTask = null;
         }
-        aftermatch = false;
+        this.aftermatch = false;
     }
 
     @Override
     public void parseStart() {
-        final String pu = arena.getArenaConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH);
+        final String pu = this.arena.getArenaConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH);
 
-        if (afterTask != null) {
-            afterTask.cancel();
-            afterTask = null;
+        if (this.afterTask != null) {
+            this.afterTask.cancel();
+            this.afterTask = null;
         }
 
         final int i;
@@ -225,10 +227,10 @@ public class AfterMatch extends ArenaModule {
             return;
         }
 
-        debug("using aftermatch : {}:{}", arena.getArenaConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH), i);
+        debug("using aftermatch : {}:{}", this.arena.getArenaConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH), i);
         if (i > 0) {
             debug("aftermatch time trigger!");
-            afterTask = new AfterRunnable(this, i);
+            this.afterTask = new AfterRunnable(this, i);
         }
     }
 }
