@@ -395,9 +395,9 @@ public class VaultSupport extends ArenaModule implements Listener {
         debug(player, "giving Vault rewards to Player {}", player);
         int winners = 0;
         for (final ArenaPlayer arenaPlayer : arena.getFighters()) {
-            debug(arenaPlayer.getPlayer(), "- checking fighter {}", arenaPlayer.getName());
+            debug(arenaPlayer, "- checking fighter {}", arenaPlayer.getName());
             if (arenaPlayer.getStatus() != null && arenaPlayer.getStatus() == Status.FIGHT) {
-                debug(arenaPlayer.getPlayer(), "-- added!");
+                debug(arenaPlayer, "-- added!");
                 winners++;
             }
         }

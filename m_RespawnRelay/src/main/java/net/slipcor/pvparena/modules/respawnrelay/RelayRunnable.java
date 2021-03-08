@@ -33,7 +33,7 @@ public class RelayRunnable extends ArenaRunnable {
 
     @Override
     protected void commit() {
-        debug(ap.getPlayer(), "RelayRunnable commiting");
+        debug(ap, "RelayRunnable commiting");
 
         Player maybePlayer = this.maybePlayer;
 
