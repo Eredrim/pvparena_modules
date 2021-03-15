@@ -3,7 +3,7 @@ package net.slipcor.pvparena.modules.ssp;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.arena.ArenaPlayer.Status;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.arena.ArenaTeam;
 import net.slipcor.pvparena.classes.PALocation;
 import net.slipcor.pvparena.classes.PASpawn;
@@ -66,7 +66,7 @@ public class SinglePlayerSupport extends ArenaModule {
         arenaPlayer.setLocation(new PALocation(arenaPlayer.getPlayer().getLocation()));
 
         arenaPlayer.setArena(arena);
-        arenaPlayer.setStatus(Status.FIGHT);
+        arenaPlayer.setStatus(PlayerStatus.FIGHT);
         team.add(arenaPlayer);
         final Set<PASpawn> spawns = new HashSet<>();
         if (arena.getArenaConfig().getBoolean(CFG.GENERAL_CLASSSPAWN)) {

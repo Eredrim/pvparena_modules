@@ -3,7 +3,7 @@ package net.slipcor.pvparena.modules.squads;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.arena.ArenaPlayer.Status;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.arena.ArenaTeam;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
@@ -199,7 +199,7 @@ public class Squads extends ArenaModule {
             return false;
         }
 
-        List<Status> disabledStatusList = asList(Status.DEAD, Status.LOST, Status.NULL, Status.WARM, Status.WATCH);
+        List<PlayerStatus> disabledStatusList = asList(PlayerStatus.DEAD, PlayerStatus.LOST, PlayerStatus.NULL, PlayerStatus.WARM, PlayerStatus.WATCH);
         if (disabledStatusList.contains(arenaPlayer.getStatus())) {
             return false;
         }

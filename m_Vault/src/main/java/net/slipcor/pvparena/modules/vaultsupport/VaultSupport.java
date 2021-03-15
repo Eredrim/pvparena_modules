@@ -7,7 +7,7 @@ import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaClass;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.arena.ArenaPlayer.Status;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.arena.ArenaTeam;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config.CFG;
@@ -396,7 +396,7 @@ public class VaultSupport extends ArenaModule implements Listener {
         int winners = 0;
         for (final ArenaPlayer arenaPlayer : arena.getFighters()) {
             debug(arenaPlayer, "- checking fighter {}", arenaPlayer.getName());
-            if (arenaPlayer.getStatus() != null && arenaPlayer.getStatus() == Status.FIGHT) {
+            if (arenaPlayer.getStatus() != null && arenaPlayer.getStatus() == PlayerStatus.FIGHT) {
                 debug(arenaPlayer, "-- added!");
                 winners++;
             }
@@ -702,8 +702,8 @@ public class VaultSupport extends ArenaModule implements Listener {
         if (ap.getStatus() == null || force) {
             return;
         }
-        if (ap.getStatus() == Status.LOUNGE ||
-                ap.getStatus() == Status.READY) {
+        if (ap.getStatus() == PlayerStatus.LOUNGE ||
+                ap.getStatus() == PlayerStatus.READY) {
             final int entryfee = arena.getArenaConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE);
             if (entryfee < 1) {
                 return;

@@ -2,7 +2,7 @@ package net.slipcor.pvparena.modules.playerfinder;
 
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.arena.ArenaPlayer.Status;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
@@ -86,7 +86,7 @@ public class PlayerFinder extends ArenaModule implements Listener {
                 final Player innerPlayer = (Player) e;
                 final ArenaPlayer ap = ArenaPlayer.fromPlayer(innerPlayer);
 
-                if (ap.getStatus() != Status.FIGHT) {
+                if (ap.getStatus() != PlayerStatus.FIGHT) {
                     continue;
                 }
 

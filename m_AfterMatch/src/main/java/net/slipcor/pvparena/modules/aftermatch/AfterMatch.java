@@ -3,7 +3,7 @@ package net.slipcor.pvparena.modules.aftermatch;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.arena.ArenaPlayer.Status;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.arena.ArenaTeam;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
@@ -41,7 +41,7 @@ public class AfterMatch extends ArenaModule {
     public void afterMatch() {
         for (final ArenaTeam t : this.arena.getTeams()) {
             for (final ArenaPlayer arenaPlayer : t.getTeamMembers()) {
-                if (arenaPlayer.getStatus() != Status.FIGHT) {
+                if (arenaPlayer.getStatus() != PlayerStatus.FIGHT) {
                     continue;
                 }
                 final Player player = arenaPlayer.getPlayer();
@@ -186,7 +186,7 @@ public class AfterMatch extends ArenaModule {
 
         for (final ArenaTeam t : this.arena.getTeams()) {
             for (final ArenaPlayer p : t.getTeamMembers()) {
-                if (p.getStatus() != Status.FIGHT) {
+                if (p.getStatus() != PlayerStatus.FIGHT) {
                     continue;
                 }
                 if (--i < 0) {

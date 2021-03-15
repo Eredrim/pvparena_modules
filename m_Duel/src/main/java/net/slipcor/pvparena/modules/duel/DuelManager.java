@@ -3,6 +3,7 @@ package net.slipcor.pvparena.modules.duel;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.commands.PAG_Leave;
 import net.slipcor.pvparena.core.Language;
@@ -206,7 +207,7 @@ public class DuelManager extends ArenaModule {
             if (ap == null || ap.getName().equals(player.getName())) {
                 continue;
             }
-            if (ArenaPlayer.fromPlayer(player).getStatus() == ArenaPlayer.Status.LOUNGE) {
+            if (ArenaPlayer.fromPlayer(player).getStatus() == PlayerStatus.LOUNGE) {
                 arena.msg(ap.getPlayer(), Language.parse(MSG.MODULE_DUEL_CANCELLED));
             }
             if (amount > 0) {
@@ -214,7 +215,7 @@ public class DuelManager extends ArenaModule {
                     if (mod instanceof VaultSupport) {
                         VaultSupport sup = (VaultSupport) mod;
 
-                        if (ArenaPlayer.fromPlayer(player).getStatus() == ArenaPlayer.Status.LOUNGE) {
+                        if (ArenaPlayer.fromPlayer(player).getStatus() == PlayerStatus.LOUNGE) {
                             sup.tryRefund(this, ap.getPlayer(), amount, true);
                             sup.tryRefund(this, player, amount, true);
                             amount = 0;

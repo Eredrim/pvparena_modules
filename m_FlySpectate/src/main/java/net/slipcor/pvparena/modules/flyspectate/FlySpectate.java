@@ -5,6 +5,7 @@ import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.ArenaTeam;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.classes.PALocation;
 import net.slipcor.pvparena.commands.PAG_Leave;
 import net.slipcor.pvparena.core.Config.CFG;
@@ -101,7 +102,7 @@ public class FlySpectate extends ArenaModule {
             player.setFlying(true);
             player.setCollidable(false);
             this.arena.msg(player, Language.parse(MSG.NOTICE_WELCOME_SPECTATOR));
-            arenaPlayer.setStatus(ArenaPlayer.Status.WATCH);
+            arenaPlayer.setStatus(PlayerStatus.WATCH);
             arenaPlayer.setTeleporting(false);
         }, delay);
     }

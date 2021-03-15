@@ -3,7 +3,7 @@ package net.slipcor.pvparena.modules.blockdissolve;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.arena.ArenaPlayer.Status;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.loadables.ArenaModuleManager;
 import org.bukkit.Bukkit;
@@ -52,7 +52,7 @@ class MoveChecker implements Listener {
                 return;
             }
 
-            if (this.arena.getPlayedSeconds() > this.startSeconds && player.getStatus() == Status.FIGHT) {
+            if (this.arena.getPlayedSeconds() > this.startSeconds && player.getStatus() == PlayerStatus.FIGHT) {
 
 
                 this.checkBlock(event.getPlayer().getLocation().clone().subtract(0, 1, 0));
@@ -119,7 +119,7 @@ class MoveChecker implements Listener {
             public void run() {
                 if (MoveChecker.this.active) {
                     for (ArenaPlayer arenaPlayer : MoveChecker.this.arena.getFighters()) {
-                        if (arenaPlayer.getStatus() == Status.FIGHT) {
+                        if (arenaPlayer.getStatus() == PlayerStatus.FIGHT) {
                             MoveChecker.this.checkBlock(arenaPlayer.getPlayer().getLocation().clone().subtract(0, 1, 0));
                         }
                     }

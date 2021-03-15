@@ -4,6 +4,7 @@ import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.ArenaTeam;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config.CFG;
@@ -155,7 +156,7 @@ public class AnnouncementManager extends ArenaModule {
 
         debug(player, "parseJoin ... ");
         ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
-        if (ap.getStatus() == ArenaPlayer.Status.WARM || !WarmupJoin.didNotAnnounceYet(arena)) {
+        if (ap.getStatus() == PlayerStatus.WARM || !WarmupJoin.didNotAnnounceYet(arena)) {
             debug(player, "skipping because we already did!");
             return;
         }

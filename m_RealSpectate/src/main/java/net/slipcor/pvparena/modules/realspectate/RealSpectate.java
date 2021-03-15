@@ -4,7 +4,7 @@ package net.slipcor.pvparena.modules.realspectate;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.arena.ArenaPlayer.Status;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.arena.ArenaTeam;
 import net.slipcor.pvparena.classes.PALocation;
 import net.slipcor.pvparena.core.Language.MSG;
@@ -52,7 +52,7 @@ public class RealSpectate extends ArenaModule {
         arenaPlayer.setLocation(new PALocation(arenaPlayer.getPlayer().getLocation()));
 
         arenaPlayer.setArena(arena);
-        arenaPlayer.setStatus(Status.WATCH);
+        arenaPlayer.setStatus(PlayerStatus.WATCH);
 
         if (arenaPlayer.getState() == null) {
 

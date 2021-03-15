@@ -3,7 +3,7 @@ package net.slipcor.pvparena.modules.redstone;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.arena.ArenaPlayer.Status;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.arena.ArenaTeam;
 import net.slipcor.pvparena.classes.PABlockLocation;
 import net.slipcor.pvparena.listeners.PlayerListener;
@@ -64,7 +64,7 @@ public class RedStoneTriggers extends ArenaModule implements Listener {
                     continue;
                 }
                 for (final ArenaPlayer arenaPlayer : team.getTeamMembers()) {
-                    if (arenaPlayer.getStatus() == Status.FIGHT) {
+                    if (arenaPlayer.getStatus() == PlayerStatus.FIGHT) {
                         event.getBlock().getWorld().strikeLightningEffect(arenaPlayer.getPlayer().getLocation());
                         final EntityDamageEvent e = new EntityDamageEvent(arenaPlayer.getPlayer(), DamageCause.LIGHTNING,10.0);
                         PlayerListener.finallyKillPlayer(arena, arenaPlayer.getPlayer(), e);
@@ -78,7 +78,7 @@ public class RedStoneTriggers extends ArenaModule implements Listener {
                     continue;
                 }
                 for (final ArenaPlayer ap : team.getTeamMembers()) {
-                    if (ap.getStatus() == Status.FIGHT) {
+                    if (ap.getStatus() == PlayerStatus.FIGHT) {
                         event.getBlock().getWorld().strikeLightningEffect(ap.getPlayer().getLocation());
                         final EntityDamageEvent e = new EntityDamageEvent(ap.getPlayer(), DamageCause.LIGHTNING, 10.0);
                         PlayerListener.finallyKillPlayer(arena, ap.getPlayer(), e);

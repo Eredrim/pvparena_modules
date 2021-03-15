@@ -3,7 +3,7 @@ package net.slipcor.pvparena.modules.respawnrelay;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.arena.ArenaPlayer.Status;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.managers.SpawnManager;
@@ -58,7 +58,7 @@ public class RelayRunnable extends ArenaRunnable {
             return;
         }
         ap.getArena().unKillPlayer(ap.getPlayer(), maybePlayer.getLastDamageCause() == null ? null : ap.getPlayer().getLastDamageCause().getCause(), ap.getPlayer().getKiller());
-        ap.setStatus(Status.FIGHT);
+        ap.setStatus(PlayerStatus.FIGHT);
         mod.getRunnerMap().remove(ap.getName());
         mod.overrideMap.remove(ap.getName());
     }
