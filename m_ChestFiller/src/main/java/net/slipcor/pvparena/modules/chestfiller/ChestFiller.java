@@ -94,8 +94,8 @@ public class ChestFiller extends ArenaModule {
             }
             PABlockLocation loc = new PABlockLocation(b.getLocation());
 
-            arena.getArenaConfig().set(Config.CFG.MODULES_CHESTFILLER_CHESTLOCATION, loc.toString());
-            arena.getArenaConfig().save();
+            arena.getConfig().set(Config.CFG.MODULES_CHESTFILLER_CHESTLOCATION, loc.toString());
+            arena.getConfig().save();
             sender.sendMessage(Language.parse(arena, MSG.MODULE_CHESTFILLER_CHEST, loc.toString()));
             return;
         }
@@ -115,12 +115,12 @@ public class ChestFiller extends ArenaModule {
             }
             PABlockLocation loc = new PABlockLocation(b.getLocation());
 
-            List<String> chests = arena.getArenaConfig().getStringList("inventories", new ArrayList<String>());
+            List<String> chests = arena.getConfig().getStringList("inventories", new ArrayList<String>());
 
             chests.add(loc.toString());
 
-            arena.getArenaConfig().setManually("inventories", chests);
-            arena.getArenaConfig().save();
+            arena.getConfig().setManually("inventories", chests);
+            arena.getConfig().save();
             sender.sendMessage(Language.parse(arena, MSG.MODULE_CHESTFILLER_FILLCHEST, loc.toString()));
             return;
         }
@@ -128,8 +128,8 @@ public class ChestFiller extends ArenaModule {
 
 
         if ("clear".equals(args[1])) {
-            arena.getArenaConfig().setManually("inventories", null);
-            arena.getArenaConfig().save();
+            arena.getConfig().setManually("inventories", null);
+            arena.getConfig().save();
 
             sender.sendMessage(Language.parse(MSG.MODULE_CHESTFILLER_CLEAR));
         }
@@ -138,13 +138,13 @@ public class ChestFiller extends ArenaModule {
 
     @Override
     public void displayInfo(final CommandSender sender) {
-        String content = arena.getArenaConfig().getString(Config.CFG.MODULES_CHESTFILLER_CHESTLOCATION);
+        String content = arena.getConfig().getString(Config.CFG.MODULES_CHESTFILLER_CHESTLOCATION);
         sender.sendMessage("items: " + (content.equals("none")?
-                StringParser.getItems(arena.getArenaConfig().getItems(Config.CFG.MODULES_CHESTFILLER_ITEMS)) :
+                StringParser.getItems(arena.getConfig().getItems(Config.CFG.MODULES_CHESTFILLER_ITEMS)) :
                 content));
-        sender.sendMessage("max: " + arena.getArenaConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MAXITEMS)
+        sender.sendMessage("max: " + arena.getConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MAXITEMS)
                 + " | " +
-                "min: " + arena.getArenaConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MINITEMS));
+                "min: " + arena.getConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MINITEMS));
 
     }
 
@@ -157,7 +157,7 @@ public class ChestFiller extends ArenaModule {
     public void parseStart() {
         final ItemStack[] items;
         try {
-            items = arena.getArenaConfig().getItems(Config.CFG.MODULES_CHESTFILLER_ITEMS);
+            items = arena.getConfig().getItems(Config.CFG.MODULES_CHESTFILLER_ITEMS);
         } catch (final Exception e) {
             e.printStackTrace();
             return;
@@ -165,16 +165,16 @@ public class ChestFiller extends ArenaModule {
 
         final boolean clear;
         try {
-            clear = arena.getArenaConfig().getBoolean(Config.CFG.MODULES_CHESTFILLER_CLEAR);
+            clear = arena.getConfig().getBoolean(Config.CFG.MODULES_CHESTFILLER_CLEAR);
         } catch (final Exception e) {
             e.printStackTrace();
             return;
         }
 
-        final int cmax = Integer.parseInt(String.valueOf(arena.getArenaConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MAXITEMS)));
-        final int cmin = Integer.parseInt(String.valueOf(arena.getArenaConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MINITEMS)));
+        final int cmax = Integer.parseInt(String.valueOf(arena.getConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MAXITEMS)));
+        final int cmin = Integer.parseInt(String.valueOf(arena.getConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MINITEMS)));
 
-        String chest = arena.getArenaConfig().getDefinedString(Config.CFG.MODULES_CHESTFILLER_CHESTLOCATION);
+        String chest = arena.getConfig().getDefinedString(Config.CFG.MODULES_CHESTFILLER_CHESTLOCATION);
         ItemStack[] contents = new ItemStack[0];
         if (chest != null) {
             try {
@@ -201,9 +201,9 @@ public class ChestFiller extends ArenaModule {
 
         // ----------------------------------------
 
-        if (!arena.getArenaConfig().getStringList("inventories", new ArrayList<String>()).isEmpty()) {
+        if (!arena.getConfig().getStringList("inventories", new ArrayList<String>()).isEmpty()) {
 
-            final List<String> tempList = arena.getArenaConfig()
+            final List<String> tempList = arena.getConfig()
                     .getStringList("inventories", null);
 
             debug("reading inventories");
@@ -271,8 +271,8 @@ public class ChestFiller extends ArenaModule {
         }
 
 
-        arena.getArenaConfig().setManually("inventories", result);
-        arena.getArenaConfig().save();
+        arena.getConfig().setManually("inventories", result);
+        arena.getConfig().save();
 
         // ----------------------------------------
 

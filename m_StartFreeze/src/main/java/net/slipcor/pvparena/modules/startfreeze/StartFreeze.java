@@ -81,15 +81,15 @@ public class StartFreeze extends ArenaModule implements Listener {
                 return;
             }
 
-            arena.getArenaConfig().set(CFG.MODULES_STARTFREEZE_TIMER, i);
-            arena.getArenaConfig().save();
+            arena.getConfig().set(CFG.MODULES_STARTFREEZE_TIMER, i);
+            arena.getConfig().save();
             arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_STARTFREEZE_TIMER.getNode(), String.valueOf(i)));
         }
     }
 
     @Override
     public void displayInfo(final CommandSender sender) {
-        sender.sendMessage("seconds: " + arena.getArenaConfig().getInt(CFG.MODULES_STARTFREEZE_TIMER));
+        sender.sendMessage("seconds: " + arena.getConfig().getInt(CFG.MODULES_STARTFREEZE_TIMER));
     }
 
     @Override
@@ -106,7 +106,7 @@ public class StartFreeze extends ArenaModule implements Listener {
         if (speeds.containsKey(p.getName())) {
             p.setWalkSpeed(speeds.get(p.getName()));
         }
-        int ticks = arena.getArenaConfig().getInt(Config.CFG.MODULES_STARTFREEZE_TIMER) * 20;
+        int ticks = arena.getConfig().getInt(Config.CFG.MODULES_STARTFREEZE_TIMER) * 20;
 
         for (ArenaPlayer arenaPlayer : arena.getFighters()) {
             try {

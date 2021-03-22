@@ -87,12 +87,12 @@ public class AnnouncementManager extends ArenaModule {
 
             for (final Announcement.type t : Announcement.type.values()) {
                 if (t.name().equalsIgnoreCase(args[1])) {
-                    final boolean b = arena.getArenaConfig().getBoolean(
+                    final boolean b = arena.getConfig().getBoolean(
                             CFG.valueOf("MODULES_ANNOUNCEMENTS_" + t.name()));
-                    arena.getArenaConfig().set(
+                    arena.getConfig().set(
                             CFG.valueOf("MODULES_ANNOUNCEMENTS_" + t.name()),
                             !b);
-                    arena.getArenaConfig().save();
+                    arena.getConfig().save();
 
                     arena.msg(
                             sender,
@@ -121,33 +121,33 @@ public class AnnouncementManager extends ArenaModule {
     public void displayInfo(final CommandSender player) {
         player.sendMessage("");
         player.sendMessage("radius: "
-                + StringParser.colorVar(arena.getArenaConfig().getInt(
+                + StringParser.colorVar(arena.getConfig().getInt(
                 CFG.MODULES_ANNOUNCEMENTS_RADIUS, 0))
                 + " || color: "
-                + StringParser.colorVar(arena.getArenaConfig().getString(
+                + StringParser.colorVar(arena.getConfig().getString(
                 CFG.MODULES_ANNOUNCEMENTS_COLOR)));
-        player.sendMessage(StringParser.colorVar("advert", arena.getArenaConfig()
+        player.sendMessage(StringParser.colorVar("advert", arena.getConfig()
                 .getBoolean(CFG.MODULES_ANNOUNCEMENTS_ADVERT))
                 + " || "
-                + StringParser.colorVar("custom", arena.getArenaConfig()
+                + StringParser.colorVar("custom", arena.getConfig()
                 .getBoolean(CFG.MODULES_ANNOUNCEMENTS_CUSTOM))
                 + " || "
-                + StringParser.colorVar("end", arena.getArenaConfig()
+                + StringParser.colorVar("end", arena.getConfig()
                 .getBoolean(CFG.MODULES_ANNOUNCEMENTS_END))
                 + " || "
-                + StringParser.colorVar("join", arena.getArenaConfig()
+                + StringParser.colorVar("join", arena.getConfig()
                 .getBoolean(CFG.MODULES_ANNOUNCEMENTS_JOIN))
                 + " || "
-                + StringParser.colorVar("loser", arena.getArenaConfig()
+                + StringParser.colorVar("loser", arena.getConfig()
                 .getBoolean(CFG.MODULES_ANNOUNCEMENTS_LOSER))
                 + " || "
-                + StringParser.colorVar("prize", arena.getArenaConfig()
+                + StringParser.colorVar("prize", arena.getConfig()
                 .getBoolean(CFG.MODULES_ANNOUNCEMENTS_PRIZE))
                 + " || "
-                + StringParser.colorVar("start", arena.getArenaConfig()
+                + StringParser.colorVar("start", arena.getConfig()
                 .getBoolean(CFG.MODULES_ANNOUNCEMENTS_START))
                 + " || "
-                + StringParser.colorVar("winner", arena.getArenaConfig()
+                + StringParser.colorVar("winner", arena.getConfig()
                 .getBoolean(CFG.MODULES_ANNOUNCEMENTS_WINNER)));
     }
 
@@ -166,26 +166,26 @@ public class AnnouncementManager extends ArenaModule {
                     PVPArena.hasOverridePerms(player) ? arena.getName() : ArenaManager.getIndirectArenaName(arena);
             Announcement.announce(arena, Announcement.type.ADVERT, Language
                     .parse(arena, CFG.MSG_STARTING, arenaname +
-                            ChatColor.valueOf(arena.getArenaConfig().getString(
+                            ChatColor.valueOf(arena.getConfig().getString(
                                     CFG.MODULES_ANNOUNCEMENTS_COLOR))));
         }
 
         if (arena.isFreeForAll()) {
             Announcement.announce(arena, Announcement.type.JOIN,
-                    arena.getArenaConfig().getString(CFG.MSG_PLAYERJOINED)
+                    arena.getConfig().getString(CFG.MSG_PLAYERJOINED)
                             .replace("%1%", player.getName() +
-                                    ChatColor.valueOf(arena.getArenaConfig().getString(
+                                    ChatColor.valueOf(arena.getConfig().getString(
                                             CFG.MODULES_ANNOUNCEMENTS_COLOR))));
         } else {
             Announcement.announce(
                     arena,
                     Announcement.type.JOIN,
-                    arena.getArenaConfig().getString(CFG.MSG_PLAYERJOINEDTEAM)
+                    arena.getConfig().getString(CFG.MSG_PLAYERJOINEDTEAM)
                             .replace("%1%", player.getName() +
-                                    ChatColor.valueOf(arena.getArenaConfig().getString(
+                                    ChatColor.valueOf(arena.getConfig().getString(
                                             CFG.MODULES_ANNOUNCEMENTS_COLOR)))
                             .replace("%2%", team.getColoredName() +
-                                    ChatColor.valueOf(arena.getArenaConfig().getString(
+                                    ChatColor.valueOf(arena.getConfig().getString(
                                             CFG.MODULES_ANNOUNCEMENTS_COLOR))));
         }
     }
@@ -195,7 +195,7 @@ public class AnnouncementManager extends ArenaModule {
         if (team == null) {
             Announcement.announce(arena, Announcement.type.LOSER,
                     Language.parse(MSG.FIGHT_PLAYER_LEFT, player.getName() +
-                            ChatColor.valueOf(arena.getArenaConfig().getString(
+                            ChatColor.valueOf(arena.getConfig().getString(
                                     CFG.MODULES_ANNOUNCEMENTS_COLOR))));
         } else {
             Announcement.announce(
@@ -203,7 +203,7 @@ public class AnnouncementManager extends ArenaModule {
                     Announcement.type.LOSER,
                     Language.parse(MSG.FIGHT_PLAYER_LEFT,
                             team.colorizePlayer(player) +
-                                    ChatColor.valueOf(arena.getArenaConfig().getString(
+                                    ChatColor.valueOf(arena.getConfig().getString(
                                             CFG.MODULES_ANNOUNCEMENTS_COLOR))));
         }
     }

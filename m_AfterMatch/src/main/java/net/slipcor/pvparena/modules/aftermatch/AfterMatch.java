@@ -22,9 +22,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static net.slipcor.pvparena.config.Debugger.debug;
 
 public class AfterMatch extends ArenaModule {
+    public static final String AFTER = "after";
     private ArenaRunnable afterTask;
     private boolean aftermatch;
 
@@ -46,7 +49,7 @@ public class AfterMatch extends ArenaModule {
                 }
                 final Player player = arenaPlayer.getPlayer();
                 if (player != null) {
-                    this.arena.tpPlayerToCoordName(arenaPlayer, "after");
+                    this.arena.tpPlayerToCoordName(arenaPlayer, AFTER);
                 }
             }
         }
@@ -88,13 +91,13 @@ public class AfterMatch extends ArenaModule {
     }
 
     @Override
-    public String checkForMissingSpawns(final Set<String> list) {
+    public Set<String> checkForMissingSpawns(final Set<String> list) {
         for (final String s : list) {
-            if (s.startsWith("after")) {
-                return null;
+            if (s.startsWith(AFTER)) {
+                return emptySet();
             }
         }
-        return Language.parse(MSG.MODULE_AFTERMATCH_SPAWNNOTSET);
+        return singleton(AFTER);
     }
 
     @Override
@@ -118,8 +121,8 @@ public class AfterMatch extends ArenaModule {
         if ("!am".equals(args[0]) || "aftermatch".equals(args[0])) {
             if (args.length == 2) {
                 if ("off".equals(args[1])) {
-                    this.arena.getArenaConfig().set(CFG.MODULES_AFTERMATCH_AFTERMATCH, args[1]);
-                    this.arena.getArenaConfig().save();
+                    this.arena.getConfig().set(CFG.MODULES_AFTERMATCH_AFTERMATCH, args[1]);
+                    this.arena.getConfig().save();
                     this.arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), args[1]));
                     return;
                 }
@@ -135,8 +138,8 @@ public class AfterMatch extends ArenaModule {
                 return;
             }
             if ("time".equals(args[1]) || "death".equals(args[1])) {
-                this.arena.getArenaConfig().set(CFG.MODULES_AFTERMATCH_AFTERMATCH, args[1] + ':' + i);
-                this.arena.getArenaConfig().save();
+                this.arena.getConfig().set(CFG.MODULES_AFTERMATCH_AFTERMATCH, args[1] + ':' + i);
+                this.arena.getConfig().save();
                 this.arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), args[1] + ':' + i));
                 return;
             }
@@ -157,21 +160,21 @@ public class AfterMatch extends ArenaModule {
     @Override
     public void displayInfo(final CommandSender player) {
         player.sendMessage("active: "
-                + StringParser.colorVar(!"off".equals(this.arena.getArenaConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH)))
+                + StringParser.colorVar(!"off".equals(this.arena.getConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH)))
                 + '('
-                + StringParser.colorVar(this.arena.getArenaConfig()
+                + StringParser.colorVar(this.arena.getConfig()
                 .getString(CFG.MODULES_AFTERMATCH_AFTERMATCH)) + ')');
     }
 
     @Override
     public boolean hasSpawn(final String string) {
-        return "after".equals(string);
+        return AFTER.equals(string);
     }
 
     @Override
     public void parsePlayerDeath(final Player player,
                                  final EntityDamageEvent cause) {
-        final String pu = this.arena.getArenaConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH);
+        final String pu = this.arena.getConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH);
 
         if ("off".equals(pu) || this.aftermatch) {
             return;
@@ -211,7 +214,7 @@ public class AfterMatch extends ArenaModule {
 
     @Override
     public void parseStart() {
-        final String pu = this.arena.getArenaConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH);
+        final String pu = this.arena.getConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH);
 
         if (this.afterTask != null) {
             this.afterTask.cancel();
@@ -227,7 +230,7 @@ public class AfterMatch extends ArenaModule {
             return;
         }
 
-        debug("using aftermatch : {}:{}", this.arena.getArenaConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH), i);
+        debug("using aftermatch : {}:{}", pu, i);
         if (i > 0) {
             debug("aftermatch time trigger!");
             this.afterTask = new AfterRunnable(this, i);

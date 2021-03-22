@@ -20,7 +20,7 @@ class ItemSpawnRunnable implements Runnable {
     public ItemSpawnRunnable(final Arena a) {
         arena = a;
         trace(arena, "ItemSpawnRunnable constructor");
-        items = arena.getArenaConfig().getItems(CFG.MODULES_ITEMS_ITEMS);
+        items = arena.getConfig().getItems(CFG.MODULES_ITEMS_ITEMS);
         spawns = SpawnManager.getPASpawnsStartingWith(arena, "item");
     }
 

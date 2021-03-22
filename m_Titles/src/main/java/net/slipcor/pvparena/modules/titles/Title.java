@@ -34,7 +34,7 @@ public final class Title {
             send(a, arenaPlayer.getPlayer(), message.replace(
                     ChatColor.WHITE.toString(),
                     ChatColor.valueOf(
-                            a.getArenaConfig().getString(
+                            a.getConfig().getString(
                                     CFG.MODULES_TITLES_COLOR))
                             .toString()));
         }
@@ -50,7 +50,7 @@ public final class Title {
      */
     protected static boolean sendCheck(final Arena a, final type t) {
         final CFG cfg = CFG.valueOf("MODULES_TITLES_" + t.name());
-        return a.getArenaConfig().getBoolean(cfg);
+        return a.getConfig().getBoolean(cfg);
     }
 
     /**
@@ -62,7 +62,7 @@ public final class Title {
      */
     private static void send(final Arena a, final Player p, final String message) {
         p.sendTitle("",
-                ChatColor.valueOf(a.getArenaConfig().getString(
+                ChatColor.valueOf(a.getConfig().getString(
                         CFG.MODULES_TITLES_COLOR)) + message);
     }
 

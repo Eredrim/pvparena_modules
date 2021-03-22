@@ -3,7 +3,6 @@ package net.slipcor.pvparena.modules.arenaboards;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.classes.PABlockLocation;
-import net.slipcor.pvparena.config.Debugger;
 import net.slipcor.pvparena.core.Config;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
@@ -25,7 +24,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.slipcor.pvparena.config.Debugger.*;
+import static net.slipcor.pvparena.config.Debugger.debug;
 
 public class ArenaBoardManager extends ArenaModule implements Listener {
     final Map<PABlockLocation, ArenaBoard> boards = new HashMap<>();
@@ -85,7 +84,7 @@ public class ArenaBoardManager extends ArenaModule implements Listener {
         }
 
         final String msg = Language.parse(MSG.MODULE_ARENABOARDS_DESTROYED);
-        for (final Entity e : Bukkit.getWorld(arena.getWorld()).getEntities()) {
+        for (final Entity e : arena.getWorld().getEntities()) {
             if (e instanceof Player) {
                 final Player player = (Player) e;
                 if (player.getLocation().distance(block.getLocation()) > 5) {

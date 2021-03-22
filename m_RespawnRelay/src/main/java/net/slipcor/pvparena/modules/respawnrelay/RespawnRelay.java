@@ -17,8 +17,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class RespawnRelay extends ArenaModule {
+
+    public static final String RELAY = "relay";
+
     private class RelayListener implements Listener {
         @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
         public void onAsyncChat(final AsyncPlayerChatEvent event) {
@@ -37,7 +41,7 @@ public class RespawnRelay extends ArenaModule {
                 }
             }
 
-            if (module == null || !player.getArena().getArenaConfig().getBoolean(CFG.MODULES_RESPAWNRELAY_CHOOSESPAWN)) {
+            if (module == null || !player.getArena().getConfig().getBoolean(CFG.MODULES_RESPAWNRELAY_CHOOSESPAWN)) {
                 return;
             }
 
@@ -80,27 +84,30 @@ public class RespawnRelay extends ArenaModule {
     }
 
     @Override
-    public String checkForMissingSpawns(final Set<String> list) {
+    public Set<String> checkForMissingSpawns(final Set<String> list) {
         if (listener == null) {
             listener = new RelayListener();
             Bukkit.getPluginManager().registerEvents(listener, PVPArena.getInstance());
         }
 
-        boolean allTeams = true;
-
-        for (String team : arena.getTeamNames()) {
-            if (!list.contains(team.toLowerCase()+"relay")) {
-                allTeams = false;
-                break;
+        Set<String> missingSpawns = new HashSet<>();
+        if(this.arena.isFreeForAll()) {
+            if(!list.contains(RELAY)) {
+                missingSpawns.add(RELAY);
             }
+        } else {
+            missingSpawns = this.arena.getTeamNames().stream()
+                    .filter(team -> !list.contains(team.toLowerCase() + RELAY))
+                    .map(team -> team.toLowerCase() + RELAY)
+                    .collect(Collectors.toSet());
         }
 
-        return (allTeams || list.contains("relay")) ? null : "relay(s) not set";
+        return missingSpawns;
     }
 
     @Override
     public void displayInfo(final CommandSender sender) {
-        sender.sendMessage("seconds: " + arena.getArenaConfig().getInt(CFG.MODULES_RESPAWNRELAY_INTERVAL));
+        sender.sendMessage("seconds: " + arena.getConfig().getInt(CFG.MODULES_RESPAWNRELAY_INTERVAL));
     }
 
     Map<String, BukkitRunnable> getRunnerMap() {
@@ -113,11 +120,11 @@ public class RespawnRelay extends ArenaModule {
     @Override
     public boolean hasSpawn(final String s) {
         for (String team : arena.getTeamNames()) {
-            if ((team.toLowerCase()+"relay").equals(s)) {
+            if ((team.toLowerCase()+ RELAY).equals(s)) {
                 return true;
             }
         }
-        return "relay".equals(s);
+        return RELAY.equals(s);
     }
 
     @Override
@@ -135,10 +142,10 @@ public class RespawnRelay extends ArenaModule {
         if (drops == null) {
             drops = new ArrayList<>();
         }
-        if (SpawnManager.getSpawnByExactName(arena, arenaPlayer.getArenaTeam().getName()+"relay") == null) {
-            SpawnManager.respawn(arena, arenaPlayer, "relay");
+        if (SpawnManager.getSpawnByExactName(arena, arenaPlayer.getArenaTeam().getName()+ RELAY) == null) {
+            SpawnManager.respawn(arena, arenaPlayer, RELAY);
         } else {
-            SpawnManager.respawn(arena, arenaPlayer, arenaPlayer.getArenaTeam().getName()+"relay");
+            SpawnManager.respawn(arena, arenaPlayer, arenaPlayer.getArenaTeam().getName()+ RELAY);
         }
         arena.unKillPlayer(arenaPlayer.getPlayer(), arenaPlayer.getPlayer().getLastDamageCause() == null ? null : arenaPlayer.getPlayer().getLastDamageCause().getCause(), arenaPlayer.getPlayer().getKiller());
 

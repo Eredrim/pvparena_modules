@@ -39,8 +39,8 @@ class MoveChecker implements Listener {
         this.arena = arena;
         Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
         this.delay = delay;
-        this.startSeconds = arena.getArenaConfig().getInt(CFG.MODULES_BLOCKDISSOLVE_STARTSECONDS);
-        this.offset = arena.getArenaConfig().getDouble(CFG.MODULES_BLOCKDISSOLVE_CALCOFFSET);
+        this.startSeconds = arena.getConfig().getInt(CFG.MODULES_BLOCKDISSOLVE_STARTSECONDS);
+        this.offset = arena.getConfig().getDouble(CFG.MODULES_BLOCKDISSOLVE_CALCOFFSET);
     }
 
     @EventHandler(ignoreCancelled = true)

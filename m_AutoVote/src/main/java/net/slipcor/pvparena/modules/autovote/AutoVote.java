@@ -76,7 +76,7 @@ public class AutoVote extends ArenaModule implements Listener {
             throw new GameplayException("voting");
         }
 
-        if (!this.arena.getArenaConfig().getBoolean(CFG.PERMS_JOINWITHSCOREBOARD)) {
+        if (!this.arena.getConfig().getBoolean(CFG.PERMS_JOINWITHSCOREBOARD)) {
             for (final Team team : player.getScoreboard().getTeams()) {
                 for (final String playerName : team.getEntries()) {
                     if (playerName.equals(player.getName())) {
@@ -92,7 +92,7 @@ public class AutoVote extends ArenaModule implements Listener {
 
         if (args[0].startsWith("vote")) {
 
-            if (!arena.getArenaConfig().getBoolean(CFG.PERMS_JOINWITHSCOREBOARD)) {
+            if (!arena.getConfig().getBoolean(CFG.PERMS_JOINWITHSCOREBOARD)) {
                 final Player p = (Player) sender;
 
                 for (final Team team : p.getScoreboard().getTeams()) {
@@ -129,9 +129,9 @@ public class AutoVote extends ArenaModule implements Listener {
             // !av seconds X
 
             if (args.length < 3 || "everyone".equals(args[1])) {
-                final boolean b = arena.getArenaConfig().getBoolean(CFG.MODULES_ARENAVOTE_EVERYONE);
-                arena.getArenaConfig().set(CFG.MODULES_ARENAVOTE_EVERYONE, !b);
-                arena.getArenaConfig().save();
+                final boolean b = arena.getConfig().getBoolean(CFG.MODULES_ARENAVOTE_EVERYONE);
+                arena.getConfig().set(CFG.MODULES_ARENAVOTE_EVERYONE, !b);
+                arena.getConfig().save();
                 arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_ARENAVOTE_EVERYONE.getNode(), String.valueOf(!b)));
                 return;
             }
@@ -150,8 +150,8 @@ public class AutoVote extends ArenaModule implements Listener {
                     return;
                 }
 
-                arena.getArenaConfig().set(c, i);
-                arena.getArenaConfig().save();
+                arena.getConfig().set(c, i);
+                arena.getConfig().save();
                 arena.msg(sender, Language.parse(MSG.SET_DONE, c.getNode(), String.valueOf(i)));
                 return;
             }
@@ -163,11 +163,11 @@ public class AutoVote extends ArenaModule implements Listener {
     @Override
     public void displayInfo(final CommandSender player) {
         player.sendMessage("seconds:"
-                + StringParser.colorVar(arena.getArenaConfig().getInt(CFG.MODULES_ARENAVOTE_SECONDS))
+                + StringParser.colorVar(arena.getConfig().getInt(CFG.MODULES_ARENAVOTE_SECONDS))
                 + " | readyup: "
-                + StringParser.colorVar(arena.getArenaConfig().getInt(CFG.MODULES_ARENAVOTE_READYUP))
+                + StringParser.colorVar(arena.getConfig().getInt(CFG.MODULES_ARENAVOTE_READYUP))
                 + " | "
-                + StringParser.colorVar("everyone", arena.getArenaConfig().getBoolean(CFG.MODULES_ARENAVOTE_EVERYONE)));
+                + StringParser.colorVar("everyone", arena.getConfig().getBoolean(CFG.MODULES_ARENAVOTE_EVERYONE)));
     }
 
     @Override
@@ -187,7 +187,7 @@ public class AutoVote extends ArenaModule implements Listener {
                 if (ArenaManager.getShortcutValues().get(def).equals(arena)) {
 
                     vote = new AutoVoteRunnable(arena,
-                            arena.getArenaConfig().getInt(CFG.MODULES_ARENAVOTE_SECONDS), this, def);
+                            arena.getConfig().getInt(CFG.MODULES_ARENAVOTE_SECONDS), this, def);
                     break;
                 }
             }
@@ -195,7 +195,7 @@ public class AutoVote extends ArenaModule implements Listener {
 
                 debug(arena, "AutoVote not setup via shortcuts, ignoring");
                 vote = new AutoVoteRunnable(arena,
-                        arena.getArenaConfig().getInt(CFG.MODULES_ARENAVOTE_SECONDS), this, null);
+                        arena.getConfig().getInt(CFG.MODULES_ARENAVOTE_SECONDS), this, null);
             }
         }
     }
@@ -317,7 +317,7 @@ public class AutoVote extends ArenaModule implements Listener {
             for (final ArenaModule mod : arena.getMods()) {
                 if (mod.getName().equals(getName())) {
                     Bukkit.getPluginManager().registerEvents((AutoVote) mod, PVPArena.getInstance());
-                    if (!arena.getArenaConfig().getBoolean(CFG.MODULES_ARENAVOTE_AUTOSTART)) {
+                    if (!arena.getConfig().getBoolean(CFG.MODULES_ARENAVOTE_AUTOSTART)) {
                         continue;
                     }
                     Bukkit.getPluginManager().registerEvents((AutoVote) mod, PVPArena.getInstance());

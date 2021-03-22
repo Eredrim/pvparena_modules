@@ -28,13 +28,13 @@ public class WallsRunner extends ArenaRunnable {
     @Override
     protected void spam() {
         super.spam();
-        if (arena.getArenaConfig().getBoolean(Config.CFG.MODULES_WALLS_SCOREBOARDCOUNTDOWN)) {
+        if (arena.getConfig().getBoolean(Config.CFG.MODULES_WALLS_SCOREBOARDCOUNTDOWN)) {
             int mins = seconds / 60;
             int seconds = this.seconds % 60;
             String value = mins + ":" + String.format("%02d", seconds);
 
-            arena.addCustomScoreBoardEntry(module, Language.parse(arena, MSG.MODULE_WALLS_FALLINGIN, value), 99);
-            arena.addCustomScoreBoardEntry(module, Language.parse(arena, MSG.MODULE_WALLS_SEPARATOR), 98);
+            arena.getScoreboard().addCustomEntry(module, Language.parse(arena, MSG.MODULE_WALLS_FALLINGIN, value), 99);
+            arena.getScoreboard().addCustomEntry(module, Language.parse(arena, MSG.MODULE_WALLS_SEPARATOR), 98);
         }
     }
 

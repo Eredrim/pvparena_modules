@@ -174,8 +174,8 @@ public class BanKick extends ArenaModule {
             arena.msg(admin, Language.parse(MSG.MODULE_BANVOTE_BANNED, player));
         }
         tryNotify(Language.parse(MSG.MODULE_BANVOTE_YOUBANNED, arena.getName()));
-        arena.getArenaConfig().setManually("bans", getBans());
-        arena.getArenaConfig().save();
+        arena.getConfig().setManually("bans", getBans());
+        arena.getConfig().save();
     }
 
     void doUnBan(final CommandSender admin, final String player) {
@@ -184,8 +184,8 @@ public class BanKick extends ArenaModule {
             arena.msg(admin, Language.parse(MSG.MODULE_BANVOTE_UNBANNED, player));
         }
         tryNotify(Language.parse(MSG.MODULE_BANVOTE_YOUBANNED, arena.getName()));
-        arena.getArenaConfig().setManually("bans", getBans());
-        arena.getArenaConfig().save();
+        arena.getConfig().setManually("bans", getBans());
+        arena.getConfig().save();
     }
 
     private long parseStringToSeconds(final String string) {

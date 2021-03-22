@@ -52,7 +52,7 @@ public class ArenaRotateRunnable extends ArenaRunnable {
             playerssss:
             for (final Player p : Bukkit.getOnlinePlayers()) {
                 for (final Arena aaa : ArenaManager.getArenas()) {
-                    if (!aaa.getArenaConfig().getBoolean(CFG.MODULES_ARENAVOTE_ONLYSPAMTOJOIN)) {
+                    if (!aaa.getConfig().getBoolean(CFG.MODULES_ARENAVOTE_ONLYSPAMTOJOIN)) {
                         Arena.pmsg(p, message);
                         continue playerssss;
                     }

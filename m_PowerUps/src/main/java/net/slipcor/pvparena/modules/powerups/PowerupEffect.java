@@ -228,14 +228,14 @@ class PowerupEffect {
                                     arena.parseDeathCause(player,
                                             DamageCause.MAGIC, player)), "LOSER");
 
-                    if (arena.getArenaConfig().getBoolean(CFG.USES_DEATHMESSAGES)) {
+                    if (arena.getConfig().getBoolean(CFG.USES_DEATHMESSAGES)) {
                         arena.broadcast(Language.parse(MSG.FIGHT_KILLED_BY,
                                 team.colorizePlayer(player) + ChatColor.YELLOW,
                                 arena.parseDeathCause(player,
                                         DamageCause.MAGIC, player)));
                     }
                     // needed so player does not get found when dead
-                    arena.removePlayer(player, arena.getArenaConfig().getString(CFG.TP_LOSE), true, false);
+                    arena.removePlayer(player, arena.getConfig().getString(CFG.TP_LOSE), true, false);
                     arenaPlayer.getArenaTeam().remove(arenaPlayer);
 
                     ArenaManager.checkAndCommit(arena, false);

@@ -99,12 +99,12 @@ public class Skins extends ArenaModule {
                     arena.msg(sender, Language.parse(
                             MSG.MODULE_SKINS_SHOWTEAM,
                             team.getColoredName(),
-                            (String) arena.getArenaConfig().getUnsafe("skins." + team.getName())));
+                            (String) arena.getConfig().getUnsafe("skins." + team.getName())));
                     return;
                 }
 
-                arena.getArenaConfig().setManually("skins." + team.getName(), args[2]);
-                arena.getArenaConfig().save();
+                arena.getConfig().setManually("skins." + team.getName(), args[2]);
+                arena.getConfig().save();
                 arena.msg(sender, Language.parse(MSG.SET_DONE, team.getName(), args[2]));
 
                 return;
@@ -124,12 +124,12 @@ public class Skins extends ArenaModule {
             arena.msg(
                     sender,
                     Language.parse(MSG.MODULE_SKINS_SHOWCLASS,
-                            (String) arena.getArenaConfig().getUnsafe("skins." + c.getName())));
+                            (String) arena.getConfig().getUnsafe("skins." + c.getName())));
             return;
         }
 
-        arena.getArenaConfig().setManually("skins." + c.getName(), args[2]);
-        arena.getArenaConfig().save();
+        arena.getConfig().setManually("skins." + c.getName(), args[2]);
+        arena.getConfig().save();
         arena.msg(sender, Language.parse(MSG.SET_DONE, c.getName(), args[2]));
 
     }
@@ -157,7 +157,7 @@ public class Skins extends ArenaModule {
         if (arena == null) {
             return;
         }
-        if (enabled || arena.getArenaConfig().getBoolean(CFG.MODULES_SKINS_VANILLA)) {
+        if (enabled || arena.getConfig().getBoolean(CFG.MODULES_SKINS_VANILLA)) {
             enabled = true;
             return;
         }
@@ -185,7 +185,7 @@ public class Skins extends ArenaModule {
             final ArenaTeam team = ArenaPlayer.fromPlayer(player).getArenaTeam();
             if (team != null) {
                 final ItemStack is = new ItemStack(Material.PLAYER_HEAD, 1);
-                final String disguise = (String) arena.getArenaConfig().getUnsafe("skins." + team.getName());
+                final String disguise = (String) arena.getConfig().getUnsafe("skins." + team.getName());
                 if (disguise == null) {
                     return;
                 }
@@ -226,12 +226,12 @@ public class Skins extends ArenaModule {
         if (team == null) {
             return;
         }
-        String disguise = (String) arena.getArenaConfig().getUnsafe("skins." + team.getName());
+        String disguise = (String) arena.getConfig().getUnsafe("skins." + team.getName());
 
         final ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
 
         if (ap.getArenaClass() != null && (disguise == null || "none".equals(disguise))) {
-            disguise = (String) arena.getArenaConfig().getUnsafe("skins." + ap.getArenaClass().getName());
+            disguise = (String) arena.getConfig().getUnsafe("skins." + ap.getArenaClass().getName());
         }
 
         if (disguise == null || "none".equals(disguise)) {

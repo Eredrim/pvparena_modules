@@ -74,7 +74,7 @@ public class Turrets extends ArenaModule implements Listener {
                     return;
                 }
 
-                final double degrees = arena.getArenaConfig().getDouble(CFG.MODULES_TURRETS_MAXDEGREES);
+                final double degrees = arena.getConfig().getDouble(CFG.MODULES_TURRETS_MAXDEGREES);
                 for (final PASpawn location : spawns) {
                     final PALocation loc = location.getLocation();
                     turretMap.put(new PABlockLocation(loc.toLocation()), new Turret(location.getName(), loc, degrees));
@@ -84,7 +84,7 @@ public class Turrets extends ArenaModule implements Listener {
         }
         Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 5L);
 
-        minInterval = arena.getArenaConfig().getInt(CFG.MODULES_TURRETS_MININTERVAL);
+        minInterval = arena.getConfig().getInt(CFG.MODULES_TURRETS_MININTERVAL);
     }
 
     @EventHandler(ignoreCancelled = true)

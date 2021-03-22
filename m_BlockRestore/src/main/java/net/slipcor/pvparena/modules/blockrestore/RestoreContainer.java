@@ -55,9 +55,9 @@ class RestoreContainer {
 
     public void saveChests() {
 
-        if (!blocks.getArena().getArenaConfig().getStringList("inventories", new ArrayList<String>()).isEmpty()) {
+        if (!blocks.getArena().getConfig().getStringList("inventories", new ArrayList<String>()).isEmpty()) {
 
-            final List<String> tempList = blocks.getArena().getArenaConfig()
+            final List<String> tempList = blocks.getArena().getConfig()
                     .getStringList("inventories", null);
 
             debug("reading inventories");
@@ -120,8 +120,8 @@ class RestoreContainer {
                 }
             }
         }
-        blocks.getArena().getArenaConfig().setManually("inventories", result);
-        blocks.getArena().getArenaConfig().save();
+        blocks.getArena().getConfig().setManually("inventories", result);
+        blocks.getArena().getConfig().save();
     }
 
     private Location saveBlock(final World world, final int x, final int y, final int z) {

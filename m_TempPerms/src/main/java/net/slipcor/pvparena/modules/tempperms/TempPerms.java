@@ -200,8 +200,8 @@ public class TempPerms extends ArenaModule implements Listener {
     private Map<String, Boolean> getTempPerms(final Arena arena, final String node) {
         final Map<String, Boolean> result = new HashMap<>();
 
-        if (arena.getArenaConfig().getYamlConfiguration().contains("perms." + node)) {
-            final List<String> list = arena.getArenaConfig().getStringList("perms." + node, new ArrayList<>());
+        if (arena.getConfig().getYamlConfiguration().contains("perms." + node)) {
+            final List<String> list = arena.getConfig().getStringList("perms." + node, new ArrayList<>());
             for (final String key : list) {
                 result.put(getStrippedPermission(key), !(key.startsWith("^") || key.startsWith("-")));
             }
@@ -214,8 +214,8 @@ public class TempPerms extends ArenaModule implements Listener {
         for (final Map.Entry<String, Boolean> stringBooleanEntry : map.entrySet()) {
             result.add(getPolarizedPermission(stringBooleanEntry));
         }
-        arena.getArenaConfig().setManually("perms." + node, result);
-        arena.getArenaConfig().save();
+        arena.getConfig().setManually("perms." + node, result);
+        arena.getConfig().save();
     }
 
     private static String getStrippedPermission(String key) {

@@ -79,11 +79,11 @@ public class EventActions extends ArenaModule {
             return;
         }
 
-        if (a.getArenaConfig().getUnsafe("event." + string) == null) {
+        if (a.getConfig().getUnsafe("event." + string) == null) {
             return;
         }
 
-        final List<String> items = a.getArenaConfig().getStringList("event." + string, new ArrayList<String>());
+        final List<String> items = a.getConfig().getStringList("event." + string, new ArrayList<String>());
 
         final List<String> eachPlayer = new ArrayList<>();
 
@@ -152,7 +152,7 @@ public class EventActions extends ArenaModule {
 
             if (split.length == 3) {
                 if ("minplayers".equals(split[2])) {
-                    if (arena.getPlayedPlayers().size() < arena.getArenaConfig().getInt(CFG.ITEMS_MINPLAYERS)) {
+                    if (arena.getPlayedPlayers().size() < arena.getConfig().getInt(CFG.ITEMS_MINPLAYERS)) {
                         return;
                     }
                 }

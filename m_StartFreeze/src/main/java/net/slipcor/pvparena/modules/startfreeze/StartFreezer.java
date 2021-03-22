@@ -21,7 +21,7 @@ class StartFreezer extends ArenaRunnable {
 
     StartFreezer(final StartFreeze mod) {
         super(Language.MSG.MODULE_STARTFREEZE_ANNOUNCE.getNode(),
-                mod.getArena().getArenaConfig().getInt(Config.CFG.MODULES_STARTFREEZE_TIMER),
+                mod.getArena().getConfig().getInt(Config.CFG.MODULES_STARTFREEZE_TIMER),
                 null, mod.getArena(), false);
         module = mod;
         for (ArenaPlayer arenaPlayer : mod.getArena().getFighters()) {

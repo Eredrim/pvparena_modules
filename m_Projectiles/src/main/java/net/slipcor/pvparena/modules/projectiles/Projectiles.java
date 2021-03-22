@@ -32,19 +32,19 @@ public class Projectiles extends ArenaModule implements Listener {
 
     @Override
     public void displayInfo(final CommandSender player) {
-        Config cfg = this.arena.getArenaConfig();
+        Config cfg = this.arena.getConfig();
         String message = String.format("%s | %s | %s | %s",
                 StringParser.colorVar("snowball", cfg.getBoolean(MODULES_PROJECTILES_SNOWBALL)),
-                StringParser.colorVar("egg", arena.getArenaConfig().getBoolean(CFG.MODULES_PROJECTILES_EGG)),
-                StringParser.colorVar("fishHook", arena.getArenaConfig().getBoolean(CFG.MODULES_PROJECTILES_FISHHOOK)),
-                StringParser.colorVar("enderPearl", arena.getArenaConfig().getBoolean(CFG.MODULES_PROJECTILES_ENDERPEARL))
+                StringParser.colorVar("egg", arena.getConfig().getBoolean(CFG.MODULES_PROJECTILES_EGG)),
+                StringParser.colorVar("fishHook", arena.getConfig().getBoolean(CFG.MODULES_PROJECTILES_FISHHOOK)),
+                StringParser.colorVar("enderPearl", arena.getConfig().getBoolean(CFG.MODULES_PROJECTILES_ENDERPEARL))
         );
         player.sendMessage(message);
     }
 
     @Override
     public void onProjectileHit(final Player attacker, final Player defender, final ProjectileHitEvent event) {
-        Config cfg = this.arena.getArenaConfig();
+        Config cfg = this.arena.getConfig();
 
         Projectile projectile = event.getEntity();
         if ((projectile instanceof Snowball && cfg.getBoolean(MODULES_PROJECTILES_SNOWBALL)) ||

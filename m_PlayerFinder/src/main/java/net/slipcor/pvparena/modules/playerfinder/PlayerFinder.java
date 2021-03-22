@@ -68,7 +68,7 @@ public class PlayerFinder extends ArenaModule implements Listener {
             return;
         }
 
-        final int maxRadius = arena.getArenaConfig().getInt(CFG.MODULES_PLAYERFINDER_MAXRADIUS, 100);
+        final int maxRadius = arena.getConfig().getInt(CFG.MODULES_PLAYERFINDER_MAXRADIUS, 100);
 
         final List<Entity> list = player.getNearbyEntities(maxRadius, maxRadius, maxRadius);
         final Map<Double, Player> sortMap = new HashMap<>();

@@ -121,10 +121,10 @@ public class BetterGears extends ArenaModule {
                     rgb[0] = Short.parseShort(args[3]);
                     rgb[1] = Short.parseShort(args[4]);
                     rgb[2] = Short.parseShort(args[5]);
-                    arena.getArenaConfig().setManually(
+                    arena.getConfig().setManually(
                             "modules.bettergears.colors." + team.getName(),
                             StringParser.joinArray(rgb, ","));
-                    arena.getArenaConfig().save();
+                    arena.getConfig().save();
                     getColorMap().put(team, rgb);
                     arena.msg(sender, Language.parse(
                             MSG.MODULE_BETTERGEARS_TEAMDONE,
@@ -162,9 +162,9 @@ public class BetterGears extends ArenaModule {
 
         try {
             final short l = Short.parseShort(args[3]);
-            arena.getArenaConfig().setManually(
+            arena.getConfig().setManually(
                     "modules.bettergears.levels." + c.getName(), l);
-            arena.getArenaConfig().save();
+            arena.getConfig().save();
             getLevelMap().put(c, l);
             arena.msg(
                     sender,
@@ -248,7 +248,7 @@ public class BetterGears extends ArenaModule {
         Short s = getLevelMap().get(arenaPlayer.getArenaClass());
 
         if (s == null) {
-            final String autoClass = getArena().getArenaConfig().getString(CFG.READY_AUTOCLASS);
+            final String autoClass = getArena().getConfig().getString(CFG.READY_AUTOCLASS);
             final ArenaClass ac = getArena().getClass(autoClass);
             s = getLevelMap().get(ac);
         }
@@ -261,19 +261,19 @@ public class BetterGears extends ArenaModule {
             isArmor[0].addUnsafeEnchantment(Enchantment.PROTECTION_PROJECTILE, s);
         }
 
-        if (arena.getArenaConfig().getBoolean(CFG.MODULES_BETTERGEARS_HEAD)) {
+        if (arena.getConfig().getBoolean(CFG.MODULES_BETTERGEARS_HEAD)) {
             this.replaceArmorItem(EquipmentSlot.HEAD, player, isArmor[0]);
         }
 
-        if (arena.getArenaConfig().getBoolean(CFG.MODULES_BETTERGEARS_CHEST)) {
+        if (arena.getConfig().getBoolean(CFG.MODULES_BETTERGEARS_CHEST)) {
             this.replaceArmorItem(EquipmentSlot.CHEST, player, isArmor[1]);
         }
 
-        if (arena.getArenaConfig().getBoolean(CFG.MODULES_BETTERGEARS_LEG)) {
+        if (arena.getConfig().getBoolean(CFG.MODULES_BETTERGEARS_LEG)) {
             this.replaceArmorItem(EquipmentSlot.LEGS, player, isArmor[2]);
         }
 
-        if (arena.getArenaConfig().getBoolean(CFG.MODULES_BETTERGEARS_FOOT)) {
+        if (arena.getConfig().getBoolean(CFG.MODULES_BETTERGEARS_FOOT)) {
             this.replaceArmorItem(EquipmentSlot.FEET, player, isArmor[3]);
         }
     }
@@ -348,7 +348,7 @@ public class BetterGears extends ArenaModule {
     public void parseRespawn(final Player player, final ArenaTeam team, final DamageCause cause,
                              final Entity damager) {
         final ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
-        if (arena.getArenaConfig().getBoolean(CFG.PLAYER_REFILLINVENTORY)) {
+        if (arena.getConfig().getBoolean(CFG.PLAYER_REFILLINVENTORY)) {
             new EquipRunnable(ap, this);
         }
     }
@@ -429,7 +429,7 @@ public class BetterGears extends ArenaModule {
             Short s = 0;
             try {
                 s = Short
-                        .valueOf(String.valueOf(arena.getArenaConfig()
+                        .valueOf(String.valueOf(arena.getConfig()
                                 .getUnsafe(
                                         "modules.bettergears.levels."
                                                 + c.getName())));
@@ -440,7 +440,7 @@ public class BetterGears extends ArenaModule {
         }
 
         for (final ArenaTeam t : arena.getTeams()) {
-            final Short[] s = parseRGBToShortArray(arena.getArenaConfig().getUnsafe(
+            final Short[] s = parseRGBToShortArray(arena.getConfig().getUnsafe(
                     "modules.bettergears.colors." + t.getName()));
             getColorMap().put(t, s);
             debug("{} : {}", t.getName(), StringParser.joinArray(s, ","));
@@ -466,7 +466,7 @@ public class BetterGears extends ArenaModule {
     }
 
     private ItemStack getColoredItemStack(ItemStack checkItem, ItemStack setItem) {
-        if(!arena.getArenaConfig().getBoolean(CFG.MODULES_BETTERGEARS_ONLYIFLEATHER)) {
+        if(!arena.getConfig().getBoolean(CFG.MODULES_BETTERGEARS_ONLYIFLEATHER)) {
             return setItem;
         } else if (checkItem != null && setItem != null && setItem.getType().equals(checkItem.getType())) {
             LeatherArmorMeta checkMeta = (LeatherArmorMeta) checkItem.getItemMeta();

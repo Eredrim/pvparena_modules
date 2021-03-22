@@ -210,8 +210,8 @@ public class Handycap extends ArenaModule {
                 PotionEffectType pet = PotionEffectType.getByName(split[0].toUpperCase());
                 petWorked = true;
                 Integer level = Integer.parseInt(split[1]);
-                getArena().getArenaConfig().setManually("modules.handycap.powerups."+pet.getName().toLowerCase(), level);
-                getArena().getArenaConfig().save();
+                getArena().getConfig().setManually("modules.handycap.powerups."+pet.getName().toLowerCase(), level);
+                getArena().getConfig().save();
 
             } catch (Exception e) {
                 if (petWorked) {
@@ -229,14 +229,14 @@ public class Handycap extends ArenaModule {
 
     private void commitSetType(CommandSender sender, String arg) {
         if (arg.equalsIgnoreCase("health")) {
-            getArena().getArenaConfig().setManually("modules.handycap.type", "HEALTH");
+            getArena().getConfig().setManually("modules.handycap.type", "HEALTH");
         } else if (arg.toLowerCase().startsWith("powerup")) {
-            getArena().getArenaConfig().setManually("modules.handycap.type", "POWERUP");
+            getArena().getConfig().setManually("modules.handycap.type", "POWERUP");
         } else {
             sender.sendMessage(Language.parse(Language.MSG.ERROR_ARGUMENT, arg, "health, powerup"));
             return;
         }
-        getArena().getArenaConfig().save();
+        getArena().getConfig().save();
     }
 
     @Override
@@ -271,7 +271,7 @@ public class Handycap extends ArenaModule {
     public void parseStart() {
         effects.clear();
 
-        ConfigurationSection cs = getArena().getArenaConfig().getYamlConfiguration()
+        ConfigurationSection cs = getArena().getConfig().getYamlConfiguration()
                 .getConfigurationSection("modules.handycap");
         try {
             type = HandycapType.valueOf(cs.getString("type"));

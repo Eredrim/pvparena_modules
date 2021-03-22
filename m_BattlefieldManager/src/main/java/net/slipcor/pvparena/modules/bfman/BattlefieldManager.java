@@ -130,13 +130,13 @@ public class BattlefieldManager extends ArenaModule {
 				}
 				*/
                 for (PASpawn spawn : arena.getSpawns()) {
-                    arena.getArenaConfig().setManually(
+                    arena.getConfig().setManually(
                             "spawns." + encrypt(spawn.getName(), loaded),
                             Config.parseToString(spawn.getLocation()));
                 }
 
                 for (PABlock block : arena.getBlocks()) {
-                    arena.getArenaConfig().setManually(
+                    arena.getConfig().setManually(
                             "spawns." + encrypt(block.getName(), loaded),
                             Config.parseToString(block.getLocation()));
                 }
@@ -145,7 +145,7 @@ public class BattlefieldManager extends ArenaModule {
                 return;
             }
             // !bm [name] | load definition [name]
-            Set<String> keys = arena.getArenaConfig().getKeys("spawns");
+            Set<String> keys = arena.getConfig().getKeys("spawns");
 
             if (keys == null) {
                 return;
@@ -156,24 +156,24 @@ public class BattlefieldManager extends ArenaModule {
 
             for (final String key : keys) {
                 if (key.startsWith(loaded + "->")) {
-                    final String value = (String) arena.getArenaConfig().getUnsafe("spawns." + key);
+                    final String value = (String) arena.getConfig().getUnsafe("spawns." + key);
                     try {
                         final PABlockLocation loc = Config.parseBlockLocation(value);
 
-                        final String[] split = ((String) arena.getArenaConfig().getUnsafe("spawns." + key)).split(">");
+                        final String[] split = ((String) arena.getConfig().getUnsafe("spawns." + key)).split(">");
                         final String newKey = StringParser.joinArray(StringParser.shiftArrayBy(split, 1), "");
                         arena.addBlock(new PABlock(loc, newKey));
                     } catch (final IllegalArgumentException e) {
                         final PALocation loc = Config.parseLocation(value);
 
-                        final String[] split = ((String) arena.getArenaConfig().getUnsafe("spawns." + key)).split(">");
+                        final String[] split = ((String) arena.getConfig().getUnsafe("spawns." + key)).split(">");
                         final String newKey = StringParser.joinArray(StringParser.shiftArrayBy(split, 1), "");
                         arena.addSpawn(new PASpawn(loc, newKey));
                     }
                 }
             }
 
-            keys = arena.getArenaConfig().getKeys("arenaregion");
+            keys = arena.getConfig().getKeys("arenaregion");
 
             if (keys == null) {
                 return;
@@ -183,7 +183,7 @@ public class BattlefieldManager extends ArenaModule {
 
             for (final String key : keys) {
                 if (key.startsWith(loaded + "->")) {
-                    arena.addRegion(Config.parseRegion(arena, arena.getArenaConfig().getYamlConfiguration(), key));
+                    arena.addRegion(Config.parseRegion(arena, arena.getConfig().getYamlConfiguration(), key));
                 }
             }
 
@@ -193,13 +193,13 @@ public class BattlefieldManager extends ArenaModule {
         // !bm save [name] | save to definition [name]
 
         for (final PASpawn spawn : arena.getSpawns()) {
-            arena.getArenaConfig().setManually(
+            arena.getConfig().setManually(
                     "spawns." + encrypt(spawn.getName(), args[1]),
                     Config.parseToString(spawn.getLocation()));
         }
 
         for (final PABlock block : arena.getBlocks()) {
-            arena.getArenaConfig().setManually(
+            arena.getConfig().setManually(
                     "spawns." + encrypt(block.getName(), args[1]),
                     Config.parseToString(block.getLocation()));
         }

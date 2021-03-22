@@ -142,7 +142,7 @@ public class PAWE extends ArenaModule {
                     arena.msg(sender, Language.parse(MSG.ERROR_REGION_NOTFOUND, args[1]));
                     return;
                 }
-                final List<String> regions = arena.getArenaConfig().getStringList(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), new ArrayList<String>());
+                final List<String> regions = arena.getConfig().getStringList(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), new ArrayList<String>());
                 if (args.length < 2) {
                     arena.msg(sender, Language.parse(MSG.MODULE_WORLDEDIT_LIST_SHOW, StringParser.joinList(regions, ", ")));
                     return;
@@ -150,30 +150,30 @@ public class PAWE extends ArenaModule {
 
                 if (!regions.contains(ars.getRegionName()) || args.length > 2 && StringParser.positive.contains(args[2])) {
                     regions.add(ars.getRegionName());
-                    arena.getArenaConfig().setManually(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), regions);
-                    arena.getArenaConfig().save();
+                    arena.getConfig().setManually(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), regions);
+                    arena.getConfig().save();
                     arena.msg(sender, Language.parse(MSG.MODULE_WORLDEDIT_LIST_ADDED, ars.getRegionName()));
                     return;
                 }
                 regions.remove(ars.getRegionName());
-                arena.getArenaConfig().setManually(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), regions);
-                arena.getArenaConfig().save();
+                arena.getConfig().setManually(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), regions);
+                arena.getConfig().save();
                 arena.msg(sender, Language.parse(MSG.MODULE_WORLDEDIT_LIST_REMOVED, ars.getRegionName()));
                 return;
             }
             if (args[0].equals("!we")) {
 
                 if (args[1].endsWith("save")) {
-                    boolean b = arena.getArenaConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOSAVE);
-                    arena.getArenaConfig().set(CFG.MODULES_WORLDEDIT_AUTOSAVE, !b);
-                    arena.getArenaConfig().save();
+                    boolean b = arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOSAVE);
+                    arena.getConfig().set(CFG.MODULES_WORLDEDIT_AUTOSAVE, !b);
+                    arena.getConfig().save();
                     arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_WORLDEDIT_AUTOSAVE.getNode(), String.valueOf(!b)));
                     return;
                 }
                 if (args[1].endsWith("load")) {
-                    boolean b = arena.getArenaConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOLOAD);
-                    arena.getArenaConfig().set(CFG.MODULES_WORLDEDIT_AUTOLOAD, !b);
-                    arena.getArenaConfig().save();
+                    boolean b = arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOLOAD);
+                    arena.getConfig().set(CFG.MODULES_WORLDEDIT_AUTOLOAD, !b);
+                    arena.getConfig().save();
                     arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_WORLDEDIT_AUTOLOAD.getNode(), String.valueOf(!b)));
                     return;
                 }
@@ -237,8 +237,8 @@ public class PAWE extends ArenaModule {
 
     @Override
     public void displayInfo(final CommandSender sender) {
-        sender.sendMessage(StringParser.colorVar("autoload", arena.getArenaConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOLOAD)) +
-                " | " + StringParser.colorVar("autosave", arena.getArenaConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOSAVE)));
+        sender.sendMessage(StringParser.colorVar("autoload", arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOLOAD)) +
+                " | " + StringParser.colorVar("autosave", arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOSAVE)));
     }
 
     private void helpCommands(final Arena arena, final CommandSender sender) {
@@ -287,7 +287,7 @@ public class PAWE extends ArenaModule {
                 BlockVector3 to = BlockVector3.at(loc.getX(), loc.getY(), loc.getZ());
                 Operation operation=holder.createPaste(editSession)
                         .to(to)
-                        .ignoreAirBlocks(!this.arena.getArenaConfig().getBoolean(CFG.MODULES_WORLDEDIT_REPLACEAIR))
+                        .ignoreAirBlocks(!this.arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_REPLACEAIR))
                         .build();
                 Operations.completeLegacy(operation);
                 editSession.flushSession();
@@ -314,8 +314,8 @@ public class PAWE extends ArenaModule {
 
     @Override
     public void parseStart() {
-        if (arena.getArenaConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOSAVE)) {
-            List<String> regions = arena.getArenaConfig().getStringList(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), new ArrayList<String>());
+        if (arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOSAVE)) {
+            List<String> regions = arena.getConfig().getStringList(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), new ArrayList<String>());
             if (regions.size() > 0) {
                 for (String regionName : regions) {
                     ArenaRegion region = arena.getRegion(regionName);
@@ -334,8 +334,8 @@ public class PAWE extends ArenaModule {
 
     @Override
     public void reset(final boolean force) {
-        if (needsLoading && arena.getArenaConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOLOAD)) {
-            List<String> regions = arena.getArenaConfig().getStringList(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), new ArrayList<String>());
+        if (needsLoading && arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOLOAD)) {
+            List<String> regions = arena.getConfig().getStringList(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), new ArrayList<String>());
             if (regions.size() > 0) {
                 for (String regionName : regions) {
                     ArenaRegion region = arena.getRegion(regionName);

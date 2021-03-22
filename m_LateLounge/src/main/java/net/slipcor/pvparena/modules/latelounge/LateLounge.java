@@ -39,7 +39,7 @@ public class LateLounge extends ArenaModule {
 
     @Override
     public boolean handleJoin(Player player) throws GameplayExceptionNotice {
-        int requiredPlayers = this.arena.getArenaConfig().getInt(CFG.READY_MINPLAYERS);
+        int requiredPlayers = this.arena.getConfig().getInt(CFG.READY_MINPLAYERS);
 
         if (this.playerList.contains(player.getName())) {
             if (this.playerList.size() < requiredPlayers) {

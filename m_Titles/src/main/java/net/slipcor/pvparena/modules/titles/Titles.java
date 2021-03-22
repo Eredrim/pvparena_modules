@@ -94,12 +94,12 @@ public class Titles extends ArenaModule {
 
             for (final Title.type t : Title.type.values()) {
                 if (t.name().equalsIgnoreCase(args[1])) {
-                    final boolean b = arena.getArenaConfig().getBoolean(
+                    final boolean b = arena.getConfig().getBoolean(
                             CFG.valueOf("MODULES_TITLES_" + t.name()));
-                    arena.getArenaConfig().set(
+                    arena.getConfig().set(
                             CFG.valueOf("MODULES_TITLES_" + t.name()),
                             !b);
-                    arena.getArenaConfig().save();
+                    arena.getConfig().save();
 
                     arena.msg(
                             sender,
@@ -128,33 +128,33 @@ public class Titles extends ArenaModule {
     public void displayInfo(final CommandSender player) {
         player.sendMessage("");
         player.sendMessage("color: "
-                + StringParser.colorVar(arena.getArenaConfig().getString(
+                + StringParser.colorVar(arena.getConfig().getString(
                 CFG.MODULES_TITLES_COLOR)));
-        player.sendMessage(StringParser.colorVar("advert", arena.getArenaConfig()
+        player.sendMessage(StringParser.colorVar("advert", arena.getConfig()
                 .getBoolean(CFG.MODULES_TITLES_ADVERT))
                 + " || "
-                + StringParser.colorVar("count", arena.getArenaConfig()
+                + StringParser.colorVar("count", arena.getConfig()
                 .getBoolean(CFG.MODULES_TITLES_COUNT))
                 + " || "
-                + StringParser.colorVar("custom", arena.getArenaConfig()
+                + StringParser.colorVar("custom", arena.getConfig()
                 .getBoolean(CFG.MODULES_TITLES_CUSTOM))
                 + " || "
-                + StringParser.colorVar("end", arena.getArenaConfig()
+                + StringParser.colorVar("end", arena.getConfig()
                 .getBoolean(CFG.MODULES_TITLES_END))
                 + " || "
-                + StringParser.colorVar("join", arena.getArenaConfig()
+                + StringParser.colorVar("join", arena.getConfig()
                 .getBoolean(CFG.MODULES_TITLES_JOIN))
                 + " || "
-                + StringParser.colorVar("loser", arena.getArenaConfig()
+                + StringParser.colorVar("loser", arena.getConfig()
                 .getBoolean(CFG.MODULES_TITLES_LOSER))
                 + " || "
-                + StringParser.colorVar("prize", arena.getArenaConfig()
+                + StringParser.colorVar("prize", arena.getConfig()
                 .getBoolean(CFG.MODULES_TITLES_PRIZE))
                 + " || "
-                + StringParser.colorVar("start", arena.getArenaConfig()
+                + StringParser.colorVar("start", arena.getConfig()
                 .getBoolean(CFG.MODULES_TITLES_START))
                 + " || "
-                + StringParser.colorVar("winner", arena.getArenaConfig()
+                + StringParser.colorVar("winner", arena.getConfig()
                 .getBoolean(CFG.MODULES_TITLES_WINNER)));
     }
 
@@ -168,26 +168,26 @@ public class Titles extends ArenaModule {
                     PVPArena.hasOverridePerms(player) ? arena.getName() : ArenaManager.getIndirectArenaName(arena);
             Title.announce(arena, Title.type.ADVERT, Language
                     .parse(arena, CFG.MSG_STARTING, arenaname +
-                            ChatColor.valueOf(arena.getArenaConfig().getString(
+                            ChatColor.valueOf(arena.getConfig().getString(
                                     CFG.MODULES_TITLES_COLOR))));
         }
 
         if (arena.isFreeForAll()) {
             Title.announce(arena, Title.type.JOIN,
-                    arena.getArenaConfig().getString(CFG.MSG_PLAYERJOINED)
+                    arena.getConfig().getString(CFG.MSG_PLAYERJOINED)
                             .replace("%1%", player.getName() +
-                                    ChatColor.valueOf(arena.getArenaConfig().getString(
+                                    ChatColor.valueOf(arena.getConfig().getString(
                                             CFG.MODULES_TITLES_COLOR))));
         } else {
             Title.announce(
                     arena,
                     Title.type.JOIN,
-                    arena.getArenaConfig().getString(CFG.MSG_PLAYERJOINEDTEAM)
+                    arena.getConfig().getString(CFG.MSG_PLAYERJOINEDTEAM)
                             .replace("%1%", player.getName() +
-                                    ChatColor.valueOf(arena.getArenaConfig().getString(
+                                    ChatColor.valueOf(arena.getConfig().getString(
                                             CFG.MODULES_TITLES_COLOR)))
                             .replace("%2%", team.getColoredName() +
-                                    ChatColor.valueOf(arena.getArenaConfig().getString(
+                                    ChatColor.valueOf(arena.getConfig().getString(
                                             CFG.MODULES_TITLES_COLOR))));
         }
     }
@@ -197,7 +197,7 @@ public class Titles extends ArenaModule {
         if (team == null) {
             Title.announce(arena, Title.type.LOSER,
                     Language.parse(MSG.FIGHT_PLAYER_LEFT, player.getName() +
-                            ChatColor.valueOf(arena.getArenaConfig().getString(
+                            ChatColor.valueOf(arena.getConfig().getString(
                                     CFG.MODULES_TITLES_COLOR))));
         } else {
             Title.announce(
@@ -205,7 +205,7 @@ public class Titles extends ArenaModule {
                     Title.type.LOSER,
                     Language.parse(MSG.FIGHT_PLAYER_LEFT,
                             team.colorizePlayer(player) +
-                                    ChatColor.valueOf(arena.getArenaConfig().getString(
+                                    ChatColor.valueOf(arena.getConfig().getString(
                                             CFG.MODULES_TITLES_COLOR))));
         }
     }

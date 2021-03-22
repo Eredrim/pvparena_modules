@@ -111,9 +111,9 @@ public class Maps extends ArenaModule {
                 arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[1], "align | lives | players | spawns"));
                 return;
             }
-            final boolean b = arena.getArenaConfig().getBoolean(c);
-            arena.getArenaConfig().set(c, !b);
-            arena.getArenaConfig().save();
+            final boolean b = arena.getConfig().getBoolean(c);
+            arena.getConfig().set(c, !b);
+            arena.getConfig().save();
             arena.msg(sender, Language.parse(MSG.SET_DONE, c.getNode(), String.valueOf(!b)));
         }
     }
@@ -121,16 +121,16 @@ public class Maps extends ArenaModule {
     @Override
     public void displayInfo(final CommandSender sender) {
         sender.sendMessage(StringParser.colorVar("playerAlign",
-                arena.getArenaConfig().getBoolean(
+                arena.getConfig().getBoolean(
                         CFG.MODULES_ARENAMAPS_ALIGNTOPLAYER)) + "||" +
                 StringParser.colorVar("showLives",
-                        arena.getArenaConfig().getBoolean(
+                        arena.getConfig().getBoolean(
                                 CFG.MODULES_ARENAMAPS_SHOWLIVES)) + "||" +
                 StringParser.colorVar("showPlayers",
-                        arena.getArenaConfig().getBoolean(
+                        arena.getConfig().getBoolean(
                                 CFG.MODULES_ARENAMAPS_SHOWPLAYERS)) + "||" +
                 StringParser.colorVar("showSpawns",
-                        arena.getArenaConfig().getBoolean(
+                        arena.getConfig().getBoolean(
                                 CFG.MODULES_ARENAMAPS_SHOWSPAWNS)));
     }
 

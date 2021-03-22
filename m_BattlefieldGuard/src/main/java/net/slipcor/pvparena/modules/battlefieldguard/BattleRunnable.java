@@ -46,7 +46,7 @@ class BattleRunnable extends BukkitRunnable {
                 trace(p, "arena IN: {}", ap.getArena());
 
                 if(ap.getArena() == null) {
-                    if (arena.getArenaConfig().getBoolean(CFG.MODULES_BATTLEFIELDGUARD_ENTERDEATH)) {
+                    if (arena.getConfig().getBoolean(CFG.MODULES_BATTLEFIELDGUARD_ENTERDEATH)) {
                         p.setLastDamageCause(new EntityDamageEvent(p, DamageCause.CUSTOM,1000.0));
                         p.setHealth(0);
                         p.damage(1000);
@@ -54,7 +54,7 @@ class BattleRunnable extends BukkitRunnable {
                         arena.tpPlayerToCoordName(ap, "exit");
                     }
                 } else if(!ap.getArena().equals(arena)) {
-                    if (ap.getArena().getArenaConfig().getBoolean(CFG.MODULES_BATTLEFIELDGUARD_ENTERDEATH)) {
+                    if (ap.getArena().getConfig().getBoolean(CFG.MODULES_BATTLEFIELDGUARD_ENTERDEATH)) {
                         p.setLastDamageCause(new EntityDamageEvent(p, DamageCause.CUSTOM,1000.0));
                         p.setHealth(0);
                         p.damage(1000);

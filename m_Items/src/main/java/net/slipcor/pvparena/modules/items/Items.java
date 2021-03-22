@@ -21,8 +21,8 @@ public class Items extends ArenaModule {
 
     @Override
     public void displayInfo(final CommandSender sender) {
-        sender.sendMessage("interval: " + arena.getArenaConfig().getInt(CFG.MODULES_ITEMS_INTERVAL));
-        ItemStack[] items = arena.getArenaConfig().getItems(CFG.MODULES_ITEMS_ITEMS);
+        sender.sendMessage("interval: " + arena.getConfig().getInt(CFG.MODULES_ITEMS_INTERVAL));
+        ItemStack[] items = arena.getConfig().getItems(CFG.MODULES_ITEMS_ITEMS);
         StringBuilder itemsString = new StringBuilder("items : ");
         for(ItemStack item : items) {
             itemsString.append(item.getType().name());
@@ -43,15 +43,15 @@ public class Items extends ArenaModule {
 
     @Override
     public void parseStart() {
-        if (arena.getArenaConfig().getInt(CFG.MODULES_ITEMS_INTERVAL) > 0) {
+        if (arena.getConfig().getInt(CFG.MODULES_ITEMS_INTERVAL) > 0) {
             Bukkit.getScheduler().cancelTask(id);
             id = Bukkit.getScheduler()
                     .scheduleSyncRepeatingTask(
                             PVPArena.getInstance(),
                             new ItemSpawnRunnable(arena),
-                            arena.getArenaConfig().getInt(
+                            arena.getConfig().getInt(
                                     CFG.MODULES_ITEMS_INTERVAL) * 20L,
-                            arena.getArenaConfig().getInt(
+                            arena.getConfig().getInt(
                                     CFG.MODULES_ITEMS_INTERVAL) * 20L);
         }
     }

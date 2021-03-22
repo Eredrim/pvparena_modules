@@ -48,7 +48,7 @@ public class Points extends ArenaModule implements Listener {
             config.addDefault("modules.points.classes." + aClass.getName(), 0.0d);
         }
 
-        if (arena.getArenaConfig().getBoolean(CFG.MODULES_POINTS_GLOBAL)) {
+        if (arena.getConfig().getBoolean(CFG.MODULES_POINTS_GLOBAL)) {
             if (globalconfig == null) {
                 gcf = new File(PVPArena.getInstance().getDataFolder(), "points.yml");
 
@@ -91,36 +91,36 @@ public class Points extends ArenaModule implements Listener {
     @Override
     public void displayInfo(final CommandSender player) {
         player.sendMessage(StringParser.colorVar(
-                "global", arena.getArenaConfig().getBoolean(
+                "global", arena.getConfig().getBoolean(
                         CFG.MODULES_POINTS_GLOBAL)));
     }
 
     @Override
     public void resetPlayer(final Player player, final boolean soft, final boolean force) {
-        if (arena.getArenaConfig().getBoolean(CFG.MODULES_POINTS_GLOBAL)) {
+        if (arena.getConfig().getBoolean(CFG.MODULES_POINTS_GLOBAL)) {
             globalconfig.set(player.getName(), globalpoints.get(player.getName()));
         } else {
-            arena.getArenaConfig().setManually("modules.points.players." + player.getName(), points.get(player.getName()));
+            arena.getConfig().setManually("modules.points.players." + player.getName(), points.get(player.getName()));
         }
     }
 
     @Override
     public void reset(final boolean force) {
-        if (arena.getArenaConfig().getBoolean(CFG.MODULES_POINTS_GLOBAL)) {
+        if (arena.getConfig().getBoolean(CFG.MODULES_POINTS_GLOBAL)) {
             try {
                 globalconfig.save(gcf);
             } catch (final IOException e) {
                 e.printStackTrace();
             }
         } else {
-            arena.getArenaConfig().save();
+            arena.getConfig().save();
         }
 
     }
 
     @Override
     public boolean cannotSelectClass(final Player player, final String className) {
-        final Object o = arena.getArenaConfig().getUnsafe("modules.points.classes." + className);
+        final Object o = arena.getConfig().getUnsafe("modules.points.classes." + className);
 
         if (o == null) {
             // no requirement, out!
@@ -129,7 +129,7 @@ public class Points extends ArenaModule implements Listener {
 
         final double d = (Double) o;
 
-        if (arena.getArenaConfig().getBoolean(CFG.MODULES_POINTS_GLOBAL)) {
+        if (arena.getConfig().getBoolean(CFG.MODULES_POINTS_GLOBAL)) {
             if (globalpoints.containsKey(player.getName())) {
                 return globalpoints.get(player.getName()) < d;
             }
@@ -146,7 +146,7 @@ public class Points extends ArenaModule implements Listener {
         if (event.getArenaClass() == null || event.getArena() == null || !event.getArena().equals(arena)) {
             return;
         }
-        final Object o = arena.getArenaConfig().getUnsafe("modules.points.classes." + event.getArenaClass().getName());
+        final Object o = arena.getConfig().getUnsafe("modules.points.classes." + event.getArenaClass().getName());
 
         if (o == null) {
             // no requirement, out!
@@ -215,10 +215,10 @@ public class Points extends ArenaModule implements Listener {
         debug(arena, "new Reward: " + amount + "x " + playerName + " -> " + rewardType);
         try {
 
-            final double value = arena.getArenaConfig().getDouble(
+            final double value = arena.getConfig().getDouble(
                     CFG.valueOf("MODULES_POINTS_REWARD_" + rewardType), 0.0d);
 
-            final double maybevalue = arena.getArenaConfig().getDouble(
+            final double maybevalue = arena.getConfig().getDouble(
                     CFG.valueOf("MODULES_POINTS_REWARD_" + rewardType), -1.0d);
 
             if (maybevalue < 0) {
@@ -247,7 +247,7 @@ public class Points extends ArenaModule implements Listener {
     }
 
     private void add(final String playerName, final double value) {
-        if (arena.getArenaConfig().getBoolean(CFG.MODULES_POINTS_GLOBAL)) {
+        if (arena.getConfig().getBoolean(CFG.MODULES_POINTS_GLOBAL)) {
             if (globalpoints.containsKey(playerName)) {
                 final double d = globalpoints.get(playerName);
                 globalpoints.put(playerName, value + d);
@@ -265,7 +265,7 @@ public class Points extends ArenaModule implements Listener {
     }
 
     private void remove(final String playerName, final double value) {
-        if (arena.getArenaConfig().getBoolean(CFG.MODULES_POINTS_GLOBAL)) {
+        if (arena.getConfig().getBoolean(CFG.MODULES_POINTS_GLOBAL)) {
             if (globalpoints.containsKey(playerName)) {
                 final double d = globalpoints.get(playerName);
                 globalpoints.put(playerName, d - value);

@@ -69,7 +69,7 @@ public class SinglePlayerSupport extends ArenaModule {
         arenaPlayer.setStatus(PlayerStatus.FIGHT);
         team.add(arenaPlayer);
         final Set<PASpawn> spawns = new HashSet<>();
-        if (arena.getArenaConfig().getBoolean(CFG.GENERAL_CLASSSPAWN)) {
+        if (arena.getConfig().getBoolean(CFG.GENERAL_CLASSSPAWN)) {
             final String arenaClass = arenaPlayer.getArenaClass().getName();
             spawns.addAll(SpawnManager.getPASpawnsStartingWith(arena, team.getName() + arenaClass + "spawn"));
         } else if (arena.isFreeForAll()) {
@@ -102,7 +102,7 @@ public class SinglePlayerSupport extends ArenaModule {
 
 
             if (arenaPlayer.getArenaTeam() != null && arenaPlayer.getArenaClass() == null) {
-                final String autoClass = arena.getArenaConfig().getDefinedString(CFG.READY_AUTOCLASS);
+                final String autoClass = arena.getConfig().getDefinedString(CFG.READY_AUTOCLASS);
                 if (autoClass != null && arena.getClass(autoClass) != null) {
                     arena.chooseClass(arenaPlayer.getPlayer(), null, autoClass);
                 }

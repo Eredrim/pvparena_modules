@@ -57,12 +57,12 @@ public class InventoryLoss extends ArenaModule {
 
     @Override
     public void checkJoin(Player player) throws GameplayException {
-        if (this.arena.getArenaConfig().getBoolean(CFG.MODULES_FIXINVENTORYLOSS_GAMEMODE)) {
+        if (this.arena.getConfig().getBoolean(CFG.MODULES_FIXINVENTORYLOSS_GAMEMODE)) {
             if (player.getGameMode() != GameMode.SURVIVAL) {
                 throw new GameplayException(MSG.MODULE_FIXINVENTORYLOSS_GAMEMODE);
             }
         }
-        if (this.arena.getArenaConfig().getBoolean(CFG.MODULES_FIXINVENTORYLOSS_INVENTORY)) {
+        if (this.arena.getConfig().getBoolean(CFG.MODULES_FIXINVENTORYLOSS_INVENTORY)) {
             for (final ItemStack item : player.getInventory().getContents()) {
                 if (item != null && item.getType() != Material.AIR) {
                     throw new GameplayException(MSG.MODULE_FIXINVENTORYLOSS_INVENTORY);
@@ -106,17 +106,17 @@ public class InventoryLoss extends ArenaModule {
             return;
         }
 
-        final boolean b = arena.getArenaConfig().getBoolean(c);
-        arena.getArenaConfig().set(c, !b);
-        arena.getArenaConfig().save();
+        final boolean b = arena.getConfig().getBoolean(c);
+        arena.getConfig().set(c, !b);
+        arena.getConfig().save();
         arena.msg(sender, Language.parse(MSG.SET_DONE, c.getNode(), String.valueOf(!b)));
 
     }
 
     @Override
     public void displayInfo(final CommandSender player) {
-        player.sendMessage(StringParser.colorVar("gamemode", arena.getArenaConfig().getBoolean(CFG.MODULES_FIXINVENTORYLOSS_GAMEMODE))
+        player.sendMessage(StringParser.colorVar("gamemode", arena.getConfig().getBoolean(CFG.MODULES_FIXINVENTORYLOSS_GAMEMODE))
                 + " || "
-                + StringParser.colorVar("inventory", arena.getArenaConfig().getBoolean(CFG.MODULES_FIXINVENTORYLOSS_INVENTORY)));
+                + StringParser.colorVar("inventory", arena.getConfig().getBoolean(CFG.MODULES_FIXINVENTORYLOSS_INVENTORY)));
     }
 }

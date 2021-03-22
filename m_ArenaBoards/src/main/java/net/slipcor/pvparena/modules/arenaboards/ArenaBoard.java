@@ -195,8 +195,8 @@ public class ArenaBoard {
             PVPArena.getInstance().getConfig().set("leaderboard", null);
             PVPArena.getInstance().saveConfig();
         } else {
-            abm.getArena().getArenaConfig().setManually("spawns.leaderboard", null);
-            abm.getArena().getArenaConfig().save();
+            abm.getArena().getConfig().setManually("spawns.leaderboard", null);
+            abm.getArena().getConfig().save();
         }
     }
 }

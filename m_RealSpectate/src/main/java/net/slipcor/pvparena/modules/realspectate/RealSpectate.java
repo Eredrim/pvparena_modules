@@ -62,7 +62,7 @@ public class RealSpectate extends ArenaModule {
             arenaPlayer.dump();
         }
 
-        this.arena.setupScoreboard(arenaPlayer);
+        this.arena.getScoreboard().setupPlayer(arenaPlayer);
 
         debug(player, "switching:");
         this.getListener().switchPlayer(player, null, true);

@@ -121,11 +121,11 @@ class PAListener implements Listener {
 
             final String s = "power";
             int i = 0;
-            for (String node : a.getArenaConfig().getKeys("spawns")) {
+            for (String node : a.getConfig().getKeys("spawns")) {
                 if (node.startsWith(s) && !node.contains("powerup")) {
 
                     final PABlockLocation locc = Config.parseBlockLocation(
-                            (String) a.getArenaConfig().getUnsafe("spawns." + node)
+                            (String) a.getConfig().getUnsafe("spawns." + node)
                     );
                     if (loc.equals(locc.toLocation())) {
                         PVPArena.getInstance().getLogger().warning("Block already exists!");

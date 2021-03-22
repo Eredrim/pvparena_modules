@@ -108,9 +108,9 @@ class MyRenderer extends MapRenderer {
 
                 done.add(map.getId());
 
-                showSpawns = arena.getArenaConfig().getBoolean(CFG.MODULES_ARENAMAPS_SHOWSPAWNS);
-                showPlayers = arena.getArenaConfig().getBoolean(CFG.MODULES_ARENAMAPS_SHOWPLAYERS);
-                showLives = arena.getArenaConfig().getBoolean(CFG.MODULES_ARENAMAPS_SHOWLIVES);
+                showSpawns = arena.getConfig().getBoolean(CFG.MODULES_ARENAMAPS_SHOWSPAWNS);
+                showPlayers = arena.getConfig().getBoolean(CFG.MODULES_ARENAMAPS_SHOWPLAYERS);
+                showLives = arena.getConfig().getBoolean(CFG.MODULES_ARENAMAPS_SHOWLIVES);
             }
             return;
         }
@@ -119,7 +119,7 @@ class MyRenderer extends MapRenderer {
             return;
         }
 
-        if (arena != null && arena.getArenaConfig().getBoolean(CFG.MODULES_ARENAMAPS_ALIGNTOPLAYER)) {
+        if (arena != null && arena.getConfig().getBoolean(CFG.MODULES_ARENAMAPS_ALIGNTOPLAYER)) {
 
             map.setCenterX(player.getLocation().getBlockX());
             map.setCenterZ(player.getLocation().getBlockZ());

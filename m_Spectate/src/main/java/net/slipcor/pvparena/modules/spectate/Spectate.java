@@ -89,8 +89,8 @@ public class Spectate extends ArenaModule {
         }
 
 
-        final long delay = arena.getArenaConfig().getBoolean(CFG.PERMS_FLY) ? 6L : 5L;
-        final long delay2 = arena.getArenaConfig().getBoolean(CFG.PERMS_FLY) ? 20L : 24L;
+        final long delay = arena.getConfig().getBoolean(CFG.PERMS_FLY) ? 6L : 5L;
+        final long delay2 = arena.getConfig().getBoolean(CFG.PERMS_FLY) ? 20L : 24L;
         class RunLater implements Runnable {
 
             @Override
@@ -104,7 +104,7 @@ public class Spectate extends ArenaModule {
 
             @Override
             public void run() {
-                if (arena.getArenaConfig().getGameMode(CFG.GENERAL_GAMEMODE) != null) {
+                if (arena.getConfig().getGameMode(CFG.GENERAL_GAMEMODE) != null) {
                     player.setGameMode(GameMode.SPECTATOR);
                 }
                 player.setFlySpeed(0.2f);

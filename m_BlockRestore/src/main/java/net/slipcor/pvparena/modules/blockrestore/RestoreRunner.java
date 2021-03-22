@@ -50,7 +50,7 @@ class RestoreRunner implements Runnable {
     @Override
     public void run() {
         PAA_Edit.activeEdits.put("server", blocks.getArena());
-        final World world = Bukkit.getWorld(blocks.getArena().getWorld());
+        final World world = blocks.getArena().getWorld();
         for (final Map.Entry<Location, ItemStack[]> locationEntry1 : chests.entrySet()) {
             if (locationEntry1.getKey() == null) {
                 break;
@@ -69,7 +69,7 @@ class RestoreRunner implements Runnable {
                     trace("success!");
                     chests.remove(locationEntry1.getKey());
                     Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(),
-                            this, blocks.getArena().getArenaConfig().getInt(CFG.MODULES_BLOCKRESTORE_OFFSET) * 1L);
+                            this, blocks.getArena().getConfig().getInt(CFG.MODULES_BLOCKRESTORE_OFFSET) * 1L);
                 }
                 return;
             } catch (final Exception e) {
@@ -94,7 +94,7 @@ class RestoreRunner implements Runnable {
                 trace("success!");
                 dispensers.remove(locationEntry.getKey());
                 Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(),
-                        this, blocks.getArena().getArenaConfig().getInt(CFG.MODULES_BLOCKRESTORE_OFFSET) * 1L);
+                        this, blocks.getArena().getConfig().getInt(CFG.MODULES_BLOCKRESTORE_OFFSET) * 1L);
                 return;
             } catch (final Exception e) {
                 //
@@ -111,7 +111,7 @@ class RestoreRunner implements Runnable {
                 trace("success!");
                 furnaces.remove(loc);
                 Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(),
-                        this, blocks.getArena().getArenaConfig().getInt(CFG.MODULES_BLOCKRESTORE_OFFSET) * 1L);
+                        this, blocks.getArena().getConfig().getInt(CFG.MODULES_BLOCKRESTORE_OFFSET) * 1L);
                 return;
             } catch (final Exception e) {
                 //

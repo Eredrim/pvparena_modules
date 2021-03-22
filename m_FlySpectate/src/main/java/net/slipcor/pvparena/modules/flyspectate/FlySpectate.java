@@ -91,11 +91,11 @@ public class FlySpectate extends ArenaModule {
         }
 
 
-        final long delay = this.arena.getArenaConfig().getBoolean(CFG.PERMS_FLY) ? 6L : 5L;
+        final long delay = this.arena.getConfig().getBoolean(CFG.PERMS_FLY) ? 6L : 5L;
         this.arena.tpPlayerToCoordNameForJoin(arenaPlayer, "spectator", false);
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), () -> {
-            if (this.arena.getArenaConfig().getGameMode(CFG.GENERAL_GAMEMODE) != null) {
+            if (this.arena.getConfig().getGameMode(CFG.GENERAL_GAMEMODE) != null) {
                 player.setGameMode(GameMode.CREATIVE);
             }
             player.setAllowFlight(true);

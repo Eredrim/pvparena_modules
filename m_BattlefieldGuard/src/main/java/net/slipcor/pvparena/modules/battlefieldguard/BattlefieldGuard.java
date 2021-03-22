@@ -9,7 +9,11 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.Set;
 
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
+
 public class BattlefieldGuard extends ArenaModule {
+    public static final String EXIT = "exit";
     private boolean setup;
 
     public BattlefieldGuard() {
@@ -32,17 +36,17 @@ public class BattlefieldGuard extends ArenaModule {
 
     @Override
     public void displayInfo(final CommandSender sender) {
-        sender.sendMessage(StringParser.colorVar("enterdeath", this.arena.getArenaConfig().getBoolean(CFG.MODULES_BATTLEFIELDGUARD_ENTERDEATH)));
+        sender.sendMessage(StringParser.colorVar("enterdeath", this.arena.getConfig().getBoolean(CFG.MODULES_BATTLEFIELDGUARD_ENTERDEATH)));
     }
 
     @Override
     public boolean hasSpawn(final String s) {
-        return "exit".equalsIgnoreCase(s);
+        return EXIT.equalsIgnoreCase(s);
     }
 
     @Override
-    public String checkForMissingSpawns(final Set<String> list) {
-        return list.contains("exit") ? null : "exit not set";
+    public Set<String> checkForMissingSpawns(final Set<String> list) {
+        return list.contains(EXIT) ? emptySet() : singleton(EXIT);
     }
 
     @Override

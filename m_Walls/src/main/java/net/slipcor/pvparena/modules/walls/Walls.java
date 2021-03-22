@@ -59,7 +59,7 @@ public class Walls extends ArenaModule {
     private void createWalls() {
         Material mat;
         try {
-            mat = Material.getMaterial(arena.getArenaConfig().getString(CFG.MODULES_WALLS_MATERIAL));
+            mat = Material.getMaterial(arena.getConfig().getString(CFG.MODULES_WALLS_MATERIAL));
         } catch (final Exception e) {
             mat = Material.SAND;
         }
@@ -120,8 +120,8 @@ public class Walls extends ArenaModule {
                 return;
             }
 
-            arena.getArenaConfig().set(CFG.MODULES_WALLS_SECONDS, i);
-            arena.getArenaConfig().save();
+            arena.getConfig().set(CFG.MODULES_WALLS_SECONDS, i);
+            arena.getConfig().save();
             arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_WALLS_SECONDS.getNode(), String.valueOf(i)));
         } else {
             // setting walls material
@@ -134,21 +134,21 @@ public class Walls extends ArenaModule {
                 return;
             }
 
-            arena.getArenaConfig().set(CFG.MODULES_WALLS_MATERIAL, mat.name());
-            arena.getArenaConfig().save();
+            arena.getConfig().set(CFG.MODULES_WALLS_MATERIAL, mat.name());
+            arena.getConfig().save();
             arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_WALLS_MATERIAL.getNode(), mat.name()));
         }
     }
 
     @Override
     public void displayInfo(final CommandSender sender) {
-        sender.sendMessage("seconds: " + arena.getArenaConfig().getInt(CFG.MODULES_WALLS_SECONDS) +
-                "material: " + arena.getArenaConfig().getString(CFG.MODULES_WALLS_MATERIAL));
+        sender.sendMessage("seconds: " + arena.getConfig().getInt(CFG.MODULES_WALLS_SECONDS) +
+                "material: " + arena.getConfig().getString(CFG.MODULES_WALLS_MATERIAL));
     }
 
     @Override
     public void parseStart() {
-        runnable = new WallsRunner(this, arena, arena.getArenaConfig().getInt(CFG.MODULES_WALLS_SECONDS));
+        runnable = new WallsRunner(this, arena, arena.getConfig().getInt(CFG.MODULES_WALLS_SECONDS));
         createWalls();
     }
 
@@ -157,9 +157,9 @@ public class Walls extends ArenaModule {
         debug("resetting WALLS");
         if (runnable != null) {
             runnable.cancel();
-            if (arena.getArenaConfig().getBoolean(Config.CFG.MODULES_WALLS_SCOREBOARDCOUNTDOWN)) {
-                arena.removeCustomScoreBoardEntry(this, 99);
-                arena.removeCustomScoreBoardEntry(this, 98);
+            if (arena.getConfig().getBoolean(Config.CFG.MODULES_WALLS_SCOREBOARDCOUNTDOWN)) {
+                arena.getScoreboard().removeCustomEntry(this, 99);
+                arena.getScoreboard().removeCustomEntry(this, 98);
             }
         }
         if (!needsReset) {
@@ -174,7 +174,7 @@ public class Walls extends ArenaModule {
     public void removeWalls() {
         Material mat;
         try {
-            mat = Material.getMaterial(arena.getArenaConfig().getString(CFG.MODULES_WALLS_MATERIAL));
+            mat = Material.getMaterial(arena.getConfig().getString(CFG.MODULES_WALLS_MATERIAL));
         } catch (final Exception e) {
             mat = Material.SAND;
         }
@@ -203,9 +203,9 @@ public class Walls extends ArenaModule {
                 needsReset = true;
             }
         }
-        if (arena.getArenaConfig().getBoolean(Config.CFG.MODULES_WALLS_SCOREBOARDCOUNTDOWN)) {
-            arena.removeCustomScoreBoardEntry(this, 99);
-            arena.removeCustomScoreBoardEntry(this, 98);
+        if (arena.getConfig().getBoolean(Config.CFG.MODULES_WALLS_SCOREBOARDCOUNTDOWN)) {
+            arena.getScoreboard().removeCustomEntry(this, 99);
+            arena.getScoreboard().removeCustomEntry(this, 98);
         }
     }
 }

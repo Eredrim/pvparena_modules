@@ -29,8 +29,8 @@ public class BlockDissolve extends ArenaModule {
             return;
         }
         if (this.checker == null) {
-            this.dissolveItems = this.arena.getArenaConfig().getItems(CFG.MODULES_BLOCKDISSOLVE_MATERIALS);
-            this.dissolveTicks = this.arena.getArenaConfig().getInt(CFG.MODULES_BLOCKDISSOLVE_TICKS);
+            this.dissolveItems = this.arena.getConfig().getItems(CFG.MODULES_BLOCKDISSOLVE_MATERIALS);
+            this.dissolveTicks = this.arena.getConfig().getInt(CFG.MODULES_BLOCKDISSOLVE_TICKS);
             this.checker = new MoveChecker(this.arena, this.dissolveItems, this.dissolveTicks);
         }
         this.setup = true;

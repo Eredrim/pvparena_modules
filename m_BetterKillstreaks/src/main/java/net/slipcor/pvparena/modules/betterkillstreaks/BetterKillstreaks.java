@@ -83,7 +83,7 @@ public class BetterKillstreaks extends ArenaModule implements Listener {
             arena.msg(sender, Language.parse(MSG.ERROR_NOT_NUMERIC, args[1]));
             return;
         }
-        ConfigurationSection cs = arena.getArenaConfig().getYamlConfiguration().getConfigurationSection("modules.betterkillstreaks.definitions");
+        ConfigurationSection cs = arena.getConfig().getYamlConfiguration().getConfigurationSection("modules.betterkillstreaks.definitions");
         if (args.length < 3) {
             // !bk [level] | show level content
             if (cs.get("d" + level) == null) {
@@ -100,14 +100,14 @@ public class BetterKillstreaks extends ArenaModule implements Listener {
             // !bk [level] clear | clear the definition
             cs.set("d" + level, null);
             arena.msg(sender, "level " + level + " removed!");
-            arena.getArenaConfig().save();
+            arena.getConfig().save();
             return;
         }
 
         if ("items".equals(args[2])) {
             // !bk [level] items | set the items to your inventory
             cs.set("d" + level + ".items", ((Player) sender).getInventory().getContents());
-            arena.getArenaConfig().save();
+            arena.getConfig().save();
             arena.msg(sender, "Items of level " + level + " set to: " + ((Player) sender).getInventory().getContents().toString());
             return;
         }
@@ -173,7 +173,7 @@ public class BetterKillstreaks extends ArenaModule implements Listener {
 
         cs.set("d" + level + ".potion", val);
 
-        arena.getArenaConfig().save();
+        arena.getConfig().save();
         arena.msg(sender, "Level " + level + " now has potion effect: " + val);
     }
 
@@ -255,7 +255,7 @@ public class BetterKillstreaks extends ArenaModule implements Listener {
 
 
     private void reward(final Player player, final int value) {
-        final ConfigurationSection cs = arena.getArenaConfig().getYamlConfiguration().getConfigurationSection("modules.betterkillstreaks.definitions");
+        final ConfigurationSection cs = arena.getConfig().getYamlConfiguration().getConfigurationSection("modules.betterkillstreaks.definitions");
         for (final String key : cs.getKeys(false)) {
             if (key.equals("d" + value)) {
                 final ItemStack[] items = cs.getList("items").toArray(new ItemStack[0]);

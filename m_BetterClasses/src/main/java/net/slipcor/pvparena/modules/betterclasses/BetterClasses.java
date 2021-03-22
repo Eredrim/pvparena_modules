@@ -51,8 +51,8 @@ public class BetterClasses extends ArenaModule {
         int globalmax;
 
         try {
-            max = (Integer) arena.getArenaConfig().getUnsafe("modules.betterclasses.maxPlayers." + className);
-            globalmax = (Integer) arena.getArenaConfig().getUnsafe("modules.betterclasses.maxGlobalPlayers." + className);
+            max = (Integer) arena.getConfig().getUnsafe("modules.betterclasses.maxPlayers." + className);
+            globalmax = (Integer) arena.getConfig().getUnsafe("modules.betterclasses.maxGlobalPlayers." + className);
         } catch (final Exception e) {
             debug(arena, "Exception at BetterClasses.class getting " + className +" config:" + e.getMessage() + " at line "+e.getStackTrace()[1].getLineNumber());
             max = 0;
@@ -194,39 +194,39 @@ public class BetterClasses extends ArenaModule {
 
             if ("exp".equalsIgnoreCase(args[3])) {
                 final String node = "modules.betterclasses.neededEXPLevel." + c.getName();
-                arena.getArenaConfig().setManually(node, value);
+                arena.getConfig().setManually(node, value);
                 arena.msg(sender, Language.parse(MSG.SET_DONE, node, String.valueOf(value)));
             } else if ("max".equalsIgnoreCase(args[3])) {
                 final String node = "modules.betterclasses.maxPlayers." + c.getName();
-                arena.getArenaConfig().setManually(node, value);
+                arena.getConfig().setManually(node, value);
                 arena.msg(sender, Language.parse(MSG.SET_DONE, node, String.valueOf(value)));
             } else if ("globalmax".equalsIgnoreCase(args[3])) {
                 final String node = "modules.betterclasses.maxGlobalPlayers." + c.getName();
-                arena.getArenaConfig().setManually(node, value);
+                arena.getConfig().setManually(node, value);
                 arena.msg(sender, Language.parse(MSG.SET_DONE, node, String.valueOf(value)));
             } else {
                 return;
             }
-            arena.getArenaConfig().save();
+            arena.getConfig().save();
             return;
         } else if (args.length > 2 && "respawncommand".equals(args[2])) {
             final String node = "modules.betterclasses.respawnCommand." + c.getName();
             if (args.length == 3) {
-                arena.getArenaConfig().setManually(node, null);
+                arena.getConfig().setManually(node, null);
                 arena.msg(sender, Language.parse(MSG.MODULE_BETTERCLASSES_RESPAWNCOMMAND_REMOVED, node, c.getName()));
             } else {
                 String command = StringParser.joinArray(StringParser.shiftArrayBy(args, 3), " ");
-                arena.getArenaConfig().setManually(node, command);
+                arena.getConfig().setManually(node, command);
                 arena.msg(sender, Language.parse(MSG.SET_DONE, node, command));
             }
-            arena.getArenaConfig().save();
+            arena.getConfig().save();
             return;
         }
 
 
         HashSet<PotionEffect> ape = new HashSet<>();
 
-        final String s = (String) arena.getArenaConfig().getUnsafe("modules.betterclasses.permEffects." + c.getName());
+        final String s = (String) arena.getConfig().getUnsafe("modules.betterclasses.permEffects." + c.getName());
         if (s != null) {
             ape = parseStringToPotionEffects(s);
         }
@@ -251,8 +251,8 @@ public class BetterClasses extends ArenaModule {
                 return;
             }
 
-            arena.getArenaConfig().setManually("modules.betterclasses.permEffects." + c.getName(), "none");
-            arena.getArenaConfig().save();
+            arena.getConfig().setManually("modules.betterclasses.permEffects." + c.getName(), "none");
+            arena.getConfig().save();
             arena.msg(sender, Language.parse(MSG.MODULE_BETTERCLASSES_CLEAR, c.getName()));
             return;
         }
@@ -289,8 +289,8 @@ public class BetterClasses extends ArenaModule {
             }
 
             ape.add(new PotionEffect(pet, Integer.MAX_VALUE, amp));
-            arena.getArenaConfig().setManually("modules.betterclasses.permEffects." + c.getName(), parsePotionEffectsToString(ape));
-            arena.getArenaConfig().save();
+            arena.getConfig().setManually("modules.betterclasses.permEffects." + c.getName(), parsePotionEffectsToString(ape));
+            arena.getConfig().save();
             arena.msg(sender, Language.parse(MSG.MODULE_BETTERCLASSES_ADD, c.getName(), pet.getName()));
             return;
         }
@@ -324,8 +324,8 @@ public class BetterClasses extends ArenaModule {
             }
 
             ape.remove(remove);
-            arena.getArenaConfig().setManually("modules.betterclasses.permEffects." + c.getName(), parsePotionEffectsToString(ape));
-            arena.getArenaConfig().save();
+            arena.getConfig().setManually("modules.betterclasses.permEffects." + c.getName(), parsePotionEffectsToString(ape));
+            arena.getConfig().save();
             arena.msg(sender, Language.parse(MSG.MODULE_BETTERCLASSES_REMOVE, c.getName(), remove.getType().getName()));
             return;
         }
@@ -397,7 +397,7 @@ public class BetterClasses extends ArenaModule {
         superMap.put(arena, map);
 
         for (final ArenaClass c : arena.getClasses()) {
-            final String s = (String) arena.getArenaConfig().getUnsafe("modules.betterclasses.permEffects." + c.getName());
+            final String s = (String) arena.getConfig().getUnsafe("modules.betterclasses.permEffects." + c.getName());
             if (s == null) {
                 continue;
             }
@@ -424,7 +424,7 @@ public class BetterClasses extends ArenaModule {
         final int available;
 
         try {
-            needed = (Integer) arena.getArenaConfig().getUnsafe("modules.betterclasses.neededEXPLevel." + className);
+            needed = (Integer) arena.getConfig().getUnsafe("modules.betterclasses.neededEXPLevel." + className);
             final PlayerState state = ArenaPlayer.fromPlayer(player).getState();
 
             final Field value = state.getClass().getDeclaredField("explevel");
@@ -462,7 +462,7 @@ public class BetterClasses extends ArenaModule {
         final ArenaClass c = ap.getArenaClass();
         if (c != null) {
             final String node = "modules.betterclasses.respawnCommand." + c.getName();
-            String cmd = arena.getArenaConfig().getYamlConfiguration().getString(node, "");
+            String cmd = arena.getConfig().getYamlConfiguration().getString(node, "");
             if (cmd.length() > 0) {
                 cmd = cmd.replace("%player%", player.getName());
                 Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), cmd);
@@ -540,13 +540,13 @@ public class BetterClasses extends ArenaModule {
         for (final ArenaPlayer arenaPlayer : arena.getFighters()) {
             parseRespawn(arenaPlayer.getPlayer(), null, null, null);
             playerSwitches.put(arenaPlayer,
-                    (Integer) arena.getArenaConfig()
+                    (Integer) arena.getConfig()
                             .getUnsafe("modules.betterclasses.maxPlayerSwitches"));
         }
 
         for (ArenaTeam at : arena.getTeams()) {
             teamSwitches.put(at,
-                    (Integer) arena.getArenaConfig()
+                    (Integer) arena.getConfig()
                             .getUnsafe("modules.betterclasses.maxTeamSwitches."+at.getName()));
         }
     }

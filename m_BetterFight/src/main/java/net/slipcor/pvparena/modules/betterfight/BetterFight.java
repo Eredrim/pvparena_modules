@@ -86,26 +86,26 @@ public class BetterFight extends ArenaModule {
         if ("!bf".equals(args[0]) || "betterfight".equals(args[0])) {
             if (args.length == 2) {
                 if ("reset".equals(args[1])) {
-                    final boolean b = arena.getArenaConfig().getBoolean(CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH);
+                    final boolean b = arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH);
 
-                    arena.getArenaConfig().set(CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH, !b);
-                    arena.getArenaConfig().save();
+                    arena.getConfig().set(CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH, !b);
+                    arena.getConfig().save();
                     arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH.getNode(), String.valueOf(!b)));
                     return;
                 }
                 if (args[1].equals("explode")) {
-                    boolean b = arena.getArenaConfig().getBoolean(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH);
+                    boolean b = arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH);
 
-                    arena.getArenaConfig().set(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH, !b);
-                    arena.getArenaConfig().save();
+                    arena.getConfig().set(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH, !b);
+                    arena.getConfig().save();
                     arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH.getNode(), String.valueOf(!b)));
                     return;
                 }
                 if (args[1].equals("explodeonlyononehit")) {
-                    boolean b = arena.getArenaConfig().getBoolean(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATHONLYONONEHIT);
+                    boolean b = arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATHONLYONONEHIT);
 
-                    arena.getArenaConfig().set(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATHONLYONONEHIT, !b);
-                    arena.getArenaConfig().save();
+                    arena.getConfig().set(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATHONLYONONEHIT, !b);
+                    arena.getConfig().save();
                     arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_BETTERFIGHT_EXPLODEONDEATHONLYONONEHIT.getNode(), String.valueOf(!b)));
                     return;
                 }
@@ -118,8 +118,8 @@ public class BetterFight extends ArenaModule {
                     return;
                 }
 
-                arena.getArenaConfig().set(CFG.MODULES_BETTERFIGHT_ONEHITITEMS, args[2]);
-                arena.getArenaConfig().save();
+                arena.getConfig().set(CFG.MODULES_BETTERFIGHT_ONEHITITEMS, args[2]);
+                arena.getConfig().save();
                 arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_BETTERFIGHT_ONEHITITEMS.getNode(), args[2]));
                 return;
 
@@ -133,9 +133,9 @@ public class BetterFight extends ArenaModule {
                     return;
                 }
                 String value = StringParser.joinArray(StringParser.shiftArrayBy(args, 2), " ");
-                arena.getArenaConfig().setManually("modules.betterfight.messages.m" + i,
+                arena.getConfig().setManually("modules.betterfight.messages.m" + i,
                         value);
-                arena.getArenaConfig().save();
+                arena.getConfig().save();
                 arena.msg(sender, Language.parse(MSG.SET_DONE, "modules.betterfight.messages.m" + i, value));
                 return;
             }
@@ -158,7 +158,7 @@ public class BetterFight extends ArenaModule {
             config.set("betterfight", null);
         }
 
-        if (arena.getArenaConfig().getBoolean(CFG.MODULES_BETTERFIGHT_MESSAGES)) {
+        if (arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_MESSAGES)) {
             config.addDefault("modules.betterfight.messages.m1", "First Kill!");
             config.addDefault("modules.betterfight.messages.m2", "Double Kill!");
             config.addDefault("modules.betterfight.messages.m3", "Triple Kill!");
@@ -180,19 +180,19 @@ public class BetterFight extends ArenaModule {
     @Override
     public void displayInfo(final CommandSender sender) {
 
-        sender.sendMessage("one-hit items: " + arena.getArenaConfig().getString(
+        sender.sendMessage("one-hit items: " + arena.getConfig().getString(
                 CFG.MODULES_BETTERFIGHT_ONEHITITEMS));
         sender.sendMessage(StringParser.colorVar("explode",
-                arena.getArenaConfig().getBoolean(
+                arena.getConfig().getBoolean(
                         CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH)) + " | " +
                 StringParser.colorVar("explodeonlyononehit",
-                arena.getArenaConfig().getBoolean(
+                arena.getConfig().getBoolean(
                         CFG.MODULES_BETTERFIGHT_EXPLODEONDEATHONLYONONEHIT)) + " | " +
                 StringParser.colorVar("messages",
-                        arena.getArenaConfig().getBoolean(
+                        arena.getConfig().getBoolean(
                                 CFG.MODULES_BETTERFIGHT_MESSAGES)) + " | " +
                 StringParser.colorVar("reset on death",
-                        arena.getArenaConfig().getBoolean(
+                        arena.getConfig().getBoolean(
                                 CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH)));
 
     }
@@ -207,7 +207,7 @@ public class BetterFight extends ArenaModule {
     @Override
     public void onEntityDamageByEntity(final Player attacker,
                                        final Player defender, final EntityDamageByEntityEvent event) {
-        final String s = arena.getArenaConfig().getDefinedString(CFG.MODULES_BETTERFIGHT_ONEHITITEMS);
+        final String s = arena.getConfig().getDefinedString(CFG.MODULES_BETTERFIGHT_ONEHITITEMS);
         if (s == null) {
             return;
         }
@@ -246,7 +246,7 @@ public class BetterFight extends ArenaModule {
 
             final String node = "modules.betterfight.sounds." + string;
 
-            final String value = (String) arena.getArenaConfig().getUnsafe(node);
+            final String value = (String) arena.getConfig().getUnsafe(node);
 
             if ("none".equals(value)) {
                 return;
@@ -275,12 +275,12 @@ public class BetterFight extends ArenaModule {
                                  final EntityDamageEvent cause) {
         final Player p = ArenaPlayer.getLastDamagingPlayer(cause, player);
 
-        if (arena.getArenaConfig().getBoolean(CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH)) {
+        if (arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH)) {
             getKills().put(player.getName(), 0);
         }
 
-        if (arena.getArenaConfig().getBoolean(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH)) {
-            if (cause.getDamage() == 1000 || !arena.getArenaConfig().getBoolean(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATHONLYONONEHIT)) {
+        if (arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH)) {
+            if (cause.getDamage() == 1000 || !arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATHONLYONONEHIT)) {
                 class RunLater implements Runnable {
                     final World world;
                     final double x;
@@ -310,11 +310,11 @@ public class BetterFight extends ArenaModule {
 
         getKills().put(p.getName(), ++killcount);
 
-        if (!arena.getArenaConfig().getBoolean(CFG.MODULES_BETTERFIGHT_MESSAGES)) {
+        if (!arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_MESSAGES)) {
             return;
         }
 
-        final String msg = (String) arena.getArenaConfig().getUnsafe("modules.betterfight.messages.m" + killcount);
+        final String msg = (String) arena.getConfig().getUnsafe("modules.betterfight.messages.m" + killcount);
 
         final PAGoalEvent scoreEvent = new PAGoalEvent(arena, null, "BetterFight",
                 String.format("score:%s:%s:%d", p.getName(), ArenaPlayer.fromPlayer(p).getArenaTeam().getName(), killcount));

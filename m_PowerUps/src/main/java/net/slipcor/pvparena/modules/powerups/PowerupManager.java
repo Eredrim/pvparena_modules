@@ -126,15 +126,15 @@ public class PowerupManager extends ArenaModule implements Listener {
         if ("!pu".equals(args[0]) || args[0].startsWith("powerup")) {
             if (args.length == 2) {
                 if ("off".equals(args[1])) {
-                    arena.getArenaConfig().set(CFG.MODULES_POWERUPS_USAGE, args[1]);
-                    arena.getArenaConfig().save();
+                    arena.getConfig().set(CFG.MODULES_POWERUPS_USAGE, args[1]);
+                    arena.getConfig().save();
                     arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_POWERUPS_USAGE.getNode(), args[1]));
                     return;
                 }
                 if (args[1].equals("dropspawn")) {
-                    boolean b = arena.getArenaConfig().getBoolean(CFG.MODULES_POWERUPS_DROPSPAWN);
-                    arena.getArenaConfig().set(CFG.MODULES_POWERUPS_DROPSPAWN, !b);
-                    arena.getArenaConfig().save();
+                    boolean b = arena.getConfig().getBoolean(CFG.MODULES_POWERUPS_DROPSPAWN);
+                    arena.getConfig().set(CFG.MODULES_POWERUPS_DROPSPAWN, !b);
+                    arena.getConfig().save();
                     arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_POWERUPS_DROPSPAWN.getNode(), String.valueOf(!b)));
                 }
                 arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[1], "off | dropspawn"));
@@ -149,8 +149,8 @@ public class PowerupManager extends ArenaModule implements Listener {
                 return;
             }
             if ("time".equals(args[1]) || "death".equals(args[1])) {
-                arena.getArenaConfig().set(CFG.MODULES_POWERUPS_USAGE, args[1] + ':' + i);
-                arena.getArenaConfig().save();
+                arena.getConfig().set(CFG.MODULES_POWERUPS_USAGE, args[1] + ':' + i);
+                arena.getConfig().save();
                 arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_POWERUPS_USAGE.getNode(), args[1] + ':' + i));
                 return;
             }
@@ -162,7 +162,7 @@ public class PowerupManager extends ArenaModule implements Listener {
     @Override
     public void parsePlayerDeath(final Player player, final EntityDamageEvent lastDamageCause) {
         if (this.usesPowerups != null) {
-            if (this.arena.getArenaConfig().getString(CFG.MODULES_POWERUPS_USAGE).startsWith("death")) {
+            if (this.arena.getConfig().getString(CFG.MODULES_POWERUPS_USAGE).startsWith("death")) {
                 debug("calculating powerup trigger death");
                 this.powerupDiffI = ++this.powerupDiffI % this.powerupDiff;
                 if (this.powerupDiffI == 0) {
@@ -183,8 +183,8 @@ public class PowerupManager extends ArenaModule implements Listener {
         final Set<ArenaRegion> regions = this.arena.getRegionsByType(RegionType.BATTLE);
 
 
-        if (regions.size() < 1 || this.arena.getArenaConfig().getBoolean(CFG.MODULES_POWERUPS_DROPSPAWN)) {
-            if (!this.arena.getArenaConfig().getBoolean(CFG.MODULES_POWERUPS_DROPSPAWN)) {
+        if (regions.size() < 1 || this.arena.getConfig().getBoolean(CFG.MODULES_POWERUPS_DROPSPAWN)) {
+            if (!this.arena.getConfig().getBoolean(CFG.MODULES_POWERUPS_DROPSPAWN)) {
                 PVPArena.getInstance().getLogger().warning("You have deactivated 'dropspawn' but have no BATTLE region. Attempting to find powerup drop spawns!");
             }
             this.dropItemOnSpawn(item);
@@ -224,7 +224,7 @@ public class PowerupManager extends ArenaModule implements Listener {
             return;
         }
 
-        final String pu = arena.getArenaConfig().getString(CFG.MODULES_POWERUPS_USAGE, "off");
+        final String pu = arena.getConfig().getString(CFG.MODULES_POWERUPS_USAGE, "off");
 
         final String[] ss = pu.split(":");
         if (pu.startsWith("death") || pu.startsWith("time")) {
@@ -256,7 +256,7 @@ public class PowerupManager extends ArenaModule implements Listener {
         player.sendMessage("usage: "
                 + StringParser.colorVar(usesPowerups != null)
                 + '('
-                + StringParser.colorVar(arena.getArenaConfig().getString(CFG.MODULES_POWERUPS_USAGE))
+                + StringParser.colorVar(arena.getConfig().getString(CFG.MODULES_POWERUPS_USAGE))
                 + ')');
     }
 
@@ -440,7 +440,7 @@ public class PowerupManager extends ArenaModule implements Listener {
     @Override
     public void parseStart() {
         if (usesPowerups != null) {
-            final String pu = arena.getArenaConfig().getString(CFG.MODULES_POWERUPS_USAGE);
+            final String pu = arena.getConfig().getString(CFG.MODULES_POWERUPS_USAGE);
             final String[] ss = pu.split(":");
             if (pu.startsWith("time")) {
                 // arena.powerupTrigger = "time";
@@ -449,7 +449,7 @@ public class PowerupManager extends ArenaModule implements Listener {
                 return;
             }
 
-            debug("using powerups : {} : ", arena.getArenaConfig().getString(CFG.MODULES_POWERUPS_USAGE), powerupDiff);
+            debug("using powerups : {} : ", arena.getConfig().getString(CFG.MODULES_POWERUPS_USAGE), powerupDiff);
             if (powerupDiff > 0) {
                 debug("powerup time trigger!");
                 powerupDiff *= 20; // calculate ticks to seconds

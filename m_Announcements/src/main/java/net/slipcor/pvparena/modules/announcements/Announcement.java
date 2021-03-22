@@ -43,7 +43,7 @@ public final class Announcement {
             send(a, p, message.replace(
                     ChatColor.WHITE.toString(),
                     ChatColor.valueOf(
-                            a.getArenaConfig().getString(
+                            a.getConfig().getString(
                                     CFG.MODULES_ANNOUNCEMENTS_COLOR))
                             .toString()));
         }
@@ -59,7 +59,7 @@ public final class Announcement {
      */
     private static boolean sendCheck(final Arena a, final type t) {
         final CFG cfg = CFG.valueOf("MODULES_ANNOUNCEMENTS_" + t.name());
-        return a.getArenaConfig().getBoolean(cfg);
+        return a.getConfig().getBoolean(cfg);
     }
 
     /**
@@ -70,12 +70,12 @@ public final class Announcement {
      * @param message the message to send
      */
     private static void send(final Arena a, final Player p, final String message) {
-        if (a.getArenaConfig().getInt(CFG.MODULES_ANNOUNCEMENTS_RADIUS) > 0) {
+        if (a.getConfig().getInt(CFG.MODULES_ANNOUNCEMENTS_RADIUS) > 0) {
             final Set<ArenaRegion> bfs = a
                     .getRegionsByType(RegionType.BATTLE);
             for (final ArenaRegion ars : bfs) {
                 if (ars.getShape().tooFarAway(
-                        a.getArenaConfig().getInt(
+                        a.getConfig().getInt(
                                 CFG.MODULES_ANNOUNCEMENTS_RADIUS),
                         p.getLocation())) {
                     return; // too far away: out (checks world!)
@@ -83,7 +83,7 @@ public final class Announcement {
             }
         }
         a.msg(p,
-                ChatColor.valueOf(a.getArenaConfig().getString(
+                ChatColor.valueOf(a.getConfig().getString(
                         CFG.MODULES_ANNOUNCEMENTS_COLOR)) + message);
     }
 

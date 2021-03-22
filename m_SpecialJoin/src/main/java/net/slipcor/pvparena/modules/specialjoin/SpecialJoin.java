@@ -247,8 +247,8 @@ public class SpecialJoin extends ArenaModule implements Listener {
                 locs.add(Config.parseToString(paBlockLocationArenaEntry.getKey()));
             }
         }
-        a.getArenaConfig().setManually("modules.specialjoin.places", locs);
-        a.getArenaConfig().save();
+        a.getConfig().setManually("modules.specialjoin.places", locs);
+        a.getConfig().save();
     }
 
     private static void updateSignDisplay() {
@@ -259,7 +259,7 @@ public class SpecialJoin extends ArenaModule implements Listener {
 
                 for (final Map.Entry<PABlockLocation, Arena> paBlockLocationArenaEntry : places.entrySet()) {
                     final Arena arena = paBlockLocationArenaEntry.getValue();
-                    if (!arena.getArenaConfig().getBoolean(CFG.MODULES_SPECIALJOIN_SHOWPLAYERS)) {
+                    if (!arena.getConfig().getBoolean(CFG.MODULES_SPECIALJOIN_SHOWPLAYERS)) {
                         continue;
                     }
 
@@ -273,7 +273,7 @@ public class SpecialJoin extends ArenaModule implements Listener {
 
                     String line = (arena.isFightInProgress() ? ChatColor.GREEN.toString() : arena.isLocked() ? ChatColor.RED.toString() : ChatColor.GOLD.toString()) + arena.getFighters().size();
 
-                    final int maxPlayers = arena.getArenaConfig().getInt(CFG.READY_MAXPLAYERS);
+                    final int maxPlayers = arena.getConfig().getInt(CFG.READY_MAXPLAYERS);
 
                     if (maxPlayers > 0) {
                         line += " / " + maxPlayers;

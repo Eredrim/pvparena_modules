@@ -40,7 +40,7 @@ public class ArenaRotate extends ArenaModule {
             throw new GameplayException(Language.parse(MSG.MODULE_AUTOVOTE_ARENARUNNING, this.arena.getName()));
         }
 
-        if (this.arena.getArenaConfig().getBoolean(CFG.PERMS_JOINWITHSCOREBOARD)) {
+        if (this.arena.getConfig().getBoolean(CFG.PERMS_JOINWITHSCOREBOARD)) {
             for (final Team team : player.getScoreboard().getTeams()) {
                 for (final String playerName : team.getEntries()) {
                     if (player.getName().equals(playerName)) {
@@ -57,7 +57,7 @@ public class ArenaRotate extends ArenaModule {
 
         if (vote == null) {
             vote = new ArenaRotateRunnable(
-                    arena.getArenaConfig().getInt(CFG.MODULES_ARENAVOTE_SECONDS));
+                    arena.getConfig().getInt(CFG.MODULES_ARENAVOTE_SECONDS));
         }
     }
 
@@ -110,7 +110,7 @@ public class ArenaRotate extends ArenaModule {
                 }
 
                 new StartRunnable(a,
-                        a.getArenaConfig().getInt(CFG.MODULES_ARENAVOTE_READYUP));
+                        a.getConfig().getInt(CFG.MODULES_ARENAVOTE_READYUP));
                 class RunLater implements Runnable {
 
                     @Override
@@ -140,7 +140,7 @@ public class ArenaRotate extends ArenaModule {
                 for (final Arena arena : ArenaManager.getArenas()) {
                     for (final ArenaModule mod : arena.getMods()) {
                         if (mod.getName().equals(getName())
-                                && arena.getArenaConfig().getBoolean(CFG.MODULES_ARENAVOTE_AUTOSTART)) {
+                                && arena.getConfig().getBoolean(CFG.MODULES_ARENAVOTE_AUTOSTART)) {
 
                             active = true;
                             commitMod = mod;

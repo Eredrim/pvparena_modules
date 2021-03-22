@@ -105,7 +105,7 @@ public class Squads extends ArenaModule {
             return;
         }
 
-        if (!this.arena.getArenaConfig().getBoolean(Config.CFG.MODULES_SQUADS_INGAMESWITCH) && this.arena.isFightInProgress()) {
+        if (!this.arena.getConfig().getBoolean(Config.CFG.MODULES_SQUADS_INGAMESWITCH) && this.arena.isFightInProgress()) {
             return;
         }
 
@@ -121,7 +121,7 @@ public class Squads extends ArenaModule {
             } else {
                 this.arena.msg(sender, Language.parse(MSG.MODULE_SQUADS_LISTHEAD, this.arena.getName()));
                 for (final ArenaSquad squad : this.getArenaSquads()) {
-                    final String suffix = squad.getName().equalsIgnoreCase(this.arena.getArenaConfig().getString(Config.CFG.MODULES_SQUADS_AUTOSQUAD)) ? " (auto)" : "";
+                    final String suffix = squad.getName().equalsIgnoreCase(this.arena.getConfig().getString(Config.CFG.MODULES_SQUADS_AUTOSQUAD)) ? " (auto)" : "";
                     final String max = squad.getMax() > 0 ? String.valueOf(squad.getMax()) : "none";
                     this.arena.msg(sender, Language.parse(MSG.MODULE_SQUADS_LISTITEM, squad.getName(), max, suffix));
                 }
@@ -158,8 +158,8 @@ public class Squads extends ArenaModule {
 
                 // Saving to configuration
                 Map<String, Integer> squadsMap = this.getArenaSquads().stream().collect(Collectors.toMap(ArenaSquad::getName, ArenaSquad::getMax));
-                this.arena.getArenaConfig().setManually(SQUADS_LIMITS, squadsMap);
-                this.arena.getArenaConfig().save();
+                this.arena.getConfig().setManually(SQUADS_LIMITS, squadsMap);
+                this.arena.getConfig().save();
             } catch(IllegalArgumentException e) {
                 this.arena.msg(sender, Language.parse(MSG.MODULE_SQUADS_NOTEXIST, args[2]));
             } catch (Exception e) {
@@ -190,7 +190,7 @@ public class Squads extends ArenaModule {
             return false;
         }
 
-        if (this.arena.isFightInProgress() && !this.arena.getArenaConfig().getBoolean(
+        if (this.arena.isFightInProgress() && !this.arena.getConfig().getBoolean(
                 Config.CFG.MODULES_SQUADS_INGAMESWITCH)) {
             return false;
         }
@@ -287,7 +287,7 @@ public class Squads extends ArenaModule {
 
     @Override
     public void parseJoin(final Player player, final ArenaTeam team) {
-        String autoSquadName = this.arena.getArenaConfig().getString(Config.CFG.MODULES_SQUADS_AUTOSQUAD);
+        String autoSquadName = this.arena.getConfig().getString(Config.CFG.MODULES_SQUADS_AUTOSQUAD);
         try {
             ArenaSquad autoSquad = this.getArenaSquads().stream()
                     .filter(sq -> sq.getName().equalsIgnoreCase(autoSquadName))
