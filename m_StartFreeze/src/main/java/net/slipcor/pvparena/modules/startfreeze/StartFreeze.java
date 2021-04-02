@@ -60,10 +60,7 @@ public class StartFreeze extends ArenaModule implements Listener {
 
         if (!PVPArena.hasAdminPerms(sender)
                 && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(
-                    sender,
-                    Language.parse(MSG.ERROR_NOPERM,
-                            Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -76,14 +73,13 @@ public class StartFreeze extends ArenaModule implements Listener {
             try {
                 i = Integer.parseInt(args[1]);
             } catch (final Exception e) {
-                arena.msg(sender,
-                        Language.parse(MSG.ERROR_NOT_NUMERIC, args[1]));
+                arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[1]);
                 return;
             }
 
             arena.getConfig().set(CFG.MODULES_STARTFREEZE_TIMER, i);
             arena.getConfig().save();
-            arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_STARTFREEZE_TIMER.getNode(), String.valueOf(i)));
+            arena.msg(sender, MSG.SET_DONE, CFG.MODULES_STARTFREEZE_TIMER.getNode(), String.valueOf(i));
         }
     }
 

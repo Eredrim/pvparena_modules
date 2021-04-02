@@ -162,26 +162,22 @@ public class ArenaBoard {
             debug("global!", player);
             if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
                 ab.sortBy = StatisticsManager.Type.next(ab.sortBy);
-                Arena.pmsg(player,
-                        Language.parse(MSG.MODULE_ARENABOARDS_SORTINGBY, ab.sortBy.toString()));
+                Arena.pmsg(player, MSG.MODULE_ARENABOARDS_SORTINGBY, ab.sortBy.toString());
                 return true;
             } else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 ab.sortBy = StatisticsManager.Type.last(ab.sortBy);
-                Arena.pmsg(player,
-                        Language.parse(MSG.MODULE_ARENABOARDS_SORTINGBY, ab.sortBy.toString()));
+                Arena.pmsg(player, MSG.MODULE_ARENABOARDS_SORTINGBY, ab.sortBy.toString());
                 return true;
             }
         } else {
             debug("not global!", player);
             if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
                 ab.sortBy = StatisticsManager.Type.next(ab.sortBy);
-                ab.abm.getArena().msg(player,
-                        Language.parse(MSG.MODULE_ARENABOARDS_SORTINGBY, ab.sortBy.toString()));
+                ab.abm.getArena().msg(player, MSG.MODULE_ARENABOARDS_SORTINGBY, ab.sortBy.toString());
                 return true;
             } else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 ab.sortBy = StatisticsManager.Type.last(ab.sortBy);
-                ab.abm.getArena().msg(player,
-                        Language.parse(MSG.MODULE_ARENABOARDS_SORTINGBY, ab.sortBy.toString()));
+                ab.abm.getArena().msg(player, MSG.MODULE_ARENABOARDS_SORTINGBY, ab.sortBy.toString());
                 return true;
             }
         }

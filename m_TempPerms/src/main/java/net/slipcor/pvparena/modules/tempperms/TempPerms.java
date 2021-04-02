@@ -96,10 +96,7 @@ public class TempPerms extends ArenaModule implements Listener {
 
         if (!PVPArena.hasAdminPerms(sender)
                 && !PVPArena.hasCreatePerms(sender, this.arena)) {
-            this.arena.msg(
-                    sender,
-                    Language.parse(MSG.ERROR_NOPERM,
-                            Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            this.arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -110,7 +107,7 @@ public class TempPerms extends ArenaModule implements Listener {
         Map<String, Boolean> map = this.getTempPerms(this.arena, DEFAULT_NODE);
 
         if (args.length == 1) {
-            this.arena.msg(sender, Language.parse(MSG.MODULE_TEMPPERMS_HEAD, DEFAULT_NODE));
+            this.arena.msg(sender, MSG.MODULE_TEMPPERMS_HEAD, DEFAULT_NODE);
             for (final Map.Entry<String, Boolean> stringBooleanEntry : map.entrySet()) {
                 this.arena.msg(sender, stringBooleanEntry.getKey() + " - " + StringParser.colorVar(stringBooleanEntry.getValue()));
             }
@@ -120,23 +117,23 @@ public class TempPerms extends ArenaModule implements Listener {
         if (args.length == 3 && ("add".equals(args[1]) || "rem".equals(args[1]))) {
             if ("add".equals(args[1])) {
                 map.put(args[2], true);
-                this.arena.msg(sender, Language.parse(MSG.MODULE_TEMPPERMS_ADDED, args[2], DEFAULT_NODE));
+                this.arena.msg(sender, MSG.MODULE_TEMPPERMS_ADDED, args[2], DEFAULT_NODE);
             } else {
                 map.remove(getStrippedPermission(args[2]));
-                this.arena.msg(sender, Language.parse(MSG.MODULE_TEMPPERMS_REMOVED, args[2], DEFAULT_NODE));
+                this.arena.msg(sender, MSG.MODULE_TEMPPERMS_REMOVED, args[2], DEFAULT_NODE);
             }
             this.setTempPerms(this.arena, map, DEFAULT_NODE);
             return;
         }
 
         if (args.length == 3) {
-            this.arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[1], "add | remove"));
+            this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "add | remove");
             return;
         }
 
         map = this.getTempPerms(this.arena, args[1]);
         if (args.length == 2) {
-            this.arena.msg(sender, Language.parse(MSG.MODULE_TEMPPERMS_HEAD, args[1]));
+            this.arena.msg(sender, MSG.MODULE_TEMPPERMS_HEAD, args[1]);
             for (final Map.Entry<String, Boolean> stringBooleanEntry : map.entrySet()) {
                 this.arena.msg(sender, stringBooleanEntry.getKey() + " - " + StringParser.colorVar(stringBooleanEntry.getValue()));
             }
@@ -146,16 +143,16 @@ public class TempPerms extends ArenaModule implements Listener {
         if (args.length == 4 && ("add".equals(args[2]) || "rem".equals(args[2]))) {
             if ("add".equals(args[2])) {
                 map.put(args[3], true);
-                this.arena.msg(sender, Language.parse(MSG.MODULE_TEMPPERMS_ADDED, args[3], args[1]));
+                this.arena.msg(sender, MSG.MODULE_TEMPPERMS_ADDED, args[3], args[1]);
             } else {
                 map.remove(getStrippedPermission(args[3]));
-                this.arena.msg(sender, Language.parse(MSG.MODULE_TEMPPERMS_REMOVED, args[3], args[1]));
+                this.arena.msg(sender, MSG.MODULE_TEMPPERMS_REMOVED, args[3], args[1]);
             }
             this.setTempPerms(this.arena, map, args[1]);
             return;
         }
 
-        this.arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[2], "add | remove"));
+        this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[2], "add | remove");
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)

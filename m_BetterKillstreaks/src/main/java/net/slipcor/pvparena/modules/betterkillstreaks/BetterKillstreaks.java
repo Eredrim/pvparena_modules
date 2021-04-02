@@ -66,8 +66,7 @@ public class BetterKillstreaks extends ArenaModule implements Listener {
 
         if (!PVPArena.hasAdminPerms(sender)
                 && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(sender,
-                    Language.parse(MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -80,7 +79,7 @@ public class BetterKillstreaks extends ArenaModule implements Listener {
         try {
             level = Integer.parseInt(args[1]);
         } catch (final Exception e) {
-            arena.msg(sender, Language.parse(MSG.ERROR_NOT_NUMERIC, args[1]));
+            arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[1]);
             return;
         }
         ConfigurationSection cs = arena.getConfig().getYamlConfiguration().getConfigurationSection("modules.betterkillstreaks.definitions");
@@ -141,7 +140,7 @@ public class BetterKillstreaks extends ArenaModule implements Listener {
         }
 
         if (pet == null) {
-            arena.msg(sender, Language.parse(MSG.ERROR_POTIONEFFECTTYPE_NOTFOUND, args[3]));
+            arena.msg(sender, MSG.ERROR_POTIONEFFECTTYPE_NOTFOUND, args[3]);
             return;
         }
 
@@ -151,7 +150,7 @@ public class BetterKillstreaks extends ArenaModule implements Listener {
             try {
                 amp = Integer.parseInt(args[4]);
             } catch (final Exception e) {
-                arena.msg(sender, Language.parse(MSG.ERROR_NOT_NUMERIC, args[4]));
+                arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[4]);
                 return;
             }
         }
@@ -162,7 +161,7 @@ public class BetterKillstreaks extends ArenaModule implements Listener {
             try {
                 duration = Integer.parseInt(args[5]);
             } catch (final Exception e) {
-                arena.msg(sender, Language.parse(MSG.ERROR_NOT_NUMERIC, args[5]));
+                arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[5]);
                 return;
             }
         }

@@ -65,15 +65,14 @@ public class DuelManager extends ArenaModule {
     @Override
     public void checkJoin(Player player) throws GameplayException {
         if (!player.getName().equals(this.duelReceiver) && !player.getName().equals(this.duelSender)) {
-            throw new GameplayException(Language.parse(arena, MSG.MODULE_DUEL_NODIRECTJOIN, this.arena.getName()));
+            throw new GameplayException(Language.parse(MSG.MODULE_DUEL_NODIRECTJOIN, this.arena.getName()));
         }
     }
 
     @Override
     public void commitCommand(final CommandSender sender, final String[] args) {
         if (arena.isFightInProgress()) {
-            arena.msg(sender,
-                    Language.parse(MSG.ERROR_FIGHT_IN_PROGRESS));
+            arena.msg(sender, MSG.ERROR_FIGHT_IN_PROGRESS);
             return;
         }
         String arenaName = null;
@@ -93,17 +92,17 @@ public class DuelManager extends ArenaModule {
         }
         if ("duel".equals(args[0].toLowerCase()) && args.length > 1) {
             if (sender.getName().equals(duelSender)) {
-                arena.msg(sender, Language.parse(MSG.MODULE_DUEL_REQUESTED_ALREADY));
+                arena.msg(sender, MSG.MODULE_DUEL_REQUESTED_ALREADY);
             } else {
                 final Player p = Bukkit.getPlayer(args[1]);
                 if (p == null) {
-                    arena.msg(sender, Language.parse(MSG.ERROR_PLAYER_NOTFOUND, args[1]));
+                    arena.msg(sender, MSG.ERROR_PLAYER_NOTFOUND, args[1]);
                     return;
                 }
 
                 ArenaPlayer ap = ArenaPlayer.fromPlayer(p);
                 if (ap.getArena() != null) {
-                    arena.msg(sender, Language.parse(MSG.MODULE_DUEL_BUSY, args[1]));
+                    arena.msg(sender, MSG.MODULE_DUEL_BUSY, args[1]);
                     return;
                 }
 
@@ -119,7 +118,7 @@ public class DuelManager extends ArenaModule {
                                     return;
                                 }
                                 if (!sup.checkForBalance(this, p, iAmount, false)) {
-                                    arena.msg(sender, Language.parse(MSG.MODULE_VAULT_THEYNOTENOUGH, p.getName()));
+                                    arena.msg(sender, MSG.MODULE_VAULT_THEYNOTENOUGH, p.getName());
                                     return;
                                 }
                                 message = sup.tryFormat(this, iAmount);
@@ -128,17 +127,17 @@ public class DuelManager extends ArenaModule {
                         }
 
                     } catch( Exception e) {
-                        arena.msg(sender, Language.parse(MSG.ERROR_NOT_NUMERIC, args[2]));
+                        arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[2]);
                         return;
                     }
                 }
 
-                arena.msg(p, Language.parse(MSG.MODULE_DUEL_ANNOUNCE, sender.getName(), arenaName));
+                arena.msg(p, MSG.MODULE_DUEL_ANNOUNCE, sender.getName(), arenaName);
                 if (!message.equals("")) {
-                    arena.msg(p, Language.parse(MSG.MODULE_DUEL_ANNOUNCEMONEY, message));
+                    arena.msg(p, MSG.MODULE_DUEL_ANNOUNCEMONEY, message);
                 }
-                arena.msg(p, Language.parse(MSG.MODULE_DUEL_ANNOUNCE2, sender.getName(), arenaName));
-                arena.msg(sender, Language.parse(MSG.MODULE_DUEL_REQUESTED, p.getName()));
+                arena.msg(p, MSG.MODULE_DUEL_ANNOUNCE2, sender.getName(), arenaName);
+                arena.msg(sender, MSG.MODULE_DUEL_REQUESTED, p.getName());
                 duelSender = sender.getName();
                 duelReceiver = p.getName();
                 class LaterRunner implements Runnable {
@@ -146,10 +145,10 @@ public class DuelManager extends ArenaModule {
                     public void run() {
                         if (duelSender != null) {
                             if (p != null) {
-                                arena.msg(p, Language.parse(MSG.MODULE_DUEL_REQUEST_EXPIRED_RECEIVER));
+                                arena.msg(p, MSG.MODULE_DUEL_REQUEST_EXPIRED_RECEIVER);
                             }
                             if (sender != null) {
-                                arena.msg(sender, Language.parse(MSG.MODULE_DUEL_REQUEST_EXPIRED_SENDER));
+                                arena.msg(sender, MSG.MODULE_DUEL_REQUEST_EXPIRED_SENDER);
                             }
                             duelSender = null;
                             duelReceiver = null;
@@ -177,20 +176,19 @@ public class DuelManager extends ArenaModule {
                         }
                     }
                     Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new DuelRunnable(this, duelSender, sender.getName()), 500L);
-                    arena.msg(p, Language.parse(MSG.MODULE_DUEL_ACCEPTED, sender.getName()));
+                    arena.msg(p, MSG.MODULE_DUEL_ACCEPTED, sender.getName());
                 }
                 duelSender = null;
                 duelReceiver = null;
             } else if (arena.isFightInProgress()) {
-                arena.msg(sender,
-                        Language.parse(MSG.ERROR_FIGHT_IN_PROGRESS));
+                arena.msg(sender, MSG.ERROR_FIGHT_IN_PROGRESS);
             }
         } else if ("decline".equals(args[0].toLowerCase()) && duelSender != null) {
             ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(duelSender);
             if (arenaPlayer != null && arenaPlayer.getPlayer() != null){
-                arena.msg(arenaPlayer.getPlayer(), Language.parse(MSG.MODULE_DUEL_DECLINED_SENDER));
+                arena.msg(arenaPlayer.getPlayer(), MSG.MODULE_DUEL_DECLINED_SENDER);
             }
-            arena.msg(sender, Language.parse(MSG.MODULE_DUEL_DECLINED_RECEIVER));
+            arena.msg(sender, MSG.MODULE_DUEL_DECLINED_RECEIVER);
             duelSender = null;
             duelReceiver = null;
         }
@@ -208,7 +206,7 @@ public class DuelManager extends ArenaModule {
                 continue;
             }
             if (ArenaPlayer.fromPlayer(player).getStatus() == PlayerStatus.LOUNGE) {
-                arena.msg(ap.getPlayer(), Language.parse(MSG.MODULE_DUEL_CANCELLED));
+                arena.msg(ap.getPlayer(), MSG.MODULE_DUEL_CANCELLED);
             }
             if (amount > 0) {
                 for (ArenaModule mod : arena.getMods()) {

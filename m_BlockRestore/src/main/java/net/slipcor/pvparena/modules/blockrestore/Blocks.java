@@ -105,8 +105,7 @@ public class Blocks extends ArenaModule implements Listener {
 
         if (!PVPArena.hasAdminPerms(sender)
                 && !PVPArena.hasCreatePerms(sender, this.arena)) {
-            Arena.pmsg(sender,
-                    Language.parse(MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            Arena.pmsg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -118,7 +117,7 @@ public class Blocks extends ArenaModule implements Listener {
 
             this.arena.getConfig().setManually("inventories", null);
             this.arena.getConfig().save();
-            Arena.pmsg(sender, Language.parse(MSG.MODULE_BLOCKRESTORE_CLEARINVDONE));
+            Arena.pmsg(sender, MSG.MODULE_BLOCKRESTORE_CLEARINVDONE);
             return;
         }
 
@@ -135,7 +134,7 @@ public class Blocks extends ArenaModule implements Listener {
 
             this.arena.getConfig().set(c, !b);
             this.arena.getConfig().save();
-            this.arena.msg(sender, Language.parse(MSG.SET_DONE, c.getNode(), String.valueOf(!b)));
+            this.arena.msg(sender, MSG.SET_DONE, c.getNode(), String.valueOf(!b));
 
             return;
         }
@@ -149,14 +148,13 @@ public class Blocks extends ArenaModule implements Listener {
             try {
                 i = Integer.parseInt(args[2]);
             } catch (final Exception e) {
-                this.arena.msg(sender,
-                        Language.parse(MSG.ERROR_NOT_NUMERIC, args[2]));
+                this.arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[2]);
                 return;
             }
 
             this.arena.getConfig().set(CFG.MODULES_BLOCKRESTORE_OFFSET, i);
             this.arena.getConfig().save();
-            this.arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_BLOCKRESTORE_OFFSET.getNode(), String.valueOf(i)));
+            this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_BLOCKRESTORE_OFFSET.getNode(), String.valueOf(i));
         }
     }
 

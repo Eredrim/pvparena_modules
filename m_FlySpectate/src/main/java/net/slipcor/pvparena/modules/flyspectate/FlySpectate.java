@@ -64,7 +64,7 @@ public class FlySpectate extends ArenaModule {
         debug(player, "committing FLY spectate");
         final ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
         if (arena.equals(arenaPlayer.getArena())) {
-            arena.msg(player, Language.parse(MSG.ERROR_ARENA_ALREADY_PART_OF, arena.getName()));
+            arena.msg(player, MSG.ERROR_ARENA_ALREADY_PART_OF, arena.getName());
             return;
         }
 
@@ -101,7 +101,7 @@ public class FlySpectate extends ArenaModule {
             player.setAllowFlight(true);
             player.setFlying(true);
             player.setCollidable(false);
-            this.arena.msg(player, Language.parse(MSG.NOTICE_WELCOME_SPECTATOR));
+            this.arena.msg(player, MSG.NOTICE_WELCOME_SPECTATOR);
             arenaPlayer.setStatus(PlayerStatus.WATCH);
             arenaPlayer.setTeleporting(false);
         }, delay);

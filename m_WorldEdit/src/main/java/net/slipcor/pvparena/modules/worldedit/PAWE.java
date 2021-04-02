@@ -85,7 +85,7 @@ public class PAWE extends ArenaModule {
     @Override
     public void commitCommand(final CommandSender sender, final String[] args) {
         if (!sender.hasPermission("pvparena.admin")) {
-            arena.msg(sender, Language.parse(MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -102,49 +102,49 @@ public class PAWE extends ArenaModule {
 
             if (args[0].endsWith("load")) {
                 if (ars == null && !args[1].equalsIgnoreCase("all")) {
-                    arena.msg(sender, Language.parse(MSG.ERROR_REGION_NOTFOUND, args[1]));
+                    arena.msg(sender, MSG.ERROR_REGION_NOTFOUND, args[1]);
                     return;
                 } else if (ars == null) {
                     Set<ArenaRegion> regions = arena.getRegionsByType(RegionType.BATTLE);
                     for (ArenaRegion region : regions) {
                         load(region);
-                        arena.msg(sender, Language.parse(MSG.MODULE_WORLDEDIT_LOADED, region.getRegionName()));
+                        arena.msg(sender, MSG.MODULE_WORLDEDIT_LOADED, region.getRegionName());
                     }
                     return;
                 }
                 load(ars);
-                arena.msg(sender, Language.parse(MSG.MODULE_WORLDEDIT_LOADED, args[1]));
+                arena.msg(sender, MSG.MODULE_WORLDEDIT_LOADED, args[1]);
                 return;
             }
             if (args[0].endsWith("save")) {
                 if (ars == null && !args[1].equalsIgnoreCase("all")) {
-                    arena.msg(sender, Language.parse(MSG.ERROR_REGION_NOTFOUND, args[1]));
+                    arena.msg(sender, MSG.ERROR_REGION_NOTFOUND, args[1]);
                     return;
                 } else if (ars == null) {
                     Set<ArenaRegion> regions = arena.getRegionsByType(RegionType.BATTLE);
                     for (ArenaRegion region : regions) {
                         save(region);
-                        arena.msg(sender, Language.parse(MSG.MODULE_WORLDEDIT_SAVED, region.getRegionName()));
+                        arena.msg(sender, MSG.MODULE_WORLDEDIT_SAVED, region.getRegionName());
                     }
                     return;
                 }
                 save(ars);
-                arena.msg(sender, Language.parse(MSG.MODULE_WORLDEDIT_SAVED, args[1]));
+                arena.msg(sender, MSG.MODULE_WORLDEDIT_SAVED, args[1]);
                 return;
             }
             if (args[0].endsWith("create")) {
                 create((Player) sender, arena, args[1]);
-                arena.msg(sender, Language.parse(MSG.MODULE_WORLDEDIT_CREATED, args[1]));
+                arena.msg(sender, MSG.MODULE_WORLDEDIT_CREATED, args[1]);
                 return;
             }
             if (args[0].endsWith("regexlist")) {
                 if (ars == null) {
-                    arena.msg(sender, Language.parse(MSG.ERROR_REGION_NOTFOUND, args[1]));
+                    arena.msg(sender, MSG.ERROR_REGION_NOTFOUND, args[1]);
                     return;
                 }
                 final List<String> regions = arena.getConfig().getStringList(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), new ArrayList<String>());
                 if (args.length < 2) {
-                    arena.msg(sender, Language.parse(MSG.MODULE_WORLDEDIT_LIST_SHOW, StringParser.joinList(regions, ", ")));
+                    arena.msg(sender, MSG.MODULE_WORLDEDIT_LIST_SHOW, StringParser.joinList(regions, ", "));
                     return;
                 }
 
@@ -152,13 +152,13 @@ public class PAWE extends ArenaModule {
                     regions.add(ars.getRegionName());
                     arena.getConfig().setManually(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), regions);
                     arena.getConfig().save();
-                    arena.msg(sender, Language.parse(MSG.MODULE_WORLDEDIT_LIST_ADDED, ars.getRegionName()));
+                    arena.msg(sender, MSG.MODULE_WORLDEDIT_LIST_ADDED, ars.getRegionName());
                     return;
                 }
                 regions.remove(ars.getRegionName());
                 arena.getConfig().setManually(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), regions);
                 arena.getConfig().save();
-                arena.msg(sender, Language.parse(MSG.MODULE_WORLDEDIT_LIST_REMOVED, ars.getRegionName()));
+                arena.msg(sender, MSG.MODULE_WORLDEDIT_LIST_REMOVED, ars.getRegionName());
                 return;
             }
             if (args[0].equals("!we")) {
@@ -167,29 +167,29 @@ public class PAWE extends ArenaModule {
                     boolean b = arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOSAVE);
                     arena.getConfig().set(CFG.MODULES_WORLDEDIT_AUTOSAVE, !b);
                     arena.getConfig().save();
-                    arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_WORLDEDIT_AUTOSAVE.getNode(), String.valueOf(!b)));
+                    arena.msg(sender, MSG.SET_DONE, CFG.MODULES_WORLDEDIT_AUTOSAVE.getNode(), String.valueOf(!b));
                     return;
                 }
                 if (args[1].endsWith("load")) {
                     boolean b = arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOLOAD);
                     arena.getConfig().set(CFG.MODULES_WORLDEDIT_AUTOLOAD, !b);
                     arena.getConfig().save();
-                    arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_WORLDEDIT_AUTOLOAD.getNode(), String.valueOf(!b)));
+                    arena.msg(sender, MSG.SET_DONE, CFG.MODULES_WORLDEDIT_AUTOLOAD.getNode(), String.valueOf(!b));
                     return;
                 }
 
                 create((Player) sender, arena, args[1]);
-                arena.msg(sender, Language.parse(MSG.MODULE_WORLDEDIT_CREATED, args[1]));
+                arena.msg(sender, MSG.MODULE_WORLDEDIT_CREATED, args[1]);
                 return;
             }
             helpCommands(arena, sender);
         } else {
             if (args[0].endsWith("load")) {
                 load(ars, args[2]);
-                arena.msg(sender, Language.parse(MSG.MODULE_WORLDEDIT_LOADED, args[1]));
+                arena.msg(sender, MSG.MODULE_WORLDEDIT_LOADED, args[1]);
             } else if (args[0].endsWith("save")) {
                 save(ars, args[2]);
-                arena.msg(sender, Language.parse(MSG.MODULE_WORLDEDIT_SAVED, args[1]));
+                arena.msg(sender, MSG.MODULE_WORLDEDIT_SAVED, args[1]);
             } else {
                 create((Player) sender, arena, args[1], args[2]);
             }
@@ -209,7 +209,7 @@ public class PAWE extends ArenaModule {
             //
         }
         if (selection == null) {
-            Arena.pmsg(p, Language.parse(MSG.ERROR_REGION_SELECT_2));
+            Arena.pmsg(p, MSG.ERROR_REGION_SELECT_2);
             return;
         }
 
@@ -242,12 +242,12 @@ public class PAWE extends ArenaModule {
     }
 
     private void helpCommands(final Arena arena, final CommandSender sender) {
-        arena.msg(sender, Language.parse(MSG.ERROR_ERROR, "/pa regsave [regionname] {filename}"));
-        arena.msg(sender, Language.parse(MSG.ERROR_ERROR, "/pa regload [regionname] {filename}"));
-        arena.msg(sender, Language.parse(MSG.ERROR_ERROR, "/pa regcreate [regionname]"));
-        arena.msg(sender, Language.parse(MSG.ERROR_ERROR, "/pa !we autoload"));
-        arena.msg(sender, Language.parse(MSG.ERROR_ERROR, "/pa !we autosave"));
-        arena.msg(sender, Language.parse(MSG.ERROR_ERROR, "/pa !we create [regionname]"));
+        arena.msg(sender, MSG.ERROR_ERROR, "/pa regsave [regionname] {filename}");
+        arena.msg(sender, MSG.ERROR_ERROR, "/pa regload [regionname] {filename}");
+        arena.msg(sender, MSG.ERROR_ERROR, "/pa regcreate [regionname]");
+        arena.msg(sender, MSG.ERROR_ERROR, "/pa !we autoload");
+        arena.msg(sender, MSG.ERROR_ERROR, "/pa !we autosave");
+        arena.msg(sender, MSG.ERROR_ERROR, "/pa !we create [regionname]");
     }
 
     private void load(final ArenaRegion ars) {

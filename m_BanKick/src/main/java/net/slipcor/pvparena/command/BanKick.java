@@ -88,8 +88,7 @@ public class BanKick extends ArenaModule {
 
         if (!PVPArena.hasAdminPerms(sender)
                 && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(sender,
-                    Language.parse(MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -171,7 +170,7 @@ public class BanKick extends ArenaModule {
     void doBan(final CommandSender admin, final String player) {
         getBans().add(player);
         if (admin != null) {
-            arena.msg(admin, Language.parse(MSG.MODULE_BANVOTE_BANNED, player));
+            arena.msg(admin, MSG.MODULE_BANVOTE_BANNED, player);
         }
         tryNotify(Language.parse(MSG.MODULE_BANVOTE_YOUBANNED, arena.getName()));
         arena.getConfig().setManually("bans", getBans());
@@ -181,7 +180,7 @@ public class BanKick extends ArenaModule {
     void doUnBan(final CommandSender admin, final String player) {
         getBans().remove(player);
         if (admin != null) {
-            arena.msg(admin, Language.parse(MSG.MODULE_BANVOTE_UNBANNED, player));
+            arena.msg(admin, MSG.MODULE_BANVOTE_UNBANNED, player);
         }
         tryNotify(Language.parse(MSG.MODULE_BANVOTE_YOUBANNED, arena.getName()));
         arena.getConfig().setManually("bans", getBans());
@@ -232,12 +231,12 @@ public class BanKick extends ArenaModule {
     private void tryKick(final CommandSender sender, final String string) {
         final Player p = Bukkit.getPlayer(string);
         if (p == null) {
-            arena.msg(sender, Language.parse(MSG.MODULE_BANVOTE_NOTKICKED, string));
+            arena.msg(sender, MSG.MODULE_BANVOTE_NOTKICKED, string);
             return;
         }
         arena.playerLeave(p, CFG.TP_EXIT, true, true, false);
-        arena.msg(p, Language.parse(MSG.MODULE_BANVOTE_YOUKICKED, arena.getName()));
-        arena.msg(sender, Language.parse(MSG.MODULE_BANVOTE_KICKED, string));
+        arena.msg(p, MSG.MODULE_BANVOTE_YOUKICKED, arena.getName());
+        arena.msg(sender, MSG.MODULE_BANVOTE_KICKED, string);
     }
 
     private void tryNotify(final String string) {

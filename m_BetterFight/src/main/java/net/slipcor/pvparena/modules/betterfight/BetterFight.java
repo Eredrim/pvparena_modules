@@ -76,10 +76,7 @@ public class BetterFight extends ArenaModule {
 
         if (!PVPArena.hasAdminPerms(sender)
                 && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(
-                    sender,
-                    Language.parse(MSG.ERROR_NOPERM,
-                            Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -90,7 +87,7 @@ public class BetterFight extends ArenaModule {
 
                     arena.getConfig().set(CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH, !b);
                     arena.getConfig().save();
-                    arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH.getNode(), String.valueOf(!b)));
+                    arena.msg(sender, MSG.SET_DONE, CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH.getNode(), String.valueOf(!b));
                     return;
                 }
                 if (args[1].equals("explode")) {
@@ -98,7 +95,7 @@ public class BetterFight extends ArenaModule {
 
                     arena.getConfig().set(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH, !b);
                     arena.getConfig().save();
-                    arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH.getNode(), String.valueOf(!b)));
+                    arena.msg(sender, MSG.SET_DONE, CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH.getNode(), String.valueOf(!b));
                     return;
                 }
                 if (args[1].equals("explodeonlyononehit")) {
@@ -106,10 +103,10 @@ public class BetterFight extends ArenaModule {
 
                     arena.getConfig().set(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATHONLYONONEHIT, !b);
                     arena.getConfig().save();
-                    arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_BETTERFIGHT_EXPLODEONDEATHONLYONONEHIT.getNode(), String.valueOf(!b)));
+                    arena.msg(sender, MSG.SET_DONE, CFG.MODULES_BETTERFIGHT_EXPLODEONDEATHONLYONONEHIT.getNode(), String.valueOf(!b));
                     return;
                 }
-                arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[1], "reset | explode | explodeonlyononehit"));
+                arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "reset | explode | explodeonlyononehit");
                 return;
             }
             if ("items".equals(args[1])) {
@@ -120,7 +117,7 @@ public class BetterFight extends ArenaModule {
 
                 arena.getConfig().set(CFG.MODULES_BETTERFIGHT_ONEHITITEMS, args[2]);
                 arena.getConfig().save();
-                arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_BETTERFIGHT_ONEHITITEMS.getNode(), args[2]));
+                arena.msg(sender, MSG.SET_DONE, CFG.MODULES_BETTERFIGHT_ONEHITITEMS.getNode(), args[2]);
                 return;
 
             }
@@ -129,18 +126,18 @@ public class BetterFight extends ArenaModule {
                 try {
                     i = Integer.parseInt(args[2]);
                 } catch (Exception e) {
-                    arena.msg(sender, Language.parse(MSG.ERROR_NOT_NUMERIC, args[2]));
+                    arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[2]);
                     return;
                 }
                 String value = StringParser.joinArray(StringParser.shiftArrayBy(args, 2), " ");
                 arena.getConfig().setManually("modules.betterfight.messages.m" + i,
                         value);
                 arena.getConfig().save();
-                arena.msg(sender, Language.parse(MSG.SET_DONE, "modules.betterfight.messages.m" + i, value));
+                arena.msg(sender, MSG.SET_DONE, "modules.betterfight.messages.m" + i, value);
                 return;
             }
 
-            arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[1], "reset | items | messages | explode | explodeonlyononehit"));
+            arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "reset | items | messages | explode | explodeonlyononehit");
         }
     }
 

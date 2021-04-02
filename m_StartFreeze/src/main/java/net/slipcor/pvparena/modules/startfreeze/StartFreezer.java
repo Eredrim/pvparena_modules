@@ -62,7 +62,7 @@ class StartFreezer extends ArenaRunnable {
             PVPArena.getInstance().getLogger().warning("MSG not found: " + message);
             return;
         }
-        final String message = seconds > 5 ? Language.parse(arena, msg, String.valueOf(seconds)) : MESSAGES.get(seconds);
+        final String message = seconds > 5 ? Language.parse(msg, String.valueOf(seconds)) : MESSAGES.get(seconds);
         if (global) {
             final Collection<? extends Player> players = Bukkit.getOnlinePlayers();
 

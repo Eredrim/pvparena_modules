@@ -72,8 +72,7 @@ public class SpecialJoin extends ArenaModule implements Listener {
     public void commitCommand(final CommandSender sender, final String[] args) {
         if (!PVPArena.hasAdminPerms(sender)
                 && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(sender,
-                    Language.parse(MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -82,13 +81,11 @@ public class SpecialJoin extends ArenaModule implements Listener {
         if (selections.containsKey(sender.getName())) {
             // remove & announce
             selections.remove(sender.getName());
-            arena.msg(sender,
-                    Language.parse(MSG.MODULE_SPECIALJOIN_STOP));
+            arena.msg(sender, MSG.MODULE_SPECIALJOIN_STOP);
         } else {
             // add & announce
             selections.put(sender.getName(), arena);
-            arena.msg(sender,
-                    Language.parse(MSG.MODULE_SPECIALJOIN_START));
+            arena.msg(sender, MSG.MODULE_SPECIALJOIN_START);
         }
     }
 
@@ -171,8 +168,7 @@ public class SpecialJoin extends ArenaModule implements Listener {
             final Arena a = selections.get(event.getPlayer().getName());
             places.put(new PABlockLocation(event.getClickedBlock().getLocation()), a);
             selections.remove(event.getPlayer().getName());
-            a.msg(event.getPlayer(),
-                    Language.parse(MSG.MODULE_SPECIALJOIN_DONE, place));
+            a.msg(event.getPlayer(), MSG.MODULE_SPECIALJOIN_DONE, place);
             event.setCancelled(true);
             update(a);
             return;

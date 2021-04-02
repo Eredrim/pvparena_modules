@@ -205,7 +205,7 @@ public class VaultSupport extends ArenaModule implements Listener {
 
         // /pa bet [name] [amount]
         if (ap.getArenaTeam() != null) {
-            arena.msg(player, Language.parse(MSG.MODULE_VAULT_BETNOTYOURS));
+            arena.msg(player, MSG.MODULE_VAULT_BETNOTYOURS);
             return;
         }
 
@@ -217,8 +217,7 @@ public class VaultSupport extends ArenaModule implements Listener {
 
             final int maxTime = arena.getConfig().getInt(CFG.MODULES_VAULT_BETTIME);
             if (maxTime > 0 && maxTime > arena.getPlayedSeconds()) {
-                arena.msg(player, Language.parse(MSG.ERROR_INVALID_VALUE,
-                        "2l8"));
+                arena.msg(player, MSG.ERROR_INVALID_VALUE, "2l8");
                 return;
             }
 
@@ -228,7 +227,7 @@ public class VaultSupport extends ArenaModule implements Listener {
             }
             if (p == null && arena.getTeam(args[1]) == null
                     && ap.getArenaTeam() == null) {
-                arena.msg(player, Language.parse(MSG.MODULE_VAULT_BETOPTIONS));
+                arena.msg(player, MSG.MODULE_VAULT_BETOPTIONS);
                 return;
             }
 
@@ -237,8 +236,7 @@ public class VaultSupport extends ArenaModule implements Listener {
             try {
                 amount = Double.parseDouble(args[2]);
             } catch (final Exception e) {
-                arena.msg(player,
-                        Language.parse(MSG.MODULE_VAULT_INVALIDAMOUNT, args[2]));
+                arena.msg(player, MSG.MODULE_VAULT_INVALIDAMOUNT, args[2]);
                 return;
             }
             if (!economy.hasAccount(player.getName())) {
@@ -247,8 +245,7 @@ public class VaultSupport extends ArenaModule implements Listener {
             }
             if (!economy.has(player.getName(), amount)) {
                 // no money, no entry!
-                arena.msg(player,
-                        Language.parse(MSG.MODULE_VAULT_NOTENOUGH, economy.format(amount)));
+                arena.msg(player, MSG.MODULE_VAULT_NOTENOUGH, economy.format(amount));
                 return;
             }
 
@@ -257,13 +254,12 @@ public class VaultSupport extends ArenaModule implements Listener {
             if (amount < arena.getConfig().getDouble(CFG.MODULES_VAULT_MINIMUMBET)
                     || maxBet > 0.01 && amount > maxBet) {
                 // wrong amount!
-                arena.msg(player, Language.parse(MSG.ERROR_INVALID_VALUE,
-                        economy.format(amount)));
+                arena.msg(player, MSG.ERROR_INVALID_VALUE, economy.format(amount));
                 return;
             }
 
             economy.withdrawPlayer(player.getName(), amount);
-            arena.msg(player, Language.parse(MSG.MODULE_VAULT_BETPLACED, args[1]));
+            arena.msg(player, MSG.MODULE_VAULT_BETPLACED, args[1]);
             getPlayerBetMap().put(player.getName() + ':' + args[1], amount);
         }
     }
@@ -455,8 +451,7 @@ public class VaultSupport extends ArenaModule implements Listener {
                 debug("3 depositing {} to {}", amount, player.getName());
                 if (amount > 0) {
                     economy.depositPlayer(player.getName(), amount);
-                    arena.msg(player, Language.parse(MSG.NOTICE_AWARDED,
-                            economy.format(amount)));
+                    arena.msg(player, MSG.NOTICE_AWARDED, economy.format(amount));
                 }
             } else if (arena.getConfig().getInt(CFG.MODULES_VAULT_WINREWARD, 0) > 0) {
 
@@ -487,8 +482,7 @@ public class VaultSupport extends ArenaModule implements Listener {
                 debug("4 depositing {} to {}", amount, player.getName());
                 if (amount > 0) {
                     economy.depositPlayer(player.getName(), amount);
-                    arena.msg(player, Language.parse(MSG.NOTICE_AWARDED,
-                            economy.format(amount)));
+                    arena.msg(player, MSG.NOTICE_AWARDED, economy.format(amount));
                 }
             }
         }
@@ -587,8 +581,7 @@ public class VaultSupport extends ArenaModule implements Listener {
         if (entryfee > 0) {
             if (economy != null) {
                 economy.withdrawPlayer(player.getName(), entryfee);
-                arena.msg(player,
-                        Language.parse(MSG.MODULE_VAULT_JOINPAY, economy.format(entryfee)));
+                arena.msg(player, MSG.MODULE_VAULT_JOINPAY, economy.format(entryfee));
                 pot += entryfee;
             }
         }
@@ -708,7 +701,7 @@ public class VaultSupport extends ArenaModule implements Listener {
             if (entryfee < 1) {
                 return;
             }
-            arena.msg(player, Language.parse(MSG.MODULE_VAULT_REFUNDING, economy.format(entryfee)));
+            arena.msg(player, MSG.MODULE_VAULT_REFUNDING, economy.format(entryfee));
             if (!economy.hasAccount(player.getName())) {
                 debug(player, "Account not found: {}", player.getName());
                 return;

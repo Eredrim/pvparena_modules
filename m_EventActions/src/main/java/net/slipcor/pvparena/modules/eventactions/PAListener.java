@@ -5,7 +5,6 @@ import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.classes.PABlockLocation;
 import net.slipcor.pvparena.commands.PAA_Edit;
 import net.slipcor.pvparena.core.Config;
-import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.events.*;
 import net.slipcor.pvparena.managers.SpawnManager;
@@ -140,7 +139,7 @@ class PAListener implements Listener {
             }
 
             SpawnManager.setBlock(a, new PABlockLocation(loc), s + i);
-            Arena.pmsg(event.getPlayer(), Language.parse(MSG.SPAWN_SET, s + i));
+            Arena.pmsg(event.getPlayer(), MSG.SPAWN_SET, s + i);
             return true;
         }
 

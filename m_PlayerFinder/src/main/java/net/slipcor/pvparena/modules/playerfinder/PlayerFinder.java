@@ -110,13 +110,13 @@ public class PlayerFinder extends ArenaModule implements Listener {
             debug("left");
             for (final Player otherPlayer : sortedMap.values()) {
                 player.setCompassTarget(otherPlayer.getLocation().clone());
-                arena.msg(player, Language.parse(MSG.MODULE_PLAYERFINDER_POINT, otherPlayer.getName()));
+                arena.msg(player, MSG.MODULE_PLAYERFINDER_POINT, otherPlayer.getName());
                 break;
             }
         } else if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             debug("right");
             for (final double d : sortedMap.keySet()) {
-                arena.msg(player, Language.parse(MSG.MODULE_PLAYERFINDER_NEAR, String.valueOf((int) d)));
+                arena.msg(player, MSG.MODULE_PLAYERFINDER_NEAR, String.valueOf((int) d));
                 break;
             }
         }

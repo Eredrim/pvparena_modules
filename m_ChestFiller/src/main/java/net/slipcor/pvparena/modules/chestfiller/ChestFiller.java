@@ -68,10 +68,7 @@ public class ChestFiller extends ArenaModule {
         // !cf chest | set chestfiller chest
         if (!PVPArena.hasAdminPerms(sender)
                 && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(
-                    sender,
-                    Language.parse(MSG.ERROR_NOPERM,
-                            Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -81,36 +78,34 @@ public class ChestFiller extends ArenaModule {
 
         if ("chest".equals(args[1])) {
             if (!(sender instanceof Player)) {
-                Arena.pmsg(sender, Language.parse(arena, MSG.ERROR_ONLY_PLAYERS));
+                Arena.pmsg(sender, MSG.ERROR_ONLY_PLAYERS);
                 return;
             }
             Player player = (Player) sender;
 
             Block b = player.getTargetBlock((Set<Material>)null, 10);
             if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST) {
-                arena.msg(sender,
-                        Language.parse(arena, MSG.ERROR_NO_CHEST));
+                arena.msg(sender, MSG.ERROR_NO_CHEST);
                 return;
             }
             PABlockLocation loc = new PABlockLocation(b.getLocation());
 
             arena.getConfig().set(Config.CFG.MODULES_CHESTFILLER_CHESTLOCATION, loc.toString());
             arena.getConfig().save();
-            sender.sendMessage(Language.parse(arena, MSG.MODULE_CHESTFILLER_CHEST, loc.toString()));
+            sender.sendMessage(Language.parse(MSG.MODULE_CHESTFILLER_CHEST, loc.toString()));
             return;
         }
 
         if ("fillchest".equals(args[1])) {
             if (!(sender instanceof Player)) {
-                Arena.pmsg(sender, Language.parse(arena, MSG.ERROR_ONLY_PLAYERS));
+                Arena.pmsg(sender, MSG.ERROR_ONLY_PLAYERS);
                 return;
             }
             Player player = (Player) sender;
 
             Block b = player.getTargetBlock((Set<Material>)null, 10);
             if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST) {
-                arena.msg(sender,
-                        Language.parse(arena, MSG.ERROR_NO_CHEST));
+                arena.msg(sender, MSG.ERROR_NO_CHEST);
                 return;
             }
             PABlockLocation loc = new PABlockLocation(b.getLocation());
@@ -121,7 +116,7 @@ public class ChestFiller extends ArenaModule {
 
             arena.getConfig().setManually("inventories", chests);
             arena.getConfig().save();
-            sender.sendMessage(Language.parse(arena, MSG.MODULE_CHESTFILLER_FILLCHEST, loc.toString()));
+            sender.sendMessage(Language.parse(MSG.MODULE_CHESTFILLER_FILLCHEST, loc.toString()));
             return;
         }
 

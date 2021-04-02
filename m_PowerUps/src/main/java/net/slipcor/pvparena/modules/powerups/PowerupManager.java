@@ -112,10 +112,7 @@ public class PowerupManager extends ArenaModule implements Listener {
 
         if (!PVPArena.hasAdminPerms(sender)
                 && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(
-                    sender,
-                    Language.parse(MSG.ERROR_NOPERM,
-                            Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -128,34 +125,33 @@ public class PowerupManager extends ArenaModule implements Listener {
                 if ("off".equals(args[1])) {
                     arena.getConfig().set(CFG.MODULES_POWERUPS_USAGE, args[1]);
                     arena.getConfig().save();
-                    arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_POWERUPS_USAGE.getNode(), args[1]));
+                    arena.msg(sender, MSG.SET_DONE, CFG.MODULES_POWERUPS_USAGE.getNode(), args[1]);
                     return;
                 }
                 if (args[1].equals("dropspawn")) {
                     boolean b = arena.getConfig().getBoolean(CFG.MODULES_POWERUPS_DROPSPAWN);
                     arena.getConfig().set(CFG.MODULES_POWERUPS_DROPSPAWN, !b);
                     arena.getConfig().save();
-                    arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_POWERUPS_DROPSPAWN.getNode(), String.valueOf(!b)));
+                    arena.msg(sender, MSG.SET_DONE, CFG.MODULES_POWERUPS_DROPSPAWN.getNode(), String.valueOf(!b));
                 }
-                arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[1], "off | dropspawn"));
+                arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "off | dropspawn");
                 return;
             }
             final int i;
             try {
                 i = Integer.parseInt(args[2]);
             } catch (final Exception e) {
-                arena.msg(sender,
-                        Language.parse(MSG.ERROR_NOT_NUMERIC, args[2]));
+                arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[2]);
                 return;
             }
             if ("time".equals(args[1]) || "death".equals(args[1])) {
                 arena.getConfig().set(CFG.MODULES_POWERUPS_USAGE, args[1] + ':' + i);
                 arena.getConfig().save();
-                arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_POWERUPS_USAGE.getNode(), args[1] + ':' + i));
+                arena.msg(sender, MSG.SET_DONE, CFG.MODULES_POWERUPS_USAGE.getNode(), args[1] + ':' + i);
                 return;
             }
 
-            arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[1], "time | death"));
+            arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "time | death");
         }
     }
 

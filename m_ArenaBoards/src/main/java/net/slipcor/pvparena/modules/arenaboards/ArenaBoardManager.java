@@ -114,17 +114,14 @@ public class ArenaBoardManager extends ArenaModule implements Listener {
         // trying to create an arena leaderboard
 
         if (arena == a && arena != null && boards.containsKey(new PABlockLocation(event.getBlock().getLocation()))) {
-            Arena.pmsg(event.getPlayer(), Language.parse(MSG.MODULE_ARENABOARDS_EXISTS));
+            Arena.pmsg(event.getPlayer(), MSG.MODULE_ARENABOARDS_EXISTS);
             return;
         }
 
         if (!PVPArena.hasAdminPerms(event.getPlayer())
                 && a != null && !PVPArena.hasCreatePerms(event.getPlayer(),
                 a)) {
-            a.msg(
-                    event.getPlayer(),
-                    Language.parse(MSG.ERROR_NOPERM,
-                            Language.parse(MSG.MODULE_ARENABOARDS_CREATE)));
+            a.msg(event.getPlayer(), MSG.ERROR_NOPERM, Language.parse(MSG.MODULE_ARENABOARDS_CREATE));
             return;
         }
 

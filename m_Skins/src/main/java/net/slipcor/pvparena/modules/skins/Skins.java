@@ -77,10 +77,7 @@ public class Skins extends ArenaModule {
         // !sk [classname] [skin] |
         if (!PVPArena.hasAdminPerms(sender)
                 && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(
-                    sender,
-                    Language.parse(MSG.ERROR_NOPERM,
-                            Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -105,15 +102,14 @@ public class Skins extends ArenaModule {
 
                 arena.getConfig().setManually("skins." + team.getName(), args[2]);
                 arena.getConfig().save();
-                arena.msg(sender, Language.parse(MSG.SET_DONE, team.getName(), args[2]));
+                arena.msg(sender, MSG.SET_DONE, team.getName(), args[2]);
 
                 return;
             }
             // no team AND no class!
 
-            arena.msg(sender,
-                    Language.parse(MSG.ERROR_CLASS_NOT_FOUND, args[1]));
-            arena.msg(sender, Language.parse(MSG.ERROR_TEAMNOTFOUND, args[1]));
+            arena.msg(sender, MSG.ERROR_CLASS_NOT_FOUND, args[1]);
+            arena.msg(sender, MSG.ERROR_TEAMNOTFOUND, args[1]);
             printHelp(arena, sender);
             return;
         }
@@ -121,16 +117,13 @@ public class Skins extends ArenaModule {
         // !bg [classname] [skin]
 
         if (args.length == 2) {
-            arena.msg(
-                    sender,
-                    Language.parse(MSG.MODULE_SKINS_SHOWCLASS,
-                            (String) arena.getConfig().getUnsafe("skins." + c.getName())));
+            arena.msg(sender, MSG.MODULE_SKINS_SHOWCLASS, (String) arena.getConfig().getUnsafe("skins." + c.getName()));
             return;
         }
 
         arena.getConfig().setManually("skins." + c.getName(), args[2]);
         arena.getConfig().save();
-        arena.msg(sender, Language.parse(MSG.SET_DONE, c.getName(), args[2]));
+        arena.msg(sender, MSG.SET_DONE, c.getName(), args[2]);
 
     }
 
@@ -169,7 +162,7 @@ public class Skins extends ArenaModule {
 
         enabled = true;
 
-        Arena.pmsg(Bukkit.getConsoleSender(), Language.parse(m));
+        Arena.pmsg(Bukkit.getConsoleSender(), m);
     }
 
     private void printHelp(final Arena arena, final CommandSender sender) {

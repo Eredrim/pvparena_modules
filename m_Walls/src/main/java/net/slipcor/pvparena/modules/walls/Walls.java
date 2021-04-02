@@ -98,10 +98,7 @@ public class Walls extends ArenaModule {
 
         if (!PVPArena.hasAdminPerms(sender)
                 && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(
-                    sender,
-                    Language.parse(MSG.ERROR_NOPERM,
-                            Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -115,14 +112,13 @@ public class Walls extends ArenaModule {
             try {
                 i = Integer.parseInt(args[1]);
             } catch (final Exception e) {
-                arena.msg(sender,
-                        Language.parse(MSG.ERROR_NOT_NUMERIC, args[1]));
+                arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[1]);
                 return;
             }
 
             arena.getConfig().set(CFG.MODULES_WALLS_SECONDS, i);
             arena.getConfig().save();
-            arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_WALLS_SECONDS.getNode(), String.valueOf(i)));
+            arena.msg(sender, MSG.SET_DONE, CFG.MODULES_WALLS_SECONDS.getNode(), String.valueOf(i));
         } else {
             // setting walls material
             final Material mat;
@@ -130,13 +126,13 @@ public class Walls extends ArenaModule {
                 mat = Material.getMaterial(args[1].toUpperCase());
                 debug("wall material: {}", mat);
             } catch (final Exception e) {
-                arena.msg(sender, Language.parse(MSG.ERROR_MAT_NOT_FOUND, args[1]));
+                arena.msg(sender, MSG.ERROR_MAT_NOT_FOUND, args[1]);
                 return;
             }
 
             arena.getConfig().set(CFG.MODULES_WALLS_MATERIAL, mat.name());
             arena.getConfig().save();
-            arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_WALLS_MATERIAL.getNode(), mat.name()));
+            arena.msg(sender, MSG.SET_DONE, CFG.MODULES_WALLS_MATERIAL.getNode(), mat.name());
         }
     }
 

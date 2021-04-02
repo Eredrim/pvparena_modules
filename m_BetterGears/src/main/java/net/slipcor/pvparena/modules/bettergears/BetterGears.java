@@ -83,10 +83,7 @@ public class BetterGears extends ArenaModule {
         // !bg [classname] level <level> | protection level
         if (!PVPArena.hasAdminPerms(sender)
                 && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(
-                    sender,
-                    Language.parse(MSG.ERROR_NOPERM,
-                            Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -130,17 +127,15 @@ public class BetterGears extends ArenaModule {
                             MSG.MODULE_BETTERGEARS_TEAMDONE,
                             team.getColoredName(), args[3]));
                 } catch (final Exception e) {
-                    arena.msg(sender,
-                            Language.parse(MSG.ERROR_NOT_NUMERIC, args[3]));
+                    arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[3]);
                 }
 
                 return;
             }
             // no team AND no class!
 
-            arena.msg(sender,
-                    Language.parse(MSG.ERROR_CLASS_NOT_FOUND, args[1]));
-            arena.msg(sender, Language.parse(MSG.ERROR_TEAMNOTFOUND, args[1]));
+            arena.msg(sender, MSG.ERROR_CLASS_NOT_FOUND, args[1]);
+            arena.msg(sender, MSG.ERROR_TEAMNOTFOUND, args[1]);
             printHelp(sender);
             return;
         }
@@ -148,10 +143,7 @@ public class BetterGears extends ArenaModule {
         // !bg [classname] level <level> | protection level
 
         if (args.length == 2) {
-            arena.msg(
-                    sender,
-                    Language.parse(MSG.MODULE_BETTERGEARS_SHOWCLASS,
-                            c.getName(), String.valueOf(getLevelMap().get(c))));
+            arena.msg(sender, MSG.MODULE_BETTERGEARS_SHOWCLASS, c.getName(), String.valueOf(getLevelMap().get(c)));
             return;
         }
 
@@ -166,12 +158,9 @@ public class BetterGears extends ArenaModule {
                     "modules.bettergears.levels." + c.getName(), l);
             arena.getConfig().save();
             getLevelMap().put(c, l);
-            arena.msg(
-                    sender,
-                    Language.parse(MSG.MODULE_BETTERGEARS_CLASSDONE,
-                            c.getName(), args[3]));
+            arena.msg(sender, MSG.MODULE_BETTERGEARS_CLASSDONE, c.getName(), args[3]);
         } catch (final Exception e) {
-            arena.msg(sender, Language.parse(MSG.ERROR_NOT_NUMERIC, args[3]));
+            arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[3]);
         }
     }
 

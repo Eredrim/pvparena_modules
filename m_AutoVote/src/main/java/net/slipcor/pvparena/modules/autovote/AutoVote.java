@@ -105,7 +105,7 @@ public class AutoVote extends ArenaModule implements Listener {
             }
 
             votes.put(sender.getName(), arena.getName());
-            arena.msg(sender, Language.parse(MSG.MODULE_AUTOVOTE_YOUVOTED, arena.getName()));
+            arena.msg(sender, MSG.MODULE_AUTOVOTE_YOUVOTED, arena.getName());
         } else if ("votestop".equals(args[0])) {
             if (vote != null) {
                 vote.cancel();
@@ -113,10 +113,7 @@ public class AutoVote extends ArenaModule implements Listener {
         } else {
             if (!PVPArena.hasAdminPerms(sender)
                     && !PVPArena.hasCreatePerms(sender, arena)) {
-                arena.msg(
-                        sender,
-                        Language.parse(MSG.ERROR_NOPERM,
-                                Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+                arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
                 return;
             }
 
@@ -132,7 +129,7 @@ public class AutoVote extends ArenaModule implements Listener {
                 final boolean b = arena.getConfig().getBoolean(CFG.MODULES_ARENAVOTE_EVERYONE);
                 arena.getConfig().set(CFG.MODULES_ARENAVOTE_EVERYONE, !b);
                 arena.getConfig().save();
-                arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_ARENAVOTE_EVERYONE.getNode(), String.valueOf(!b)));
+                arena.msg(sender, MSG.SET_DONE, CFG.MODULES_ARENAVOTE_EVERYONE.getNode(), String.valueOf(!b));
                 return;
             }
             CFG c = null;
@@ -146,17 +143,17 @@ public class AutoVote extends ArenaModule implements Listener {
                 try {
                     i = Integer.parseInt(args[2]);
                 } catch (Exception e) {
-                    arena.msg(sender, Language.parse(MSG.ERROR_NOT_NUMERIC, args[2]));
+                    arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[2]);
                     return;
                 }
 
                 arena.getConfig().set(c, i);
                 arena.getConfig().save();
-                arena.msg(sender, Language.parse(MSG.SET_DONE, c.getNode(), String.valueOf(i)));
+                arena.msg(sender, MSG.SET_DONE, c.getNode(), String.valueOf(i));
                 return;
             }
 
-            arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[1], "everyone | readyup | seconds"));
+            arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "everyone | readyup | seconds");
         }
     }
 

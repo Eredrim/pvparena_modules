@@ -80,10 +80,7 @@ public class Maps extends ArenaModule {
 
         if (!PVPArena.hasAdminPerms(sender)
                 && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(
-                    sender,
-                    Language.parse(MSG.ERROR_NOPERM,
-                            Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -108,13 +105,13 @@ public class Maps extends ArenaModule {
             }
             if (c == null) {
 
-                arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[1], "align | lives | players | spawns"));
+                arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "align | lives | players | spawns");
                 return;
             }
             final boolean b = arena.getConfig().getBoolean(c);
             arena.getConfig().set(c, !b);
             arena.getConfig().save();
-            arena.msg(sender, Language.parse(MSG.SET_DONE, c.getNode(), String.valueOf(!b)));
+            arena.msg(sender, MSG.SET_DONE, c.getNode(), String.valueOf(!b));
         }
     }
 

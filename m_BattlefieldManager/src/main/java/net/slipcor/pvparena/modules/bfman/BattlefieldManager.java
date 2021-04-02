@@ -66,10 +66,7 @@ public class BattlefieldManager extends ArenaModule {
         // !bm save [name] | save to definition [name]
         if (!PVPArena.hasAdminPerms(sender)
                 && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(
-                    sender,
-                    Language.parse(MSG.ERROR_NOPERM,
-                            Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -101,7 +98,7 @@ public class BattlefieldManager extends ArenaModule {
                 // !bm update | update loaded definition with corrections/additions
 
                 if (loaded == null) {
-                    arena.msg(sender, Language.parse(MSG.ERROR_ERROR, "No definition loaded!"));
+                    arena.msg(sender, MSG.ERROR_ERROR, "No definition loaded!");
 
                     return;
                 }
@@ -118,13 +115,13 @@ public class BattlefieldManager extends ArenaModule {
                 // !bm update | update loaded definition with corrections/additions
 
                 if (loaded == null) {
-                    arena.msg(sender, Language.parse(MSG.ERROR_ERROR, "No definition loaded!"));
+                    arena.msg(sender, MSG.ERROR_ERROR, "No definition loaded!");
 
                     return;
                 }
                 /*
 				if (!changed) {
-					arena.msg(sender, Language.parse(MSG.ERROR_ERROR, "No definition loaded!"));
+					arena.msg(sender, MSG.ERROR_ERROR, "No definition loaded!");
 
 					return;
 				}

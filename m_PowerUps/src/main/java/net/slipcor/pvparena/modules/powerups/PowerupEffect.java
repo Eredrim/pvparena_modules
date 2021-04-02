@@ -343,8 +343,7 @@ class PowerupEffect {
             try {
                 duration = Integer.parseInt(s[1]);
             } catch (final Exception e) {
-                Arena.pmsg(Bukkit.getConsoleSender(), Language.parse(MSG.MODULE_POWERUPS_INVALIDPUEFF,
-                        eClass));
+                Arena.pmsg(Bukkit.getConsoleSender(), MSG.MODULE_POWERUPS_INVALIDPUEFF, eClass);
             }
 
             if (s.length > 2) {
@@ -352,8 +351,7 @@ class PowerupEffect {
                 try {
                     amplifyer = Integer.parseInt(s[2]);
                 } catch (final Exception e) {
-                    Arena.pmsg(Bukkit.getConsoleSender(), Language.parse(MSG.MODULE_POWERUPS_INVALIDPUEFF,
-                            eClass));
+                    Arena.pmsg(Bukkit.getConsoleSender(), MSG.MODULE_POWERUPS_INVALIDPUEFF, eClass);
                 }
             }
         }

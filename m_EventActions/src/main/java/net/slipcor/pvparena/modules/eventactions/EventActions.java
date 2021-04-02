@@ -52,10 +52,10 @@ public class EventActions extends ArenaModule {
 
         if (a == null) {
             PAA_Edit.activeEdits.put(sender.getName() + "_power", arena);
-            arena.msg(sender, Language.parse(MSG.SPAWN_SET_START, "power"));
+            arena.msg(sender, MSG.SPAWN_SET_START, "power");
         } else {
             PAA_Edit.activeEdits.remove(sender.getName() + "_power");
-            arena.msg(sender, Language.parse(MSG.SPAWN_SET_DONE, "power"));
+            arena.msg(sender, MSG.SPAWN_SET_DONE, "power");
         }
     }
 

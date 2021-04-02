@@ -33,8 +33,8 @@ public class WallsRunner extends ArenaRunnable {
             int seconds = this.seconds % 60;
             String value = mins + ":" + String.format("%02d", seconds);
 
-            arena.getScoreboard().addCustomEntry(module, Language.parse(arena, MSG.MODULE_WALLS_FALLINGIN, value), 99);
-            arena.getScoreboard().addCustomEntry(module, Language.parse(arena, MSG.MODULE_WALLS_SEPARATOR), 98);
+            arena.getScoreboard().addCustomEntry(module, Language.parse(MSG.MODULE_WALLS_FALLINGIN, value), 99);
+            arena.getScoreboard().addCustomEntry(module, Language.parse(MSG.MODULE_WALLS_SEPARATOR), 98);
         }
     }
 

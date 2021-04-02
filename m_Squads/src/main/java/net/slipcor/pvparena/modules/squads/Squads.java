@@ -96,8 +96,7 @@ public class Squads extends ArenaModule {
     public void commitCommand(final CommandSender sender, final String[] args) {
 
         if (!PVPArena.hasAdminPerms(sender) && !PVPArena.hasCreatePerms(sender, this.arena)) {
-            this.arena.msg(sender,
-                    Language.parse(MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            this.arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -110,20 +109,20 @@ public class Squads extends ArenaModule {
         }
 
         if (args == null || args.length > 4 || asList(0, 2).contains(args.length)) {
-            this.arena.msg(sender, Language.parse(MSG.MODULE_SQUADS_HELP));
+            this.arena.msg(sender, MSG.MODULE_SQUADS_HELP);
             return;
         }
 
         if (args.length == 1) {
             // !sq | show the arena squads
             if (this.getArenaSquads().size() < 1) {
-                this.arena.msg(sender, Language.parse(MSG.MODULE_SQUADS_NOSQUAD));
+                this.arena.msg(sender, MSG.MODULE_SQUADS_NOSQUAD);
             } else {
-                this.arena.msg(sender, Language.parse(MSG.MODULE_SQUADS_LISTHEAD, this.arena.getName()));
+                this.arena.msg(sender, MSG.MODULE_SQUADS_LISTHEAD, this.arena.getName());
                 for (final ArenaSquad squad : this.getArenaSquads()) {
                     final String suffix = squad.getName().equalsIgnoreCase(this.arena.getConfig().getString(Config.CFG.MODULES_SQUADS_AUTOSQUAD)) ? " (auto)" : "";
                     final String max = squad.getMax() > 0 ? String.valueOf(squad.getMax()) : "none";
-                    this.arena.msg(sender, Language.parse(MSG.MODULE_SQUADS_LISTITEM, squad.getName(), max, suffix));
+                    this.arena.msg(sender, MSG.MODULE_SQUADS_LISTITEM, squad.getName(), max, suffix);
                 }
             }
         }
@@ -134,7 +133,7 @@ public class Squads extends ArenaModule {
                     // !sq add [name] [limit] | add squad with player limit
                     ArenaSquad newSquad = new ArenaSquad(args[2], Integer.parseInt(args[3]));
                     this.getArenaSquads().add(newSquad);
-                    this.arena.msg(sender, Language.parse(MSG.MODULE_SQUADS_ADDED, args[2]));
+                    this.arena.msg(sender, MSG.MODULE_SQUADS_ADDED, args[2]);
                 } else if ("remove".equalsIgnoreCase(args[1]) || "set".equalsIgnoreCase(args[1])) {
                     // !sq remove [name] | remove squad [name]
                     // /pa !sq set [name] [limit] | set player limit for squad
@@ -148,9 +147,9 @@ public class Squads extends ArenaModule {
                     if("set".equalsIgnoreCase(args[1])) {
                         ArenaSquad newSquad = new ArenaSquad(args[2], Integer.parseInt(args[3]));
                         this.getArenaSquads().add(newSquad);
-                        this.arena.msg(sender, Language.parse(MSG.MODULE_SQUADS_SET, args[2]));
+                        this.arena.msg(sender, MSG.MODULE_SQUADS_SET, args[2]);
                     } else {
-                        this.arena.msg(sender, Language.parse(MSG.MODULE_SQUADS_REMOVED, args[2]));
+                        this.arena.msg(sender, MSG.MODULE_SQUADS_REMOVED, args[2]);
                     }
                 } else {
                     throw new IllegalArgumentException();
@@ -161,10 +160,10 @@ public class Squads extends ArenaModule {
                 this.arena.getConfig().setManually(SQUADS_LIMITS, squadsMap);
                 this.arena.getConfig().save();
             } catch(IllegalArgumentException e) {
-                this.arena.msg(sender, Language.parse(MSG.MODULE_SQUADS_NOTEXIST, args[2]));
+                this.arena.msg(sender, MSG.MODULE_SQUADS_NOTEXIST, args[2]);
             } catch (Exception e) {
-                this.arena.msg(sender, Language.parse(MSG.MODULE_SQUADS_ERROR));
-                this.arena.msg(sender, Language.parse(MSG.MODULE_SQUADS_HELP));
+                this.arena.msg(sender, MSG.MODULE_SQUADS_ERROR);
+                this.arena.msg(sender, MSG.MODULE_SQUADS_HELP);
             }
         }
     }
@@ -213,7 +212,7 @@ public class Squads extends ArenaModule {
         for (final ArenaSquad squad : this.getArenaSquads()) {
             if (squad.getName().equals(sign.getLine(0))) {
                 if (squad.getMax() != 0 && squad.getCount() >= squad.getMax()) {
-                    this.arena.msg(arenaPlayer.getPlayer(), Language.parse(MSG.MODULE_SQUADS_FULL));
+                    this.arena.msg(arenaPlayer.getPlayer(), MSG.MODULE_SQUADS_FULL);
                     return false;
                 }
                 for (final ArenaSquad s : this.getArenaSquads()) {

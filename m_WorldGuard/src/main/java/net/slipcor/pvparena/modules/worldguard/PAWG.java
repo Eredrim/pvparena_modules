@@ -68,7 +68,7 @@ public class PAWG extends ArenaModule {
     @Override
     public void commitCommand(final CommandSender sender, final String[] args) {
         if (!sender.hasPermission("pvparena.admin")) {
-            arena.msg(sender, Language.parse(MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -94,7 +94,7 @@ public class PAWG extends ArenaModule {
         final ProtectedRegion region = (rgManager != null) ? rgManager.getRegion(wgRegion) : null;
 
         if (region == null) {
-            arena.msg(p, Language.parse(MSG.MODULE_WORLDGUARD_NOTFOUND, wgRegion));
+            arena.msg(p, MSG.MODULE_WORLDGUARD_NOTFOUND, wgRegion);
             return;
         }
 
@@ -123,7 +123,7 @@ public class PAWG extends ArenaModule {
         final ProtectedRegion region = (rgManager != null) ? rgManager.getRegion(wgRegion) : null;
 
         if (region == null) {
-            arena.msg(p, Language.parse(MSG.MODULE_WORLDGUARD_NOTFOUND, wgRegion));
+            arena.msg(p, MSG.MODULE_WORLDGUARD_NOTFOUND, wgRegion);
             return;
         }
 
@@ -139,11 +139,11 @@ public class PAWG extends ArenaModule {
         ars.locs[0] = new PABlockLocation(loc1);
         ars.locs[1] = new PABlockLocation(loc2);
         ars.saveToConfig();
-        arena.msg(p, Language.parse(MSG.MODULE_WORLDGUARD_SAVED, ars.getRegionName(), wgRegion));
+        arena.msg(p, MSG.MODULE_WORLDGUARD_SAVED, ars.getRegionName(), wgRegion);
     }
 
     private void helpCommands(final Arena arena, final CommandSender sender) {
-        arena.msg(sender, Language.parse(MSG.ERROR_ERROR, "/pa wgload [regionname] [wgregionname]"));
+        arena.msg(sender, MSG.ERROR_ERROR, "/pa wgload [regionname] [wgregionname]");
     }
 
     @Override

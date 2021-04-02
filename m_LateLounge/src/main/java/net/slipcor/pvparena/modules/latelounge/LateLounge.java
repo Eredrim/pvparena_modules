@@ -44,7 +44,7 @@ public class LateLounge extends ArenaModule {
         if (this.playerList.contains(player.getName())) {
             if (this.playerList.size() < requiredPlayers) {
                 int pos = this.playerList.indexOf(player.getName());
-                this.arena.msg(player, Language.parse(MSG.MODULE_LATELOUNGE_POSITION, String.valueOf(pos)));
+                this.arena.msg(player, MSG.MODULE_LATELOUNGE_POSITION, String.valueOf(pos));
                 
                 throw new GameplayExceptionNotice(MSG.MODULE_LATELOUNGE_WAIT);
             }
@@ -57,13 +57,13 @@ public class LateLounge extends ArenaModule {
             for (final Player p : Bukkit.getOnlinePlayers()) {
                 if (!p.equals(player)) {
                     try {
-                        this.arena.msg(p, Language.parse(MSG.MODULE_LATELOUNGE_ANNOUNCE, ArenaManager.getIndirectArenaName(this.arena), player.getName()));
+                        this.arena.msg(p, MSG.MODULE_LATELOUNGE_ANNOUNCE, ArenaManager.getIndirectArenaName(this.arena), player.getName());
                     } catch (Exception ignored) {
 
                     }
                 }
             }
-            this.arena.msg(player, Language.parse(MSG.MODULE_LATELOUNGE_POSITION, String.valueOf(pos)));
+            this.arena.msg(player, MSG.MODULE_LATELOUNGE_POSITION, String.valueOf(pos));
             throw new GameplayExceptionNotice(MSG.MODULE_LATELOUNGE_WAIT);
         }
 
@@ -82,7 +82,7 @@ public class LateLounge extends ArenaModule {
                             try {
                                 mod.checkJoin(p);
                             } catch (GameplayException e) {
-                                this.arena.msg(p, Language.parse(MSG.MODULE_LATELOUNGE_REJOIN));
+                                this.arena.msg(p, MSG.MODULE_LATELOUNGE_REJOIN);
                                 removals.add(s);
                                 break;
                             }
@@ -120,7 +120,7 @@ public class LateLounge extends ArenaModule {
     public boolean handleSpecialLeave(final ArenaPlayer arenaPlayer) {
         if(this.playerList.contains(arenaPlayer.getName())) {
             this.playerList.remove(arenaPlayer.getName());
-            this.arena.msg(arenaPlayer.getPlayer(), Language.parse(MSG.MODULE_LATELOUNGE_LEAVE, this.arena.getName()));
+            this.arena.msg(arenaPlayer.getPlayer(), MSG.MODULE_LATELOUNGE_LEAVE, this.arena.getName());
             return true;
         }
         return false;

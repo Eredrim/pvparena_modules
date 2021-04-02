@@ -46,14 +46,14 @@ public class SinglePlayerSupport extends ArenaModule {
     public boolean handleJoin(Player player) throws GameplayException {
         if (this.arena.isLocked() && !player.hasPermission("pvparena.admin")
                 && !(player.hasPermission("pvparena.create") && this.arena.getOwner().equals(player.getName()))) {
-            throw new GameplayException(Language.parse(this.arena, MSG.ERROR_DISABLED));
+            throw new GameplayException(Language.parse(MSG.ERROR_DISABLED));
         }
 
         final ArenaPlayer aPlayer = ArenaPlayer.fromPlayer(player);
 
         if (aPlayer.getArena() != null) {
             debug(aPlayer.getArena(), player, this.getName());
-            throw new GameplayException(Language.parse(this.arena, MSG.ERROR_ARENA_ALREADY_PART_OF, ArenaManager.getIndirectArenaName(aPlayer.getArena())));
+            throw new GameplayException(Language.parse(MSG.ERROR_ARENA_ALREADY_PART_OF, ArenaManager.getIndirectArenaName(aPlayer.getArena())));
         }
 
         return true;

@@ -66,7 +66,7 @@ public class Spectate extends ArenaModule {
 
         final ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
         if (arena.equals(arenaPlayer.getArena())) {
-            arena.msg(player, Language.parse(MSG.ERROR_ARENA_ALREADY_PART_OF, ArenaManager.getIndirectArenaName(arena)));
+            arena.msg(player, MSG.ERROR_ARENA_ALREADY_PART_OF, ArenaManager.getIndirectArenaName(arena));
             return;
         }
 
@@ -96,7 +96,7 @@ public class Spectate extends ArenaModule {
             @Override
             public void run() {
                 arena.tpPlayerToCoordNameForJoin(arenaPlayer, "spectator", false);
-                arena.msg(player, Language.parse(MSG.NOTICE_WELCOME_SPECTATOR));
+                arena.msg(player, MSG.NOTICE_WELCOME_SPECTATOR);
                 arenaPlayer.setStatus(PlayerStatus.WATCH);
             }
         }

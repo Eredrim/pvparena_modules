@@ -78,10 +78,7 @@ public class Titles extends ArenaModule {
 
         if (!PVPArena.hasAdminPerms(sender)
                 && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(
-                    sender,
-                    Language.parse(MSG.ERROR_NOPERM,
-                            Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -111,7 +108,7 @@ public class Titles extends ArenaModule {
 
             final String list = StringParser.joinArray(Title.type.values(),
                     ", ");
-            arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[1], list));
+            arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], list);
         }
     }
 

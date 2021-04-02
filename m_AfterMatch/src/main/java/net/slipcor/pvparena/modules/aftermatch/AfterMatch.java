@@ -107,10 +107,7 @@ public class AfterMatch extends ArenaModule {
 
         if (!PVPArena.hasAdminPerms(sender)
                 && !PVPArena.hasCreatePerms(sender, this.arena)) {
-            this.arena.msg(
-                    sender,
-                    Language.parse(MSG.ERROR_NOPERM,
-                            Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
+            this.arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -123,28 +120,27 @@ public class AfterMatch extends ArenaModule {
                 if ("off".equals(args[1])) {
                     this.arena.getConfig().set(CFG.MODULES_AFTERMATCH_AFTERMATCH, args[1]);
                     this.arena.getConfig().save();
-                    this.arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), args[1]));
+                    this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), args[1]);
                     return;
                 }
-                this.arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[1], "off"));
+                this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "off");
                 return;
             }
             final int i;
             try {
                 i = Integer.parseInt(args[2]);
             } catch (final Exception e) {
-                this.arena.msg(sender,
-                        Language.parse(MSG.ERROR_NOT_NUMERIC, args[2]));
+                this.arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[2]);
                 return;
             }
             if ("time".equals(args[1]) || "death".equals(args[1])) {
                 this.arena.getConfig().set(CFG.MODULES_AFTERMATCH_AFTERMATCH, args[1] + ':' + i);
                 this.arena.getConfig().save();
-                this.arena.msg(sender, Language.parse(MSG.SET_DONE, CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), args[1] + ':' + i));
+                this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), args[1] + ':' + i);
                 return;
             }
 
-            this.arena.msg(sender, Language.parse(MSG.ERROR_ARGUMENT, args[1], "time | death"));
+            this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "time | death");
         }
     }
 
