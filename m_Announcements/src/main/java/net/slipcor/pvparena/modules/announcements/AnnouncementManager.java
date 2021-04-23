@@ -108,7 +108,7 @@ public class AnnouncementManager extends ArenaModule {
                 MSG.FIGHT_KILLED_BY,
                 player.getName(),
                 arena.parseDeathCause(player, cause.getCause(),
-                        ArenaPlayer.getLastDamagingPlayer(cause, player))));
+                        ArenaPlayer.getLastDamagingPlayer(cause))));
     }
 
     @Override

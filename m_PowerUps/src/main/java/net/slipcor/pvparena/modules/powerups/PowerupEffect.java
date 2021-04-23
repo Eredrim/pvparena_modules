@@ -235,7 +235,7 @@ class PowerupEffect {
                                         DamageCause.MAGIC, player)));
                     }
                     // needed so player does not get found when dead
-                    arena.removePlayer(player, arena.getConfig().getString(CFG.TP_LOSE), true, false);
+                    arena.removePlayer(arenaPlayer, arena.getConfig().getString(CFG.TP_LOSE), true, false);
                     arenaPlayer.getArenaTeam().remove(arenaPlayer);
 
                     ArenaManager.checkAndCommit(arena, false);
