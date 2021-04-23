@@ -3,10 +3,10 @@ package net.slipcor.pvparena.modules.redstone;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.arena.ArenaTeam;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.classes.PABlockLocation;
-import net.slipcor.pvparena.listeners.PlayerListener;
+import net.slipcor.pvparena.classes.PADeathInfo;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.ArenaManager;
 import org.bukkit.Bukkit;
@@ -16,7 +16,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockRedstoneEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 import static net.slipcor.pvparena.config.Debugger.debug;
@@ -56,6 +55,7 @@ public class RedStoneTriggers extends ArenaModule implements Listener {
         }
 
         final Sign s = (Sign) block.getState();
+        final PADeathInfo pluginDeathCause = new PADeathInfo(DamageCause.LIGHTNING);
 
         if ("[WIN]".equals(s.getLine(0))) {
             for (final ArenaTeam team : arena.getTeams()) {
@@ -66,8 +66,7 @@ public class RedStoneTriggers extends ArenaModule implements Listener {
                 for (final ArenaPlayer arenaPlayer : team.getTeamMembers()) {
                     if (arenaPlayer.getStatus() == PlayerStatus.FIGHT) {
                         event.getBlock().getWorld().strikeLightningEffect(arenaPlayer.getPlayer().getLocation());
-                        final EntityDamageEvent e = new EntityDamageEvent(arenaPlayer.getPlayer(), DamageCause.LIGHTNING,10.0);
-                        PlayerListener.finallyKillPlayer(arena, arenaPlayer.getPlayer(), e);
+                        arenaPlayer.handleDeathAndLose(pluginDeathCause);
                     }
                 }
             }
@@ -80,8 +79,7 @@ public class RedStoneTriggers extends ArenaModule implements Listener {
                 for (final ArenaPlayer ap : team.getTeamMembers()) {
                     if (ap.getStatus() == PlayerStatus.FIGHT) {
                         event.getBlock().getWorld().strikeLightningEffect(ap.getPlayer().getLocation());
-                        final EntityDamageEvent e = new EntityDamageEvent(ap.getPlayer(), DamageCause.LIGHTNING, 10.0);
-                        PlayerListener.finallyKillPlayer(arena, ap.getPlayer(), e);
+                        ap.handleDeathAndLose(pluginDeathCause);
                     }
                 }
             }

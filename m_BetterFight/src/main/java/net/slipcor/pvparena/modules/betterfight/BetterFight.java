@@ -270,7 +270,7 @@ public class BetterFight extends ArenaModule {
     @Override
     public void parsePlayerDeath(final Player player,
                                  final EntityDamageEvent cause) {
-        final Player p = ArenaPlayer.getLastDamagingPlayer(cause, player);
+        final Player p = ArenaPlayer.getLastDamagingPlayer(cause);
 
         if (arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH)) {
             getKills().put(player.getName(), 0);

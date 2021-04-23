@@ -3,6 +3,7 @@ package net.slipcor.pvparena.modules.respawnrelay;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.PlayerStatus;
+import net.slipcor.pvparena.classes.PADeathInfo;
 import net.slipcor.pvparena.classes.PASpawn;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.loadables.ArenaModule;
@@ -136,24 +137,24 @@ public class RespawnRelay extends ArenaModule {
     }
 
     @Override
-    public boolean tryDeathOverride(final ArenaPlayer arenaPlayer, List<ItemStack> drops) {
+    public boolean tryDeathOverride(ArenaPlayer arenaPlayer, PADeathInfo deathInfo, List<ItemStack> keptItems) {
         arenaPlayer.setStatus(PlayerStatus.DEAD);
 
-        if (drops == null) {
-            drops = new ArrayList<>();
+        if (keptItems == null) {
+            keptItems = new ArrayList<>();
         }
         if (SpawnManager.getSpawnByExactName(arena, arenaPlayer.getArenaTeam().getName()+ RELAY) == null) {
-            SpawnManager.respawn(arena, arenaPlayer, RELAY);
+            SpawnManager.respawn(arenaPlayer, RELAY);
         } else {
-            SpawnManager.respawn(arena, arenaPlayer, arenaPlayer.getArenaTeam().getName()+ RELAY);
+            SpawnManager.respawn(arenaPlayer, arenaPlayer.getArenaTeam().getName()+ RELAY);
         }
-        arena.unKillPlayer(arenaPlayer.getPlayer(), arenaPlayer.getPlayer().getLastDamageCause() == null ? null : arenaPlayer.getPlayer().getLastDamageCause().getCause(), arenaPlayer.getPlayer().getKiller());
+        arenaPlayer.revive(deathInfo);
 
         if (getRunnerMap().containsKey(arenaPlayer.getName())) {
             return true;
         }
 
-        getRunnerMap().put(arenaPlayer.getName(), new RelayRunnable(this, arena, arenaPlayer, drops));
+        getRunnerMap().put(arenaPlayer.getName(), new RelayRunnable(this, arena, arenaPlayer, deathInfo, keptItems));
 
         return true;
     }

@@ -590,7 +590,7 @@ public class VaultSupport extends ArenaModule implements Listener {
     @Override
     public void parsePlayerDeath(final Player p,
                                  final EntityDamageEvent cause) {
-        killreward(ArenaPlayer.getLastDamagingPlayer(cause, p));
+        killreward(ArenaPlayer.getLastDamagingPlayer(cause));
     }
 
     void pay(final Set<String> result) {
