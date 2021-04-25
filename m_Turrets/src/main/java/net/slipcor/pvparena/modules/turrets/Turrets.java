@@ -6,6 +6,7 @@ import net.slipcor.pvparena.classes.PALocation;
 import net.slipcor.pvparena.classes.PASpawn;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.loadables.ArenaModule;
+import net.slipcor.pvparena.managers.SpawnManager;
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -26,6 +27,9 @@ import java.util.Set;
 import static net.slipcor.pvparena.config.Debugger.debug;
 
 public class Turrets extends ArenaModule implements Listener {
+
+    public static final String TURRET = "turret";
+
     public Turrets() {
         super("Turrets");
     }
@@ -42,8 +46,8 @@ public class Turrets extends ArenaModule implements Listener {
     }
 
     @Override
-    public boolean hasSpawn(final String spawn) {
-        return spawn.contains("turret");
+    public boolean hasSpawn(final String spawn, final String teamName) {
+        return spawn.contains(TURRET);
     }
 
     @Override
@@ -61,23 +65,17 @@ public class Turrets extends ArenaModule implements Listener {
             @Override
             public void run() {
 
+                final Set<PASpawn> spawns = SpawnManager.getPASpawnsStartingWith(arena, TURRET);
 
-                final Set<PASpawn> spawns = new HashSet<>();
-                for (final PASpawn spawn : arena.getSpawns()) {
-                    if (spawn.getName().contains("turret")) {
-                        spawns.add(spawn);
-                    }
-                }
-
-                if (spawns.size() < 1) {
+                if (spawns.isEmpty()) {
                     PVPArena.getInstance().getLogger().warning("No valid turret spawns found!");
                     return;
                 }
 
                 final double degrees = arena.getConfig().getDouble(CFG.MODULES_TURRETS_MAXDEGREES);
-                for (final PASpawn location : spawns) {
-                    final PALocation loc = location.getLocation();
-                    turretMap.put(new PABlockLocation(loc.toLocation()), new Turret(location.getName(), loc, degrees));
+                for (final PASpawn spawn : spawns) {
+                    final PALocation location = spawn.getPALocation();
+                    turretMap.put(new PABlockLocation(location.toLocation()), new Turret(spawn.getName(), location, degrees));
                 }
             }
 

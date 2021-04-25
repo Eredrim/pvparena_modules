@@ -1,12 +1,8 @@
 package net.slipcor.pvparena.modules.skins;
 
 import me.libraryaddict.disguise.DisguiseAPI;
-import me.libraryaddict.disguise.disguisetypes.DisguiseType;
-import me.libraryaddict.disguise.disguisetypes.MiscDisguise;
-import me.libraryaddict.disguise.disguisetypes.MobDisguise;
-import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
+import me.libraryaddict.disguise.disguisetypes.*;
 import net.slipcor.pvparena.PVPArena;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
@@ -18,26 +14,31 @@ public class LibsDisguiseHandler {
     }
 
     public void parseTeleport(Player player, String disguise) {
-        try {
-            DisguiseType type =
-                    DisguiseType.getType(EntityType.fromName(disguise));
-            try {
-                MobDisguise md = new MobDisguise(type, false);
-            } catch (Exception e) {
-                MiscDisguise md = new MiscDisguise(type);
-            }
-        } catch (Exception|Error e) {
-            try {
-                PlayerDisguise pd = new PlayerDisguise(disguise);
-                if (DisguiseAPI.isDisguised(player)) {
-                    DisguiseAPI.undisguiseToAll(player);
-                }
 
-                Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new LibsDisguiseRunnable(player, pd), 3L);
-            } catch (Exception|Error e2) {
-                e2.printStackTrace();
-            }
+        final EntityType entityType = EntityType.fromName(disguise);
+        if (entityType == null) {
+            PVPArena.getInstance().getLogger().warning(String.format("Skins: Entity type %s doesn't exist !", disguise));
+            return;
         }
+        DisguiseType disguiseType = DisguiseType.getType(entityType);
+
+        TargetedDisguise targetedDisguise;
+        if (disguiseType.isPlayer()) {
+            targetedDisguise = new PlayerDisguise(disguise);
+        } else if (disguiseType.isMob()) {
+            targetedDisguise = new MobDisguise(disguiseType, false);
+        } else if (disguiseType.isMisc()) {
+            targetedDisguise = new MiscDisguise(disguiseType);
+        } else {
+            PVPArena.getInstance().getLogger().warning(String.format("Skins: Entity type %s is not supported.", disguise));
+            return;
+        }
+
+        if (DisguiseAPI.isDisguised(player)) {
+            DisguiseAPI.undisguiseToAll(player);
+        }
+        new LibsDisguiseRunnable(player, targetedDisguise).runTaskLater(PVPArena.getInstance(), 3L);
+
     }
 
     public void unload(Player player) {

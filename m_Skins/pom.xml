@@ -45,7 +45,7 @@
         <dependency>
             <groupId>LibsDisguises</groupId>
             <artifactId>LibsDisguises</artifactId>
-            <version>9.5.2</version>
+            <version>10.0.24</version>
             <type>jar</type>
             <scope>provided</scope>
         </dependency>

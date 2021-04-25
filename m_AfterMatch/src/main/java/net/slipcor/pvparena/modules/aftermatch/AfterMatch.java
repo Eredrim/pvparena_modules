@@ -5,6 +5,7 @@ import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.arena.ArenaTeam;
+import net.slipcor.pvparena.classes.PASpawn;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config.CFG;
@@ -12,6 +13,8 @@ import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.loadables.ArenaModule;
+import net.slipcor.pvparena.managers.SpawnManager;
+import net.slipcor.pvparena.managers.TeleportManager;
 import net.slipcor.pvparena.runnables.ArenaRunnable;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -19,17 +22,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
 import static net.slipcor.pvparena.config.Debugger.debug;
 
 public class AfterMatch extends ArenaModule {
     public static final String AFTER = "after";
+    public static final String AFTER_MATCH = "aftermatch";
     private ArenaRunnable afterTask;
-    private boolean aftermatch;
+    private boolean isAfterMatch;
 
     public AfterMatch() {
         super("AfterMatch");
@@ -47,16 +50,14 @@ public class AfterMatch extends ArenaModule {
                 if (arenaPlayer.getStatus() != PlayerStatus.FIGHT) {
                     continue;
                 }
-                final Player player = arenaPlayer.getPlayer();
-                if (player != null) {
-                    this.arena.tpPlayerToCoordName(arenaPlayer, AFTER);
-                }
+                TeleportManager.teleportPlayerToRandomSpawn(this.arena, arenaPlayer,
+                        SpawnManager.getPASpawnsStartingWith(this.arena, AFTER));
             }
         }
 
         this.arena.broadcast(Language.parse(MSG.MODULE_AFTERMATCH_STARTING));
         this.arena.getGoal().setPlayersLives(0);
-        this.aftermatch = true;
+        this.isAfterMatch = true;
 
         try {
             this.afterTask.cancel();
@@ -68,12 +69,12 @@ public class AfterMatch extends ArenaModule {
 
     @Override
     public boolean checkCommand(final String s) {
-        return "!am".equals(s) || "aftermatch".equals(s);
+        return "!am".equals(s) || AFTER_MATCH.equals(s);
     }
 
     @Override
     public List<String> getMain() {
-        return Collections.singletonList("aftermatch");
+        return Collections.singletonList(AFTER_MATCH);
     }
 
     @Override
@@ -91,13 +92,14 @@ public class AfterMatch extends ArenaModule {
     }
 
     @Override
-    public Set<String> checkForMissingSpawns(final Set<String> list) {
-        for (final String s : list) {
-            if (s.startsWith(AFTER)) {
-                return emptySet();
-            }
+    public Set<PASpawn> checkForMissingSpawns(final Set<PASpawn> spawns) {
+        final Set<PASpawn> missing = new HashSet<>();
+        if (spawns.stream().noneMatch(spawn ->
+                (spawn.getName().equals(AFTER))
+                        && spawn.getTeamName() == null)) {
+            missing.add(new PASpawn(null, AFTER, null, null));
         }
-        return singleton(AFTER);
+        return missing;
     }
 
     @Override
@@ -115,7 +117,7 @@ public class AfterMatch extends ArenaModule {
             return;
         }
 
-        if ("!am".equals(args[0]) || "aftermatch".equals(args[0])) {
+        if ("!am".equals(args[0]) || AFTER_MATCH.equals(args[0])) {
             if (args.length == 2) {
                 if ("off".equals(args[1])) {
                     this.arena.getConfig().set(CFG.MODULES_AFTERMATCH_AFTERMATCH, args[1]);
@@ -163,8 +165,8 @@ public class AfterMatch extends ArenaModule {
     }
 
     @Override
-    public boolean hasSpawn(final String string) {
-        return AFTER.equals(string);
+    public boolean hasSpawn(final String name, final String teamName) {
+        return AFTER.equals(name);
     }
 
     @Override
@@ -172,7 +174,7 @@ public class AfterMatch extends ArenaModule {
                                  final EntityDamageEvent cause) {
         final String pu = this.arena.getConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH);
 
-        if ("off".equals(pu) || this.aftermatch) {
+        if ("off".equals(pu) || this.isAfterMatch) {
             return;
         }
 
@@ -205,7 +207,7 @@ public class AfterMatch extends ArenaModule {
             this.afterTask.cancel();
             this.afterTask = null;
         }
-        this.aftermatch = false;
+        this.isAfterMatch = false;
     }
 
     @Override

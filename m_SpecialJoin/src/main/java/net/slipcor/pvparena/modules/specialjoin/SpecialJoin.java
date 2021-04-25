@@ -48,7 +48,7 @@ public class SpecialJoin extends ArenaModule implements Listener {
 
     @Override
     public boolean checkCommand(final String s) {
-        return "setjoin".equals(s.toLowerCase());
+        return "setjoin".equalsIgnoreCase(s);
     }
 
     @Override
