@@ -10,6 +10,7 @@ import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
+import net.slipcor.pvparena.core.RandomUtils;
 import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.regions.ArenaRegion;
@@ -40,13 +41,16 @@ import static net.slipcor.pvparena.config.Debugger.debug;
 public class PowerupManager extends ArenaModule implements Listener {
 
 
-    public static final String POWERUPS_CFG = "modules.powerups.items";
+    private static final String POWERUPS_CFG = "modules.powerups.items";
+    private static final String POWERUP = "powerup";
+    private static final String POWERUP_STRING = ChatColor.RED + "Power\nUp";
+
     private Powerups usesPowerups;
 
     private int powerupDiff;
     private int powerupDiffI;
 
-    int SPAWN_ID = -1;
+    int spawnId = -1;
 
     private boolean setup;
 
@@ -68,7 +72,7 @@ public class PowerupManager extends ArenaModule implements Listener {
             return;
         }
 
-        if (this.usesPowerups.puTotal.size() <= 0) {
+        if (this.usesPowerups.puTotal.isEmpty()) {
             return;
         }
 
@@ -82,7 +86,7 @@ public class PowerupManager extends ArenaModule implements Listener {
 
     @Override
     public boolean checkCommand(final String s) {
-        return "!pu".equals(s) || s.startsWith("powerup");
+        return "!pu".equals(s) || s.startsWith(POWERUP);
     }
 
     @Override
@@ -120,7 +124,7 @@ public class PowerupManager extends ArenaModule implements Listener {
             return;
         }
 
-        if ("!pu".equals(args[0]) || args[0].startsWith("powerup")) {
+        if ("!pu".equals(args[0]) || args[0].startsWith(POWERUP)) {
             if (args.length == 2) {
                 if ("off".equals(args[1])) {
                     arena.getConfig().set(CFG.MODULES_POWERUPS_USAGE, args[1]);
@@ -128,7 +132,7 @@ public class PowerupManager extends ArenaModule implements Listener {
                     arena.msg(sender, MSG.SET_DONE, CFG.MODULES_POWERUPS_USAGE.getNode(), args[1]);
                     return;
                 }
-                if (args[1].equals("dropspawn")) {
+                if ("dropspawn".equals(args[1])) {
                     boolean b = arena.getConfig().getBoolean(CFG.MODULES_POWERUPS_DROPSPAWN);
                     arena.getConfig().set(CFG.MODULES_POWERUPS_DROPSPAWN, !b);
                     arena.getConfig().save();
@@ -179,9 +183,10 @@ public class PowerupManager extends ArenaModule implements Listener {
         final Set<ArenaRegion> regions = this.arena.getRegionsByType(RegionType.BATTLE);
 
 
-        if (regions.size() < 1 || this.arena.getConfig().getBoolean(CFG.MODULES_POWERUPS_DROPSPAWN)) {
+        if (regions.isEmpty() || this.arena.getConfig().getBoolean(CFG.MODULES_POWERUPS_DROPSPAWN)) {
             if (!this.arena.getConfig().getBoolean(CFG.MODULES_POWERUPS_DROPSPAWN)) {
-                PVPArena.getInstance().getLogger().warning("You have deactivated 'dropspawn' but have no BATTLE region. Attempting to find powerup drop spawns!");
+                PVPArena.getInstance().getLogger().warning("You have deactivated 'dropspawn' but have no BATTLE region. " +
+                        "Attempting to find powerup drop spawns!");
             }
             this.dropItemOnSpawn(item);
 
@@ -191,15 +196,15 @@ public class PowerupManager extends ArenaModule implements Listener {
             final PABlockLocation min = ar.getShape().getMinimumLocation();
             final PABlockLocation max = ar.getShape().getMaximumLocation();
 
-            final Random r = new Random();
+            final Random random = new Random();
 
-            final int x = r.nextInt(max.getX() - min.getX());
-            final int z = r.nextInt(max.getZ() - min.getZ());
+            final int x = random.nextInt(max.getX() - min.getX());
+            final int z = random.nextInt(max.getZ() - min.getZ());
 
-            final World w = Bukkit.getWorld(min.getWorldName());
-            Location dropLoc = w.getHighestBlockAt(min.getX() + x, min.getZ() + z).getRelative(BlockFace.UP).getLocation();
+            final World world = Bukkit.getWorld(min.getWorldName());
+            Location dropLoc = world.getHighestBlockAt(min.getX() + x, min.getZ() + z).getRelative(BlockFace.UP).getLocation();
 
-            w.dropItem(dropLoc, this.getTaggedItem(item)).setVelocity(new Vector());
+            world.dropItem(dropLoc, this.getTaggedItem(item)).setVelocity(new Vector());
         }
     }
 
@@ -263,31 +268,28 @@ public class PowerupManager extends ArenaModule implements Listener {
      */
     private void dropItemOnSpawn(final Material item) {
         debug("calculating item spawn location");
-        List<PALocation> allowedLocations = new ArrayList<>(SpawnManager.getSpawnsContaining(arena, "powerup"));
+        List<PALocation> allowedLocations = new ArrayList<>(SpawnManager.getSpawnsContaining(arena, POWERUP));
 
-        if (allowedLocations.size() < 1) {
+        if (allowedLocations.isEmpty()) {
             PVPArena.getInstance().getLogger().warning("No valid powerup spawns found!");
             return;
         }
 
-        int random = new Random().nextInt(allowedLocations.size());
-        Location dropLoc = allowedLocations.get(random).toLocation().add(0, 0.5, 0);
+        Location dropLoc = RandomUtils.getRandom(allowedLocations, new Random()).toLocation().add(0, 0.5, 0);
         debug("dropping item on spawn: {}", dropLoc);
         dropLoc.getWorld().dropItem(dropLoc, this.getTaggedItem(item)).setVelocity(new Vector());;
     }
 
     @Override
-    public boolean hasSpawn(final String s) {
-        return s.toLowerCase().startsWith("powerup");
+    public boolean hasSpawn(final String s, final String teamName) {
+        return s.toLowerCase().startsWith(POWERUP);
     }
-
-    private static final String POWERUPSTRING = ChatColor.RED + "Power\nUp";
 
     private ItemStack getTaggedItem(final Material material) {
         ItemStack itemStack = new ItemStack(material);
         final ItemMeta meta = itemStack.getItemMeta();
 
-        meta.setDisplayName(POWERUPSTRING);
+        meta.setDisplayName(POWERUP_STRING);
         itemStack.setItemMeta(meta);
         return itemStack;
     }
@@ -296,7 +298,7 @@ public class PowerupManager extends ArenaModule implements Listener {
         if (!item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) {
             return false;
         }
-        return item.getItemMeta().getDisplayName().equals(POWERUPSTRING);
+        return item.getItemMeta().getDisplayName().equals(POWERUP_STRING);
     }
 
     @Override
@@ -424,10 +426,10 @@ public class PowerupManager extends ArenaModule implements Listener {
 
     @Override
     public void reset(final boolean force) {
-        if (SPAWN_ID > -1) {
-            Bukkit.getScheduler().cancelTask(SPAWN_ID);
+        if (spawnId > -1) {
+            Bukkit.getScheduler().cancelTask(spawnId);
         }
-        SPAWN_ID = -1;
+        spawnId = -1;
         if (usesPowerups != null) {
             usesPowerups.puActive.clear();
         }
@@ -450,7 +452,7 @@ public class PowerupManager extends ArenaModule implements Listener {
                 debug("powerup time trigger!");
                 powerupDiff *= 20; // calculate ticks to seconds
                 // initiate autosave timer
-                SPAWN_ID = Bukkit
+                spawnId = Bukkit
                         .getServer()
                         .getScheduler()
                         .scheduleSyncRepeatingTask(PVPArena.getInstance(),

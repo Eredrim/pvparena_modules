@@ -135,7 +135,7 @@ public class BetterGears extends ArenaModule {
             // no team AND no class!
 
             arena.msg(sender, MSG.ERROR_CLASS_NOT_FOUND, args[1]);
-            arena.msg(sender, MSG.ERROR_TEAMNOTFOUND, args[1]);
+            arena.msg(sender, MSG.ERROR_TEAM_NOT_FOUND, args[1]);
             printHelp(sender);
             return;
         }

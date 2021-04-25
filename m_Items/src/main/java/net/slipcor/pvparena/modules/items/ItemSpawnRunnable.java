@@ -30,8 +30,8 @@ class ItemSpawnRunnable implements Runnable {
         int i = (new Random()).nextInt(spawns.size());
         for (final PASpawn loc : spawns) {
             if (--i <= 0) {
-                loc.getLocation().toLocation().getWorld().dropItemNaturally(
-                        loc.getLocation().toLocation(), items[(new Random()).nextInt(items.length)]);
+                loc.getPALocation().toLocation().getWorld().dropItemNaturally(
+                        loc.getPALocation().toLocation(), items[(new Random()).nextInt(items.length)]);
                 return;
             }
         }

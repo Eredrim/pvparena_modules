@@ -25,7 +25,7 @@ class PowerupRunnable implements Runnable {
         trace("PowerupRunnable commiting spawn");
         if (pum.getArena().isLocked()) {
             // deactivate the auto saving task
-            Bukkit.getServer().getScheduler().cancelTask(pum.SPAWN_ID);
+            Bukkit.getServer().getScheduler().cancelTask(pum.spawnId);
         } else {
 
             pum.calcPowerupSpawn();
