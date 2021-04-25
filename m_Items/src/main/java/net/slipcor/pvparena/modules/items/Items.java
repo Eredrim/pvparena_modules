@@ -31,7 +31,7 @@ public class Items extends ArenaModule {
     }
 
     @Override
-    public boolean hasSpawn(final String s) {
+    public boolean hasSpawn(final String s, final String teamName) {
         return s.toLowerCase().startsWith("item");
     }
 

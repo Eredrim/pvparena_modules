@@ -1,10 +1,8 @@
 package net.slipcor.pvparena.modules.skins;
 
 import net.slipcor.pvparena.PVPArena;
-import net.slipcor.pvparena.arena.Arena;
-import net.slipcor.pvparena.arena.ArenaClass;
-import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.arena.ArenaTeam;
+import net.slipcor.pvparena.arena.*;
+import net.slipcor.pvparena.classes.PASpawn;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config.CFG;
@@ -13,6 +11,7 @@ import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
@@ -27,7 +26,9 @@ import java.util.List;
 import java.util.Set;
 
 public class Skins extends ArenaModule {
-    private static LibsDisguiseHandler ldHandler;
+    public static final String SKIN = "skin";
+    public static final String MODULES_SKINS = "modules.skins";
+    private static LibsDisguiseHandler libsDisguiseHandler;
     private static boolean enabled;
 
     private final Set<String> disguised = new HashSet<>();
@@ -43,12 +44,12 @@ public class Skins extends ArenaModule {
 
     @Override
     public boolean checkCommand(final String s) {
-        return "!sk".equals(s) || s.startsWith("skins");
+        return "!sk".equals(s) || s.startsWith(MODULES_SKINS);
     }
 
     @Override
     public List<String> getMain() {
-        return Collections.singletonList("skins");
+        return Collections.singletonList(MODULES_SKINS);
     }
 
     @Override
@@ -96,11 +97,11 @@ public class Skins extends ArenaModule {
                     arena.msg(sender, Language.parse(
                             MSG.MODULE_SKINS_SHOWTEAM,
                             team.getColoredName(),
-                            (String) arena.getConfig().getUnsafe("skins." + team.getName())));
+                            (String) arena.getConfig().getUnsafe(MODULES_SKINS + "." + team.getName())));
                     return;
                 }
 
-                arena.getConfig().setManually("skins." + team.getName(), args[2]);
+                arena.getConfig().setManually(MODULES_SKINS + "." + team.getName(), args[2]);
                 arena.getConfig().save();
                 arena.msg(sender, MSG.SET_DONE, team.getName(), args[2]);
 
@@ -109,7 +110,7 @@ public class Skins extends ArenaModule {
             // no team AND no class!
 
             arena.msg(sender, MSG.ERROR_CLASS_NOT_FOUND, args[1]);
-            arena.msg(sender, MSG.ERROR_TEAMNOTFOUND, args[1]);
+            arena.msg(sender, MSG.ERROR_TEAM_NOT_FOUND, args[1]);
             printHelp(arena, sender);
             return;
         }
@@ -117,11 +118,11 @@ public class Skins extends ArenaModule {
         // !bg [classname] [skin]
 
         if (args.length == 2) {
-            arena.msg(sender, MSG.MODULE_SKINS_SHOWCLASS, (String) arena.getConfig().getUnsafe("skins." + c.getName()));
+            arena.msg(sender, MSG.MODULE_SKINS_SHOWCLASS, (String) arena.getConfig().getUnsafe(MODULES_SKINS + "." + c.getName()));
             return;
         }
 
-        arena.getConfig().setManually("skins." + c.getName(), args[2]);
+        arena.getConfig().setManually(MODULES_SKINS + "." + c.getName(), args[2]);
         arena.getConfig().save();
         arena.msg(sender, MSG.SET_DONE, c.getName(), args[2]);
 
@@ -129,10 +130,10 @@ public class Skins extends ArenaModule {
 
     @Override
     public void configParse(final YamlConfiguration config) {
-        if (config.get("skins") == null) {
+        if (config.get(MODULES_SKINS) == null) {
             for (final ArenaTeam team : arena.getTeams()) {
                 final String sName = team.getName();
-                config.addDefault("skins." + sName, "Herobrine");
+                config.addDefault(MODULES_SKINS + "." + sName, "Herobrine");
             }
             config.options().copyDefaults(true);
         }
@@ -140,8 +141,8 @@ public class Skins extends ArenaModule {
 
     @Override
     public void parseRespawn(final Player player, final ArenaTeam team, final DamageCause lastDamageCause, final Entity damager) {
-        if (ldHandler != null) {
-            ldHandler.parseRespawn(player);
+        if (libsDisguiseHandler != null) {
+            libsDisguiseHandler.parseRespawn(player);
         }
     }
 
@@ -156,7 +157,7 @@ public class Skins extends ArenaModule {
         }
         MSG m = MSG.MODULE_SKINS_NOMOD;
         if (Bukkit.getServer().getPluginManager().getPlugin("LibsDisguises") != null) {
-            ldHandler = new LibsDisguiseHandler();
+            libsDisguiseHandler = new LibsDisguiseHandler();
             m = MSG.MODULE_SKINS_LIBSDISGUISE;
         }
 
@@ -173,43 +174,7 @@ public class Skins extends ArenaModule {
     }
 
     @Override
-    public void tpPlayerToCoordName(final Player player, final String place) {
-        if (ldHandler == null) {
-            final ArenaTeam team = ArenaPlayer.fromPlayer(player).getArenaTeam();
-            if (team != null) {
-                final ItemStack is = new ItemStack(Material.PLAYER_HEAD, 1);
-                final String disguise = (String) arena.getConfig().getUnsafe("skins." + team.getName());
-                if (disguise == null) {
-                    return;
-                }
-                if ("SKELETON".equals(disguise)) {
-                    is.setDurability((short) 0);
-                } else if ("WITHER_SKELETON".equals(disguise)) {
-                    is.setDurability((short) 1);
-                } else if ("ZOMBIE".equals(disguise)) {
-                    is.setDurability((short) 2);
-                } else if ("PLAYER".equals(disguise)) {
-                    is.setDurability((short) 3);
-                } else if ("CREEPER".equals(disguise)) {
-                    is.setDurability((short) 4);
-                } else {
-                    is.setDurability((short) 3);
-                    final SkullMeta sm = (SkullMeta) is.getItemMeta();
-                    sm.setOwner(disguise);
-                    is.setItemMeta(sm);
-                }
-
-                class TempRunnable implements Runnable {
-                    @Override
-                    public void run() {
-                        player.getInventory().setHelmet(is);
-                    }
-
-                }
-                Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new TempRunnable(), 5L);
-            }
-            return;
-        }
+    public void teleportPlayer(final Player player, final PASpawn place) {
 
         if (disguised.contains(player.getName()) || !arena.hasPlayer(player)) {
             return;
@@ -221,27 +186,57 @@ public class Skins extends ArenaModule {
         }
         String disguise = (String) arena.getConfig().getUnsafe("skins." + team.getName());
 
-        final ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
+        final ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
 
-        if (ap.getArenaClass() != null && (disguise == null || "none".equals(disguise))) {
-            disguise = (String) arena.getConfig().getUnsafe("skins." + ap.getArenaClass().getName());
+        if (!PlayerStatus.FIGHT.equals(arenaPlayer.getStatus())) {
+            return;
+        }
+
+        if (arenaPlayer.getArenaClass() != null && (disguise == null || "none".equals(disguise))) {
+            disguise = (String) arena.getConfig().getUnsafe("skins." + arenaPlayer.getArenaClass().getName());
         }
 
         if (disguise == null || "none".equals(disguise)) {
             return;
         }
 
-        if (ldHandler != null) {
-            ldHandler.parseTeleport(player, disguise);
+        if (libsDisguiseHandler != null) {
+            libsDisguiseHandler.parseTeleport(player, disguise);
+        } else {
+            setPlayerHead(team, player);
         }
 
         disguised.add(player.getName());
     }
 
+    private void setPlayerHead(ArenaTeam team, Player player) {
+        if (team != null) {
+            final ItemStack itemStack = new ItemStack(Material.PLAYER_HEAD, 1);
+            final String disguise = (String) arena.getConfig().getUnsafe("skins." + team.getName());
+            if (disguise == null) {
+                return;
+            }
+            final SkullMeta sm = (SkullMeta) itemStack.getItemMeta();
+            if (sm != null) {
+                sm.setUnbreakable(true);
+                final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(disguise);
+                sm.setOwningPlayer(offlinePlayer);
+                itemStack.setItemMeta(sm);
+            }
+            class TempRunnable implements Runnable {
+                @Override
+                public void run() {
+                    player.getInventory().setHelmet(itemStack);
+                }
+            }
+            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new TempRunnable(), 5L);
+        }
+    }
+
     @Override
     public void unload(final Player player) {
-        if (ldHandler != null) {
-            ldHandler.unload(player);
+        if (libsDisguiseHandler != null) {
+            libsDisguiseHandler.unload(player);
         }
         disguised.remove(player.getName());
     }

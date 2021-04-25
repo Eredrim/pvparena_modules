@@ -112,7 +112,7 @@ public class LateLounge extends ArenaModule {
     }
 
     @Override
-    public boolean hasSpawn(final String name) {
+    public boolean hasSpawn(final String name, final String teamName) {
         return this.playerList.contains(name);
     }
 

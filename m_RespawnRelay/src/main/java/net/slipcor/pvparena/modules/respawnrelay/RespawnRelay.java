@@ -6,6 +6,7 @@ import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.classes.PADeathInfo;
 import net.slipcor.pvparena.classes.PASpawn;
 import net.slipcor.pvparena.core.Config.CFG;
+import net.slipcor.pvparena.core.RandomUtils;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.SpawnManager;
 import org.bukkit.Bukkit;
@@ -54,19 +55,11 @@ public class RespawnRelay extends ArenaModule {
 
             final Set<PASpawn> map = SpawnManager.getPASpawnsStartingWith(player.getArena(), event.getMessage());
 
-            if (map.size() < 1) {
+            if (map.isEmpty()) {
                 return;
             }
 
-            int pos = new Random().nextInt(map.size());
-
-            for (final PASpawn s : map) {
-                if (--pos < 0) {
-                    overrideMap.put(player.getName(), s.getName());
-                    return;
-                }
-            }
-
+            overrideMap.put(player.getName(), RandomUtils.getRandom(map, new Random()).getName());
             overrideMap.put(player.getName(), event.getMessage());
         }
     }
@@ -85,22 +78,17 @@ public class RespawnRelay extends ArenaModule {
     }
 
     @Override
-    public Set<String> checkForMissingSpawns(final Set<String> list) {
+    public Set<PASpawn> checkForMissingSpawns(final Set<PASpawn> spawns) {
         if (listener == null) {
             listener = new RelayListener();
             Bukkit.getPluginManager().registerEvents(listener, PVPArena.getInstance());
         }
 
-        Set<String> missingSpawns = new HashSet<>();
+        Set<PASpawn> missingSpawns = new HashSet<>();
         if(this.arena.isFreeForAll()) {
-            if(!list.contains(RELAY)) {
-                missingSpawns.add(RELAY);
-            }
+            missingSpawns.addAll(SpawnManager.getMissingFFACustom(spawns, RELAY));
         } else {
-            missingSpawns = this.arena.getTeamNames().stream()
-                    .filter(team -> !list.contains(team.toLowerCase() + RELAY))
-                    .map(team -> team.toLowerCase() + RELAY)
-                    .collect(Collectors.toSet());
+            missingSpawns.addAll(SpawnManager.getMissingTeamCustom(this.arena, spawns, RELAY));
         }
 
         return missingSpawns;
@@ -119,9 +107,9 @@ public class RespawnRelay extends ArenaModule {
     }
 
     @Override
-    public boolean hasSpawn(final String s) {
+    public boolean hasSpawn(final String s, final String teamName) {
         for (String team : arena.getTeamNames()) {
-            if ((team.toLowerCase()+ RELAY).equals(s)) {
+            if (team.equalsIgnoreCase(teamName) && RELAY.equals(s)) {
                 return true;
             }
         }

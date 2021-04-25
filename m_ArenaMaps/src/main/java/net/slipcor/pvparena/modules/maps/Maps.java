@@ -170,15 +170,15 @@ public class Maps extends ArenaModule {
 
         for (final ArenaTeam team : arena.getTeams()) {
             for (final PASpawn spawn : arena.getSpawns()) {
-                if (spawn.getName().contains(team.getName())) {
-                    locations.add(new MapItem(new PABlockLocation(spawn.getLocation().toLocation()), team.getColor()));
+                if (spawn.getTeamName().equals(team.getName())) {
+                    locations.add(new MapItem(new PABlockLocation(spawn.getPALocation().toLocation()), team.getColor()));
                 }
             }
 
             if (this.arena.getGoal() instanceof AbstractFlagGoal) {
                 for (final PASpawn spawn : this.arena.getSpawns()) {
-                    if (spawn.getName().startsWith(team.getName() + "flag")) {
-                        locations.add(new MapItem(new PABlockLocation(spawn.getLocation().toLocation()), team.getColor()));
+                    if (spawn.getTeamName().equals(team.getName()) && spawn.getName().startsWith("flag")) {
+                        locations.add(new MapItem(new PABlockLocation(spawn.getPALocation().toLocation()), team.getColor()));
                     }
                 }
             }
