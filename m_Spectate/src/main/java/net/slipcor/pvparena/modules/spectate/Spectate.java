@@ -7,6 +7,7 @@ import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.arena.ArenaTeam;
 import net.slipcor.pvparena.classes.PALocation;
+import net.slipcor.pvparena.classes.PASpawn;
 import net.slipcor.pvparena.commands.PAG_Leave;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
@@ -14,6 +15,8 @@ import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.ArenaManager;
+import net.slipcor.pvparena.managers.SpawnManager;
+import net.slipcor.pvparena.managers.TeleportManager;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
@@ -95,7 +98,8 @@ public class Spectate extends ArenaModule {
 
             @Override
             public void run() {
-                arena.tpPlayerToCoordNameForJoin(arenaPlayer, "spectator", false);
+                TeleportManager.teleportPlayerToSpawnForJoin(arena, arenaPlayer,
+                        SpawnManager.getPASpawnsStartingWith(arena, PASpawn.SPECTATOR), false);
                 arena.msg(player, MSG.NOTICE_WELCOME_SPECTATOR);
                 arenaPlayer.setStatus(PlayerStatus.WATCH);
             }

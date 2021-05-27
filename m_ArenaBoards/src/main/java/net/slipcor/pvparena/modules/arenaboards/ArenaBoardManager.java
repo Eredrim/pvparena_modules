@@ -47,7 +47,7 @@ public class ArenaBoardManager extends ArenaModule implements Listener {
             debug("checking for leaderboard");
             if (config.get("spawns.leaderboard") != null) {
                 debug("leaderboard exists");
-                final PABlockLocation loc = Config.parseBlockLocation(config.getString("spawns.leaderboard"));
+                final PABlockLocation loc = Config.parseBlockLocation(config.getString("spawns.leaderboard"), null);
 
 
                 boards.put(loc, new ArenaBoard(this, loc, arena));
@@ -56,7 +56,7 @@ public class ArenaBoardManager extends ArenaModule implements Listener {
         final String leaderboard = PVPArena.getInstance().getConfig().getString(
                 "leaderboard");
         if (leaderboard != null && GLOBAL_ID < 0 && globalBoard == null) {
-            final PABlockLocation lbLoc = Config.parseBlockLocation(leaderboard);
+            final PABlockLocation lbLoc = Config.parseBlockLocation(leaderboard, null);
             globalBoard = new ArenaBoard(this, lbLoc, null);
 
             GLOBAL_ID = Bukkit.getScheduler().scheduleSyncRepeatingTask(
@@ -99,7 +99,7 @@ public class ArenaBoardManager extends ArenaModule implements Listener {
     public void onSignChange(final SignChangeEvent event) {
 
         String headline = event.getLine(0);
-        if (headline == null || headline != null && headline.isEmpty()) {
+        if (headline == null || headline.isEmpty()) {
             return;
         }
 
@@ -130,9 +130,9 @@ public class ArenaBoardManager extends ArenaModule implements Listener {
             debug(event.getPlayer(), "creating global leaderboard");
             globalBoard = new ArenaBoard(this, new PABlockLocation(event.getBlock().getLocation()), null);
             final Location loc = event.getBlock().getLocation();
-            final Integer x = loc.getBlockX();
-            final Integer y = loc.getBlockY();
-            final Integer z = loc.getBlockZ();
+            final int x = loc.getBlockX();
+            final int y = loc.getBlockY();
+            final int z = loc.getBlockZ();
             final Float yaw = loc.getYaw();
             final Float pitch = loc.getPitch();
 
@@ -146,7 +146,7 @@ public class ArenaBoardManager extends ArenaModule implements Listener {
         } else {
             final PABlockLocation loc = new PABlockLocation(event.getBlock().getLocation());
             boards.put(loc, new ArenaBoard(this, loc, a));
-            SpawnManager.setBlock(a, new PABlockLocation(event.getBlock().getLocation()), "leaderboard");
+            SpawnManager.setBlock(a, new PABlockLocation(event.getBlock().getLocation()), "leaderboard", null);
         }
     }
 

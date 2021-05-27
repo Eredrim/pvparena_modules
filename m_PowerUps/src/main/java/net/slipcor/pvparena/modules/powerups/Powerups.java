@@ -19,9 +19,9 @@ public class Powerups {
         debug("initialising powerupmanager");
         for (final Map.Entry<String, Object> stringObjectEntry : powerUps.entrySet()) {
             debug("reading powerUps");
-            Powerup p = new Powerup(stringObjectEntry.getKey(),
+            Powerup powerup = new Powerup(stringObjectEntry.getKey(),
                     (HashMap<String, Object>) stringObjectEntry.getValue());
-            puTotal.add(p);
+            puTotal.add(powerup);
         }
     }
 

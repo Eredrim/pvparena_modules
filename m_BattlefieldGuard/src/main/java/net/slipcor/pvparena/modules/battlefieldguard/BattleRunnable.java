@@ -4,8 +4,11 @@ import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.classes.PABlockLocation;
+import net.slipcor.pvparena.classes.PASpawn;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.managers.ArenaManager;
+import net.slipcor.pvparena.managers.SpawnManager;
+import net.slipcor.pvparena.managers.TeleportManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -28,43 +31,40 @@ class BattleRunnable extends BukkitRunnable {
     @Override
     public void run() {
         trace("BattleRunnable commiting");
-        try {
-            for (final Player p : Bukkit.getServer().getOnlinePlayers()) {
-                final ArenaPlayer ap = ArenaPlayer.fromPlayer(p);
+        for (final Player player : Bukkit.getServer().getOnlinePlayers()) {
+            final ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
 
-                final Arena arena = ArenaManager.getArenaByRegionLocation(new PABlockLocation(p.getLocation()));
+            final Arena arena = ArenaManager.getArenaByRegionLocation(new PABlockLocation(player.getLocation()));
 
-                if (arena == null) {
-                    continue; // not physically in an arena
+            if (arena == null) {
+                continue; // not physically in an arena
+            }
+
+            if (PVPArena.hasAdminPerms(player)) {
+                continue;
+            }
+
+            trace(player, "arena pos: {}", arena);
+            trace(player, "arena IN: {}", arenaPlayer.getArena());
+
+            if (arenaPlayer.getArena() == null) {
+                if (arena.getConfig().getBoolean(CFG.MODULES_BATTLEFIELDGUARD_ENTERDEATH)) {
+                    player.setLastDamageCause(new EntityDamageEvent(player, DamageCause.CUSTOM, 1000.0));
+                    player.setHealth(0);
+                    player.damage(1000);
+                } else {
+                    TeleportManager.teleportPlayerToRandomSpawn(arena, arenaPlayer,
+                            SpawnManager.getPASpawnsStartingWith(arena, PASpawn.EXIT));
                 }
-
-                if (PVPArena.hasAdminPerms(p)) {
-                    continue;
-                }
-
-                trace(p, "arena pos: {}", arena);
-                trace(p, "arena IN: {}", ap.getArena());
-
-                if(ap.getArena() == null) {
-                    if (arena.getConfig().getBoolean(CFG.MODULES_BATTLEFIELDGUARD_ENTERDEATH)) {
-                        p.setLastDamageCause(new EntityDamageEvent(p, DamageCause.CUSTOM,1000.0));
-                        p.setHealth(0);
-                        p.damage(1000);
-                    } else {
-                        arena.tpPlayerToCoordName(ap, "exit");
-                    }
-                } else if(!ap.getArena().equals(arena)) {
-                    if (ap.getArena().getConfig().getBoolean(CFG.MODULES_BATTLEFIELDGUARD_ENTERDEATH)) {
-                        p.setLastDamageCause(new EntityDamageEvent(p, DamageCause.CUSTOM,1000.0));
-                        p.setHealth(0);
-                        p.damage(1000);
-                    } else {
-                        ap.getArena().playerLeave(p, CFG.TP_EXIT, false, false, false);
-                    }
+            } else if (!arenaPlayer.getArena().equals(arena)) {
+                if (arenaPlayer.getArena().getConfig().getBoolean(CFG.MODULES_BATTLEFIELDGUARD_ENTERDEATH)) {
+                    player.setLastDamageCause(new EntityDamageEvent(player, DamageCause.CUSTOM, 1000.0));
+                    player.setHealth(0);
+                    player.damage(1000);
+                } else {
+                    arenaPlayer.getArena().playerLeave(player, CFG.TP_EXIT, false, false, false);
                 }
             }
-        } catch (final Exception e) {
-            e.printStackTrace();
         }
     }
 }

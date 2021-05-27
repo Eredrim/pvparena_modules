@@ -16,6 +16,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
+import static net.slipcor.pvparena.managers.SpawnManager.ROOT_SPAWNS_NODE;
+
 class PAListener implements Listener {
     private final EventActions ea;
 
@@ -93,7 +95,7 @@ class PAListener implements Listener {
     public void onClassChange(final PAPlayerClassChangeEvent event) {
         final Arena a = event.getArena();
         final Player p = event.getPlayer();
-        ea.catchEvent("classchange", p, a, "%class%",event.getArenaClass().getName());
+        ea.catchEvent("classchange", p, a, "%class%", event.getArenaClass().getName());
     }
 
 
@@ -120,11 +122,12 @@ class PAListener implements Listener {
 
             final String s = "power";
             int i = 0;
-            for (String node : a.getConfig().getKeys("spawns")) {
+            for (String node : a.getConfig().getKeys(ROOT_SPAWNS_NODE)) {
                 if (node.startsWith(s) && !node.contains("powerup")) {
 
                     final PABlockLocation locc = Config.parseBlockLocation(
-                            (String) a.getConfig().getUnsafe("spawns." + node)
+                            (String) a.getConfig().getUnsafe(String.format("%s.%s", ROOT_SPAWNS_NODE, node)),
+                            null
                     );
                     if (loc.equals(locc.toLocation())) {
                         PVPArena.getInstance().getLogger().warning("Block already exists!");
@@ -138,7 +141,7 @@ class PAListener implements Listener {
                 }
             }
 
-            SpawnManager.setBlock(a, new PABlockLocation(loc), s + i);
+            SpawnManager.setBlock(a, new PABlockLocation(loc), s + i, null);
             Arena.pmsg(event.getPlayer(), MSG.SPAWN_SET, s + i);
             return true;
         }

@@ -35,7 +35,7 @@ public class BattlefieldManager extends ArenaModule {
 
     @Override
     public boolean checkCommand(final String s) {
-        return arena.getEveryone().size() < 1 && ("!bm".equals(s) || s.startsWith("battlefieldm"));
+        return arena.getEveryone().isEmpty() && ("!bm".equals(s) || s.startsWith("battlefieldm"));
     }
 
     @Override
@@ -74,7 +74,7 @@ public class BattlefieldManager extends ArenaModule {
             return;
         }
 
-        if (args == null || args.length < 1) {
+        if (args.length < 1) {
             // !bm -> show status!
 
             if (loaded == null) {
@@ -99,7 +99,6 @@ public class BattlefieldManager extends ArenaModule {
 
                 if (loaded == null) {
                     arena.msg(sender, MSG.ERROR_ERROR, "No definition loaded!");
-
                     return;
                 }
 
@@ -110,26 +109,19 @@ public class BattlefieldManager extends ArenaModule {
                 changed = false;
                 loaded = null;
                 return;
-            }
-            if (args[0].equals("update")) {
+
+            } else if ("update".equals(args[0])) {
                 // !bm update | update loaded definition with corrections/additions
 
                 if (loaded == null) {
                     arena.msg(sender, MSG.ERROR_ERROR, "No definition loaded!");
-
                     return;
                 }
-                /*
-				if (!changed) {
-					arena.msg(sender, MSG.ERROR_ERROR, "No definition loaded!");
 
-					return;
-				}
-				*/
                 for (PASpawn spawn : arena.getSpawns()) {
                     arena.getConfig().setManually(
                             "spawns." + encrypt(spawn.getName(), loaded),
-                            Config.parseToString(spawn.getLocation()));
+                            Config.parseToString(spawn.getPALocation()));
                 }
 
                 for (PABlock block : arena.getBlocks()) {
@@ -155,17 +147,17 @@ public class BattlefieldManager extends ArenaModule {
                 if (key.startsWith(loaded + "->")) {
                     final String value = (String) arena.getConfig().getUnsafe("spawns." + key);
                     try {
-                        final PABlockLocation loc = Config.parseBlockLocation(value);
+                        final PABlockLocation loc = Config.parseBlockLocation(value, null);
 
                         final String[] split = ((String) arena.getConfig().getUnsafe("spawns." + key)).split(">");
                         final String newKey = StringParser.joinArray(StringParser.shiftArrayBy(split, 1), "");
-                        arena.addBlock(new PABlock(loc, newKey));
+                        arena.addBlock(new PABlock(loc, newKey, null));
                     } catch (final IllegalArgumentException e) {
                         final PALocation loc = Config.parseLocation(value);
 
                         final String[] split = ((String) arena.getConfig().getUnsafe("spawns." + key)).split(">");
                         final String newKey = StringParser.joinArray(StringParser.shiftArrayBy(split, 1), "");
-                        arena.addSpawn(new PASpawn(loc, newKey));
+                        arena.addSpawn(new PASpawn(loc, newKey, null, null));
                     }
                 }
             }
@@ -192,7 +184,7 @@ public class BattlefieldManager extends ArenaModule {
         for (final PASpawn spawn : arena.getSpawns()) {
             arena.getConfig().setManually(
                     "spawns." + encrypt(spawn.getName(), args[1]),
-                    Config.parseToString(spawn.getLocation()));
+                    Config.parseToString(spawn.getPALocation()));
         }
 
         for (final PABlock block : arena.getBlocks()) {

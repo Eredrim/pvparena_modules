@@ -48,7 +48,7 @@ public class SpecialJoin extends ArenaModule implements Listener {
 
     @Override
     public boolean checkCommand(final String s) {
-        return "setjoin".equals(s.toLowerCase());
+        return "setjoin".equalsIgnoreCase(s);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class SpecialJoin extends ArenaModule implements Listener {
         try {
             final List<String> res = config.getStringList("modules.specialjoin.places");
             for (final String s : res) {
-                places.put(Config.parseBlockLocation(s), arena);
+                places.put(Config.parseBlockLocation(s, null), arena);
             }
         } catch (final Exception e) {
             e.printStackTrace();
