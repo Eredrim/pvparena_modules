@@ -2,17 +2,16 @@ package net.slipcor.pvparena.modules.blockrestore;
 
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.classes.PABlockLocation;
-import net.slipcor.pvparena.managers.ArenaManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 
+import static java.util.Optional.ofNullable;
 import static net.slipcor.pvparena.config.Debugger.debug;
 
 class ArenaBlock {
-    private String arena;
     private final PABlockLocation location;
     private final BlockData blockData;
     private final String[] lines;
@@ -24,16 +23,11 @@ class ArenaBlock {
      */
     public ArenaBlock(final Block block) {
         this.location = new PABlockLocation(block.getLocation());
-        this.blockData = block.getBlockData();
+        this.blockData = block.getBlockData().clone();
 
         debug("creating arena block:");
         debug("loc: {} ; mat: {}", this.location, this.blockData.getMaterial());
 
-        try {
-            this.arena = ArenaManager.getArenaByRegionLocation(this.location).getName();
-        } catch (final Exception e) {
-            this.arena = "";
-        }
         if (block.getState() instanceof Sign) {
             this.lines = ((Sign) block.getState()).getLines();
         } else {
@@ -49,11 +43,6 @@ class ArenaBlock {
      */
     public ArenaBlock(final Block block, final Material type) {
         this.location = new PABlockLocation(block.getLocation());
-        try {
-            this.arena = ArenaManager.getArenaByRegionLocation(this.location).getName();
-        } catch (final Exception e) {
-            this.arena = "";
-        }
         this.blockData = Bukkit.createBlockData(type);
         this.lines = null;
 
@@ -67,27 +56,33 @@ class ArenaBlock {
      */
     public void reset() {
         final Block b = this.location.toLocation().getBlock();
-
-        b.setBlockData(this.blockData);
-
-        if (this.lines != null) {
-            int i = 0;
-            for (final String s : this.lines) {
-                if (s != null) {
-                    try {
-                        ((Sign) b.getState()).setLine(i, s);
-                    } catch (final Exception e) {
-                        PVPArena.getInstance().getLogger().warning(
-                                "tried to reset sign at location "
-                                        + this.location);
-                    }
-                }
-                i++;
-            }
-        }
+        this.resetBlock(b);
     }
 
-    public String getArena() {
-        return this.arena;
+    /**
+     * Reset an arena block only if the material at the coordinates is the same than the one stored in blockData
+     */
+    public void resetIfPresent() {
+        final Block b = this.location.toLocation().getBlock();
+
+        if(b.getType() == this.blockData.getMaterial()) {
+            this.resetBlock(b);
+        }
+
+    }
+
+    private void resetBlock(Block block) {
+        block.setBlockData(this.blockData);
+
+        if (this.lines != null) {
+            for (int i = 0; i < this.lines.length; i++) {
+                try {
+                    ((Sign) block.getState()).setLine(i, ofNullable(this.lines[i]).orElse(""));
+                } catch (Exception e) {
+                    PVPArena.getInstance().getLogger().warning(
+                            String.format("tried to reset sign at location %s", this.location));
+                }
+            }
+        }
     }
 }

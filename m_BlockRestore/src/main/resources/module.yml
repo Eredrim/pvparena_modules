@@ -1,2 +1,2 @@
 name: BlockRestore
-main-class: net.slipcor.pvparena.modules.blockrestore.Blocks
+main-class: net.slipcor.pvparena.modules.blockrestore.BlockRestore
