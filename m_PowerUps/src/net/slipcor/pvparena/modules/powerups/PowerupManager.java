@@ -15,6 +15,7 @@ import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.loadables.ArenaRegion;
 import net.slipcor.pvparena.loadables.ArenaRegion.RegionType;
+import net.slipcor.pvparena.managers.PermissionManager;
 import net.slipcor.pvparena.managers.SpawnManager;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
@@ -110,8 +111,8 @@ public class PowerupManager extends ArenaModule implements Listener {
         // !pu time 6
         // !pu death 4
 
-        if (!PVPArena.hasAdminPerms(sender)
-                && !PVPArena.hasCreatePerms(sender, arena)) {
+        if (!PermissionManager.hasAdminPerm(sender)
+                && !PermissionManager.hasBuilderPerm(sender, arena)) {
             arena.msg(
                     sender,
                     Language.parse(MSG.ERROR_NOPERM,

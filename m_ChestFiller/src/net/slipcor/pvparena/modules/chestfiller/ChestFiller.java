@@ -12,6 +12,7 @@ import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.loadables.ArenaRegion;
 import net.slipcor.pvparena.loadables.ArenaRegion.RegionType;
+import net.slipcor.pvparena.managers.PermissionManager;
 import net.slipcor.pvparena.regions.CuboidRegion;
 import net.slipcor.pvparena.regions.SphericRegion;
 import org.bukkit.Bukkit;
@@ -64,8 +65,8 @@ public class ChestFiller extends ArenaModule {
     public void commitCommand(final CommandSender sender, final String[] args) {
         // !cf clear | clear inventory definitions
         // !cf chest | set chestfiller chest
-        if (!PVPArena.hasAdminPerms(sender)
-                && !PVPArena.hasCreatePerms(sender, arena)) {
+        if (!PermissionManager.hasAdminPerm(sender)
+                && !PermissionManager.hasBuilderPerm(sender, arena)) {
             arena.msg(
                     sender,
                     Language.parse(MSG.ERROR_NOPERM,

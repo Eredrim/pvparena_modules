@@ -1,6 +1,5 @@
 package net.slipcor.pvparena.modules.bfman;
 
-import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.classes.PABlock;
 import net.slipcor.pvparena.classes.PABlockLocation;
@@ -14,6 +13,7 @@ import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.loadables.ArenaModule;
+import net.slipcor.pvparena.managers.PermissionManager;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -66,8 +66,8 @@ public class BattlefieldManager extends ArenaModule {
         // !bm clear | start defining a new definition
         // !bm update | update loaded definition with corrections/additions
         // !bm save [name] | save to definition [name]
-        if (!PVPArena.hasAdminPerms(sender)
-                && !PVPArena.hasCreatePerms(sender, arena)) {
+        if (!PermissionManager.hasAdminPerm(sender)
+                && !PermissionManager.hasBuilderPerm(sender, arena)) {
             arena.msg(
                     sender,
                     Language.parse(MSG.ERROR_NOPERM,

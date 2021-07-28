@@ -1,6 +1,5 @@
 package net.slipcor.pvparena.modules.announcements;
 
-import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.ArenaTeam;
@@ -13,6 +12,7 @@ import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.ArenaManager;
+import net.slipcor.pvparena.managers.PermissionManager;
 import net.slipcor.pvparena.managers.TeamManager;
 import net.slipcor.pvparena.modules.WarmupJoin;
 import org.bukkit.ChatColor;
@@ -20,7 +20,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -69,8 +68,8 @@ public class AnnouncementManager extends ArenaModule {
     public void commitCommand(final CommandSender sender, final String[] args) {
         // !aa [type]
 
-        if (!PVPArena.hasAdminPerms(sender)
-                && !PVPArena.hasCreatePerms(sender, arena)) {
+        if (!PermissionManager.hasAdminPerm(sender)
+                && !PermissionManager.hasBuilderPerm(sender, arena)) {
             arena.msg(
                     sender,
                     Language.parse(MSG.ERROR_NOPERM,
@@ -163,7 +162,7 @@ public class AnnouncementManager extends ArenaModule {
 
         if (TeamManager.countPlayersInTeams(arena) < 2) {
             final String arenaname =
-                    PVPArena.hasOverridePerms(sender) ? arena.getName() : ArenaManager.getIndirectArenaName(arena);
+                    PermissionManager.hasOverridePerm(sender) ? arena.getName() : ArenaManager.getIndirectArenaName(arena);
             Announcement.announce(arena, Announcement.type.ADVERT, Language
                     .parse(arena, CFG.MSG_STARTING, arenaname +
                             ChatColor.valueOf(arena.getArenaConfig().getString(

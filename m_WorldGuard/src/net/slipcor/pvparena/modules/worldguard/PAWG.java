@@ -15,6 +15,7 @@ import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.loadables.ArenaRegion;
+import net.slipcor.pvparena.managers.PermissionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -67,7 +68,7 @@ public class PAWG extends ArenaModule {
 
     @Override
     public void commitCommand(final CommandSender sender, final String[] args) {
-        if (!sender.hasPermission("pvparena.admin")) {
+        if (!PermissionManager.hasAdminPerm(sender)) {
             arena.msg(sender, Language.parse(MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN)));
             return;
         }

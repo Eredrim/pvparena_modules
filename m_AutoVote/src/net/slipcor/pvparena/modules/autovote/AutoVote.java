@@ -14,6 +14,7 @@ import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.events.PAJoinEvent;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.ArenaManager;
+import net.slipcor.pvparena.managers.PermissionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -52,11 +53,6 @@ public class AutoVote extends ArenaModule implements Listener {
     @Override
     public List<String> getShort() {
         return Collections.singletonList("!av");
-    }
-
-    @Override
-    public boolean hasPerms(final CommandSender sender, final Arena arena) {
-        return super.hasPerms(sender, arena) || PVPArena.hasPerms(sender, arena);
     }
 
     @Override
@@ -122,8 +118,8 @@ public class AutoVote extends ArenaModule implements Listener {
                 vote.cancel();
             }
         } else {
-            if (!PVPArena.hasAdminPerms(sender)
-                    && !PVPArena.hasCreatePerms(sender, arena)) {
+            if (!PermissionManager.hasAdminPerm(sender)
+                    && !PermissionManager.hasBuilderPerm(sender, arena)) {
                 arena.msg(
                         sender,
                         Language.parse(MSG.ERROR_NOPERM,

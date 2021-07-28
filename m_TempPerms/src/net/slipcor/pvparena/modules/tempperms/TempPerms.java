@@ -12,6 +12,7 @@ import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.events.PAPlayerClassChangeEvent;
 import net.slipcor.pvparena.loadables.ArenaModule;
+import net.slipcor.pvparena.managers.PermissionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -94,8 +95,8 @@ public class TempPerms extends ArenaModule implements Listener {
         // !tps [teamname] add [perm] | add team perm
         // !tps [teamname] rem [perm] | remove team perm
 
-        if (!PVPArena.hasAdminPerms(sender)
-                && !PVPArena.hasCreatePerms(sender, this.arena)) {
+        if (!PermissionManager.hasAdminPerm(sender)
+                && !PermissionManager.hasBuilderPerm(sender, this.arena)) {
             this.arena.msg(
                     sender,
                     Language.parse(MSG.ERROR_NOPERM,

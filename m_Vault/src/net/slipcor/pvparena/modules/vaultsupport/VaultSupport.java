@@ -169,11 +169,6 @@ public class VaultSupport extends ArenaModule implements Listener {
     }
 
     @Override
-    public boolean hasPerms(final CommandSender sender, final Arena arena) {
-        return super.hasPerms(sender, arena) || PVPArena.hasPerms(sender, arena);
-    }
-
-    @Override
     public PACheck checkJoin(final CommandSender sender,
                              final PACheck res, final boolean join) {
 

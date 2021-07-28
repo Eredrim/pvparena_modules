@@ -1,6 +1,8 @@
 package net.slipcor.pvparena.modules.spectate;
 
 import net.slipcor.pvparena.classes.PABlockLocation;
+import net.slipcor.pvparena.commands.PAA_Check;
+import net.slipcor.pvparena.commands.PAG_Leave;
 import net.slipcor.pvparena.loadables.ArenaRegion;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -57,7 +59,7 @@ class SpectateListener implements Listener {
         final Collection<Player> removals = new HashSet<>();
         removals.addAll(spectators);
         for (final Player p : removals) {
-            Bukkit.getServer().dispatchCommand(p, "pa leave");
+            new PAG_Leave().commit(this.spectate.getArena(), p, new String[]{});
         }
         spectators.clear();
     }

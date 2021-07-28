@@ -10,6 +10,7 @@ import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.ArenaManager;
+import net.slipcor.pvparena.managers.PermissionManager;
 import net.slipcor.pvparena.modules.vaultsupport.VaultSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -57,11 +58,6 @@ public class DuelManager extends ArenaModule {
     }
 
     @Override
-    public boolean hasPerms(final CommandSender sender, final Arena arena) {
-        return super.hasPerms(sender, arena) || PVPArena.hasPerms(sender, arena);
-    }
-
-    @Override
     public PACheck checkJoin(CommandSender sender, PACheck res, boolean join) {
         if (join) {
             if (!sender.getName().equals(this.duelReceiver) && !sender.getName().equals(this.duelSender)) {
@@ -80,7 +76,7 @@ public class DuelManager extends ArenaModule {
         }
         String arenaName = null;
 
-        if (!PVPArena.hasOverridePerms(sender) && ArenaManager.isUsingShortcuts()) {
+        if (!PermissionManager.hasOverridePerm(sender) && ArenaManager.isUsingShortcuts()) {
             Map<String, List<String>> vals = ArenaManager.getShortcutDefinitions();
             for (String key : vals.keySet()) {
                 if (vals.get(key).contains(arena.getName())) {
