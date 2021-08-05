@@ -5,6 +5,7 @@ import net.slipcor.pvparena.regions.ArenaRegion;
 import net.slipcor.pvparena.regions.RegionType;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.Waterlogged;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -52,7 +53,11 @@ public class CommonListener implements Listener {
         if (event.getBucket() != Material.LAVA_BUCKET && event.getBucket() != Material.WATER_BUCKET) {
             return;
         }
-        Block toCheck = event.getBlockClicked().getRelative(event.getBlockFace());
+
+        Block toCheck = event.getBlockClicked();
+        if(!(toCheck.getBlockData() instanceof Waterlogged)) {
+            toCheck = event.getBlockClicked().getRelative(event.getBlockFace());
+        }
         this.module.saveBlockIfInBattleground(toCheck);
     }
 
@@ -62,8 +67,7 @@ public class CommonListener implements Listener {
                 event.getItemStack().getType() == Material.MILK_BUCKET) {
             return;
         }
-        Block toCheck = event.getBlockClicked().getRelative(event.getBlockFace());
-        this.module.saveBlockIfInBattleground(toCheck);
+        this.module.saveBlockIfInBattleground(event.getBlockClicked());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
