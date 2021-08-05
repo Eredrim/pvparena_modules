@@ -20,6 +20,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.Waterlogged;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
@@ -428,7 +429,12 @@ public class Blocks extends ArenaModule implements Listener {
         if (event.getBucket() != Material.LAVA_BUCKET && event.getBucket() != Material.WATER_BUCKET) {
             return;
         }
-        Block toCheck = event.getBlockClicked().getRelative(event.getBlockFace());
+
+        Block toCheck = event.getBlockClicked();
+        if(!(toCheck.getBlockData() instanceof Waterlogged)) {
+            toCheck = event.getBlockClicked().getRelative(event.getBlockFace());
+        }
+
         for (final ArenaRegion shape : this.arena.getRegionsByType(RegionType.BATTLE)) {
             if (shape.getShape().contains(new PABlockLocation(toCheck.getLocation()))) {
                 this.saveBlock(toCheck);
@@ -441,7 +447,7 @@ public class Blocks extends ArenaModule implements Listener {
         if (event.getBucket() != Material.BUCKET) {
             return;
         }
-        Block toCheck = event.getBlockClicked().getRelative(event.getBlockFace());
+        Block toCheck = event.getBlockClicked();
         for (final ArenaRegion shape : this.arena.getRegionsByType(RegionType.BATTLE)) {
             if (shape.getShape().contains(new PABlockLocation(toCheck.getLocation()))) {
                 this.saveBlock(toCheck);
