@@ -14,6 +14,6 @@ public class PaperListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     private void onBlockDestroyPaper(BlockDestroyEvent event) {
-        this.module.saveBlockIfInBattleground(event.getBlock());
+        this.module.saveBlockWithPreviousEntryIfInBattleground(event.getBlock());
     }
 }

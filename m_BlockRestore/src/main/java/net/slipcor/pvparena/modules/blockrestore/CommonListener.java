@@ -14,7 +14,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
@@ -84,20 +83,6 @@ public class CommonListener implements Listener {
 
         if (entity instanceof FallingBlock) {
             this.module.saveBlockIfInBattleground(event.getBlock());
-        }
-    }
-
-    /**
-     * This event handler is used to prevent fire propagation during block restoration
-     */
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    private void onBlockIgnite(BlockIgniteEvent event) {
-        if(this.module.isRestoringBlocks()) {
-            for (final ArenaRegion shape : this.module.getArena().getRegionsByType(RegionType.BATTLE)) {
-                if (shape.getShape().contains(new PABlockLocation(event.getBlock().getLocation()))) {
-                    event.setCancelled(true);
-                }
-            }
         }
     }
 }

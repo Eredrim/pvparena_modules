@@ -58,15 +58,6 @@ import static net.slipcor.pvparena.core.CollectionUtils.containsIgnoreCase;
 
 public class BlockRestore extends ArenaModule implements Listener {
 
-    public BlockRestore() {
-        super("BlockRestore");
-    }
-
-    @Override
-    public String version() {
-        return this.getClass().getPackage().getImplementationVersion();
-    }
-
     private boolean listening;
     private boolean usingPaperEvents = false;
 
@@ -75,10 +66,30 @@ public class BlockRestore extends ArenaModule implements Listener {
     private final Map<PABlockLocation, ArenaBlock> interactions = new HashMap<>();
     private final Set<PABlockLocation> allBlockLocations = new HashSet<>();
     private final List<Listener> listeners = new ArrayList<>();
+    private final Listener restorationListener;
 
     private boolean restoringBlocks;
     private boolean restoringContainers;
     private boolean restoringInteractions;
+
+    public BlockRestore() {
+        super("BlockRestore");
+
+        this.restorationListener = new RestorationListener(this);
+        this.listeners.add(new CommonListener(this));
+
+        try {
+            Class.forName("com.destroystokyo.paper.event.block.BlockDestroyEvent");
+            this.listeners.add(new PaperListener(this));
+            this.usingPaperEvents = true;
+        } catch (ClassNotFoundException ignored) {
+        }
+    }
+
+    @Override
+    public String version() {
+        return this.getClass().getPackage().getImplementationVersion();
+    }
 
     public boolean isRestoringBlocks() {
         return this.restoringBlocks;
@@ -275,15 +286,6 @@ public class BlockRestore extends ArenaModule implements Listener {
     @Override
     public void parseStart() {
         if (!this.listening) {
-            this.listeners.add(new CommonListener(this));
-
-            try {
-                Class.forName("com.destroystokyo.paper.event.block.BlockDestroyEvent");
-                this.listeners.add(new PaperListener(this));
-                this.usingPaperEvents = true;
-            } catch (ClassNotFoundException ignored) {
-            }
-
             this.listeners.forEach(listener ->
                     Bukkit.getPluginManager().registerEvents(listener, PVPArena.getInstance())
             );
@@ -311,10 +313,17 @@ public class BlockRestore extends ArenaModule implements Listener {
     public void reset(final boolean force) {
         final int delay = this.arena.getConfig().getInt(CFG.MODULES_BLOCKRESTORE_OFFSET);
 
+        // Disable battlefield listeners
+        this.listeners.forEach(HandlerList::unregisterAll);
+        this.listening = false;
+
         if (this.isBlockRestoreEnabled() && !this.blocks.isEmpty()) {
             debug("resetting blocks");
             try {
                 this.restoringBlocks = true;
+                // Enable restoration listener to block battlefield changes
+                Bukkit.getPluginManager().registerEvents(this.restorationListener, PVPArena.getInstance());
+
                 BukkitRunnable restoreRunnable = new RestoreBlockRunnable(this, this.blocks);
                 restoreRunnable.runTaskTimer(PVPArena.getInstance(), 0, delay);
             } catch (final IllegalPluginAccessException e) {
@@ -352,8 +361,7 @@ public class BlockRestore extends ArenaModule implements Listener {
      */
     void finishBlockRestore() {
         this.restoringBlocks = false;
-        this.listeners.forEach(HandlerList::unregisterAll);
-        this.listening = false;
+        HandlerList.unregisterAll(this.restorationListener);
     }
 
     /**
@@ -545,6 +553,24 @@ public class BlockRestore extends ArenaModule implements Listener {
         for (final ArenaRegion shape : this.arena.getRegionsByType(RegionType.BATTLE)) {
             if (shape.getShape().contains(new PABlockLocation(toCheck.getLocation()))) {
                 this.saveBlock(toCheck);
+            }
+        }
+    }
+
+    /**
+     * Saved block to map in the same set than the previous ones
+     * Only used for indirectly destroyed blocks to restore them without physics issues
+     * @param toCheck Destroyed block to check
+     */
+    void saveBlockWithPreviousEntryIfInBattleground(Block toCheck) {
+        for (final ArenaRegion shape : this.arena.getRegionsByType(RegionType.BATTLE)) {
+            if (shape.getShape().contains(new PABlockLocation(toCheck.getLocation()))) {
+                ArenaBlock blockToAdd = new ArenaBlock(toCheck);
+                if(this.blocks.isEmpty()) {
+                    this.blocks.put(System.currentTimeMillis(), Stream.of(blockToAdd).collect(toSet()));
+                } else {
+                    this.blocks.lastEntry().getValue().add(blockToAdd);
+                }
             }
         }
     }
