@@ -1,7 +1,11 @@
 package net.slipcor.pvparena.modules.skins;
 
 import net.slipcor.pvparena.PVPArena;
-import net.slipcor.pvparena.arena.*;
+import net.slipcor.pvparena.arena.Arena;
+import net.slipcor.pvparena.arena.ArenaClass;
+import net.slipcor.pvparena.arena.ArenaPlayer;
+import net.slipcor.pvparena.arena.ArenaTeam;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.classes.PASpawn;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
@@ -9,6 +13,7 @@ import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.loadables.ArenaModule;
+import net.slipcor.pvparena.managers.PermissionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -39,7 +44,7 @@ public class Skins extends ArenaModule {
 
     @Override
     public String version() {
-        return getClass().getPackage().getImplementationVersion();
+        return this.getClass().getPackage().getImplementationVersion();
     }
 
     @Override
@@ -76,62 +81,61 @@ public class Skins extends ArenaModule {
     public void commitCommand(final CommandSender sender, final String[] args) {
         // !sk [teamname] [skin] |
         // !sk [classname] [skin] |
-        if (!PVPArena.hasAdminPerms(sender)
-                && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
+        if (!PermissionManager.hasAdminPerm(sender) && !PermissionManager.hasBuilderPerm(sender, this.arena)) {
+            this.arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
-        if (!AbstractArenaCommand.argCountValid(sender, arena, args, new Integer[]{3})) {
+        if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{3})) {
             return;
         }
 
-        final ArenaClass c = arena.getClass(args[1]);
+        final ArenaClass c = this.arena.getClass(args[1]);
 
         if (c == null) {
-            final ArenaTeam team = arena.getTeam(args[1]);
+            final ArenaTeam team = this.arena.getTeam(args[1]);
             if (team != null) {
                 // !sk [teamname] [skin]
 
                 if (args.length == 2) {
-                    arena.msg(sender, Language.parse(
+                    this.arena.msg(sender, Language.parse(
                             MSG.MODULE_SKINS_SHOWTEAM,
                             team.getColoredName(),
-                            (String) arena.getConfig().getUnsafe(MODULES_SKINS + "." + team.getName())));
+                            this.arena.getConfig().getUnsafe(MODULES_SKINS + "." + team.getName())));
                     return;
                 }
 
-                arena.getConfig().setManually(MODULES_SKINS + "." + team.getName(), args[2]);
-                arena.getConfig().save();
-                arena.msg(sender, MSG.SET_DONE, team.getName(), args[2]);
+                this.arena.getConfig().setManually(MODULES_SKINS + "." + team.getName(), args[2]);
+                this.arena.getConfig().save();
+                this.arena.msg(sender, MSG.SET_DONE, team.getName(), args[2]);
 
                 return;
             }
             // no team AND no class!
 
-            arena.msg(sender, MSG.ERROR_CLASS_NOT_FOUND, args[1]);
-            arena.msg(sender, MSG.ERROR_TEAM_NOT_FOUND, args[1]);
-            printHelp(arena, sender);
+            this.arena.msg(sender, MSG.ERROR_CLASS_NOT_FOUND, args[1]);
+            this.arena.msg(sender, MSG.ERROR_TEAM_NOT_FOUND, args[1]);
+            this.printHelp(this.arena, sender);
             return;
         }
         // !sk [classname] | show
         // !bg [classname] [skin]
 
         if (args.length == 2) {
-            arena.msg(sender, MSG.MODULE_SKINS_SHOWCLASS, (String) arena.getConfig().getUnsafe(MODULES_SKINS + "." + c.getName()));
+            this.arena.msg(sender, MSG.MODULE_SKINS_SHOWCLASS, (String) this.arena.getConfig().getUnsafe(MODULES_SKINS + "." + c.getName()));
             return;
         }
 
-        arena.getConfig().setManually(MODULES_SKINS + "." + c.getName(), args[2]);
-        arena.getConfig().save();
-        arena.msg(sender, MSG.SET_DONE, c.getName(), args[2]);
+        this.arena.getConfig().setManually(MODULES_SKINS + "." + c.getName(), args[2]);
+        this.arena.getConfig().save();
+        this.arena.msg(sender, MSG.SET_DONE, c.getName(), args[2]);
 
     }
 
     @Override
     public void configParse(final YamlConfiguration config) {
         if (config.get(MODULES_SKINS) == null) {
-            for (final ArenaTeam team : arena.getTeams()) {
+            for (final ArenaTeam team : this.arena.getTeams()) {
                 final String sName = team.getName();
                 config.addDefault(MODULES_SKINS + "." + sName, "Herobrine");
             }
@@ -148,10 +152,10 @@ public class Skins extends ArenaModule {
 
     @Override
     public void onThisLoad() {
-        if (arena == null) {
+        if (this.arena == null) {
             return;
         }
-        if (enabled || arena.getConfig().getBoolean(CFG.MODULES_SKINS_VANILLA)) {
+        if (enabled || this.arena.getConfig().getBoolean(CFG.MODULES_SKINS_VANILLA)) {
             enabled = true;
             return;
         }
@@ -176,7 +180,7 @@ public class Skins extends ArenaModule {
     @Override
     public void teleportPlayer(final Player player, final PASpawn place) {
 
-        if (disguised.contains(player.getName()) || !arena.hasPlayer(player)) {
+        if (this.disguised.contains(player.getName()) || !this.arena.hasPlayer(player)) {
             return;
         }
 
@@ -184,7 +188,7 @@ public class Skins extends ArenaModule {
         if (team == null) {
             return;
         }
-        String disguise = (String) arena.getConfig().getUnsafe("skins." + team.getName());
+        String disguise = (String) this.arena.getConfig().getUnsafe("skins." + team.getName());
 
         final ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
 
@@ -193,7 +197,7 @@ public class Skins extends ArenaModule {
         }
 
         if (arenaPlayer.getArenaClass() != null && (disguise == null || "none".equals(disguise))) {
-            disguise = (String) arena.getConfig().getUnsafe("skins." + arenaPlayer.getArenaClass().getName());
+            disguise = (String) this.arena.getConfig().getUnsafe("skins." + arenaPlayer.getArenaClass().getName());
         }
 
         if (disguise == null || "none".equals(disguise)) {
@@ -203,16 +207,16 @@ public class Skins extends ArenaModule {
         if (libsDisguiseHandler != null) {
             libsDisguiseHandler.parseTeleport(player, disguise);
         } else {
-            setPlayerHead(team, player);
+            this.setPlayerHead(team, player);
         }
 
-        disguised.add(player.getName());
+        this.disguised.add(player.getName());
     }
 
     private void setPlayerHead(ArenaTeam team, Player player) {
         if (team != null) {
             final ItemStack itemStack = new ItemStack(Material.PLAYER_HEAD, 1);
-            final String disguise = (String) arena.getConfig().getUnsafe("skins." + team.getName());
+            final String disguise = (String) this.arena.getConfig().getUnsafe("skins." + team.getName());
             if (disguise == null) {
                 return;
             }
@@ -238,6 +242,6 @@ public class Skins extends ArenaModule {
         if (libsDisguiseHandler != null) {
             libsDisguiseHandler.unload(player);
         }
-        disguised.remove(player.getName());
+        this.disguised.remove(player.getName());
     }
 }

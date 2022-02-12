@@ -1,6 +1,5 @@
 package net.slipcor.pvparena.modules.walls;
 
-import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
@@ -9,6 +8,7 @@ import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.loadables.ArenaModule;
+import net.slipcor.pvparena.managers.PermissionManager;
 import net.slipcor.pvparena.regions.ArenaRegion;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -31,7 +31,7 @@ public class Walls extends ArenaModule {
 
     @Override
     public String version() {
-        return getClass().getPackage().getImplementationVersion();
+        return this.getClass().getPackage().getImplementationVersion();
     }
 
     @Override
@@ -59,14 +59,14 @@ public class Walls extends ArenaModule {
     private void createWalls() {
         Material mat;
         try {
-            mat = Material.getMaterial(arena.getConfig().getString(CFG.MODULES_WALLS_MATERIAL));
+            mat = Material.getMaterial(this.arena.getConfig().getString(CFG.MODULES_WALLS_MATERIAL));
         } catch (final Exception e) {
             mat = Material.SAND;
         }
         debug("material: {}", mat);
         debug("replacing the wall for the following regions:");
 
-        for (final ArenaRegion region : arena.getRegions()) {
+        for (final ArenaRegion region : this.arena.getRegions()) {
             if (region.getRegionName().toLowerCase().contains("wall")) {
                 debug(region.getRegionName());
                 final World world = region.getWorld();
@@ -96,13 +96,12 @@ public class Walls extends ArenaModule {
     public void commitCommand(final CommandSender sender, final String[] args) {
         // !sf 5
 
-        if (!PVPArena.hasAdminPerms(sender)
-                && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
+        if (!PermissionManager.hasAdminPerm(sender) && !PermissionManager.hasBuilderPerm(sender, this.arena)) {
+            this.arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
-        if (!AbstractArenaCommand.argCountValid(sender, arena, args, new Integer[]{2})) {
+        if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2})) {
             return;
         }
 
@@ -112,13 +111,13 @@ public class Walls extends ArenaModule {
             try {
                 i = Integer.parseInt(args[1]);
             } catch (final Exception e) {
-                arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[1]);
+                this.arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[1]);
                 return;
             }
 
-            arena.getConfig().set(CFG.MODULES_WALLS_SECONDS, i);
-            arena.getConfig().save();
-            arena.msg(sender, MSG.SET_DONE, CFG.MODULES_WALLS_SECONDS.getNode(), String.valueOf(i));
+            this.arena.getConfig().set(CFG.MODULES_WALLS_SECONDS, i);
+            this.arena.getConfig().save();
+            this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_WALLS_SECONDS.getNode(), String.valueOf(i));
         } else {
             // setting walls material
             final Material mat;
@@ -126,55 +125,55 @@ public class Walls extends ArenaModule {
                 mat = Material.getMaterial(args[1].toUpperCase());
                 debug("wall material: {}", mat);
             } catch (final Exception e) {
-                arena.msg(sender, MSG.ERROR_MAT_NOT_FOUND, args[1]);
+                this.arena.msg(sender, MSG.ERROR_MAT_NOT_FOUND, args[1]);
                 return;
             }
 
-            arena.getConfig().set(CFG.MODULES_WALLS_MATERIAL, mat.name());
-            arena.getConfig().save();
-            arena.msg(sender, MSG.SET_DONE, CFG.MODULES_WALLS_MATERIAL.getNode(), mat.name());
+            this.arena.getConfig().set(CFG.MODULES_WALLS_MATERIAL, mat.name());
+            this.arena.getConfig().save();
+            this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_WALLS_MATERIAL.getNode(), mat.name());
         }
     }
 
     @Override
     public void displayInfo(final CommandSender sender) {
-        sender.sendMessage("seconds: " + arena.getConfig().getInt(CFG.MODULES_WALLS_SECONDS) +
-                "material: " + arena.getConfig().getString(CFG.MODULES_WALLS_MATERIAL));
+        sender.sendMessage("seconds: " + this.arena.getConfig().getInt(CFG.MODULES_WALLS_SECONDS) +
+                "material: " + this.arena.getConfig().getString(CFG.MODULES_WALLS_MATERIAL));
     }
 
     @Override
     public void parseStart() {
-        runnable = new WallsRunner(this, arena, arena.getConfig().getInt(CFG.MODULES_WALLS_SECONDS));
-        createWalls();
+        this.runnable = new WallsRunner(this, this.arena, this.arena.getConfig().getInt(CFG.MODULES_WALLS_SECONDS));
+        this.createWalls();
     }
 
     @Override
     public void reset(final boolean force) {
         debug("resetting WALLS");
-        if (runnable != null) {
-            runnable.cancel();
-            if (arena.getConfig().getBoolean(Config.CFG.MODULES_WALLS_SCOREBOARDCOUNTDOWN)) {
-                arena.getScoreboard().removeCustomEntry(this, 99);
-                arena.getScoreboard().removeCustomEntry(this, 98);
+        if (this.runnable != null) {
+            this.runnable.cancel();
+            if (this.arena.getConfig().getBoolean(Config.CFG.MODULES_WALLS_SCOREBOARDCOUNTDOWN)) {
+                this.arena.getScoreboard().removeCustomEntry(this, 99);
+                this.arena.getScoreboard().removeCustomEntry(this, 98);
             }
         }
-        if (!needsReset) {
+        if (!this.needsReset) {
             debug("[WorldEdit] we did not start yet, no reset needed!");
             return;
         }
-        needsReset = false;
-        runnable = null;
-        createWalls();
+        this.needsReset = false;
+        this.runnable = null;
+        this.createWalls();
     }
 
     public void removeWalls() {
         Material mat;
         try {
-            mat = Material.getMaterial(arena.getConfig().getString(CFG.MODULES_WALLS_MATERIAL));
+            mat = Material.getMaterial(this.arena.getConfig().getString(CFG.MODULES_WALLS_MATERIAL));
         } catch (final Exception e) {
             mat = Material.SAND;
         }
-        for (final ArenaRegion region : arena.getRegions()) {
+        for (final ArenaRegion region : this.arena.getRegions()) {
 
             if (region.getRegionName().toLowerCase().contains("wall")) {
                 final World world = region.getWorld();
@@ -196,12 +195,12 @@ public class Walls extends ArenaModule {
                         }
                     }
                 }
-                needsReset = true;
+                this.needsReset = true;
             }
         }
-        if (arena.getConfig().getBoolean(Config.CFG.MODULES_WALLS_SCOREBOARDCOUNTDOWN)) {
-            arena.getScoreboard().removeCustomEntry(this, 99);
-            arena.getScoreboard().removeCustomEntry(this, 98);
+        if (this.arena.getConfig().getBoolean(Config.CFG.MODULES_WALLS_SCOREBOARDCOUNTDOWN)) {
+            this.arena.getScoreboard().removeCustomEntry(this, 99);
+            this.arena.getScoreboard().removeCustomEntry(this, 98);
         }
     }
 }

@@ -1,12 +1,12 @@
 package net.slipcor.pvparena.modules.battlefieldguard;
 
-import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.classes.PABlockLocation;
 import net.slipcor.pvparena.classes.PASpawn;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.managers.ArenaManager;
+import net.slipcor.pvparena.managers.PermissionManager;
 import net.slipcor.pvparena.managers.SpawnManager;
 import net.slipcor.pvparena.managers.TeleportManager;
 import org.bukkit.Bukkit;
@@ -40,7 +40,7 @@ class BattleRunnable extends BukkitRunnable {
                 continue; // not physically in an arena
             }
 
-            if (PVPArena.hasAdminPerms(player)) {
+            if (PermissionManager.hasAdminPerm(player)) {
                 continue;
             }
 

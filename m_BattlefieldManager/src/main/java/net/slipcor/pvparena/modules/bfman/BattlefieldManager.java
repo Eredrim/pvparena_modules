@@ -1,6 +1,5 @@
 package net.slipcor.pvparena.modules.bfman;
 
-import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.classes.PABlock;
 import net.slipcor.pvparena.classes.PABlockLocation;
@@ -13,6 +12,7 @@ import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.loadables.ArenaModule;
+import net.slipcor.pvparena.managers.PermissionManager;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -30,12 +30,12 @@ public class BattlefieldManager extends ArenaModule {
 
     @Override
     public String version() {
-        return getClass().getPackage().getImplementationVersion();
+        return this.getClass().getPackage().getImplementationVersion();
     }
 
     @Override
     public boolean checkCommand(final String s) {
-        return arena.getEveryone().isEmpty() && ("!bm".equals(s) || s.startsWith("battlefieldm"));
+        return this.arena.getEveryone().isEmpty() && ("!bm".equals(s) || s.startsWith("battlefieldm"));
     }
 
     @Override
@@ -64,30 +64,29 @@ public class BattlefieldManager extends ArenaModule {
         // !bm clear | start defining a new definition
         // !bm update | update loaded definition with corrections/additions
         // !bm save [name] | save to definition [name]
-        if (!PVPArena.hasAdminPerms(sender)
-                && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
+        if (!PermissionManager.hasAdminPerm(sender) && !PermissionManager.hasBuilderPerm(sender, this.arena)) {
+            this.arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
-        if (!AbstractArenaCommand.argCountValid(sender, arena, args, new Integer[]{0, 1, 2})) {
+        if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{0, 1, 2})) {
             return;
         }
 
         if (args.length < 1) {
             // !bm -> show status!
 
-            if (loaded == null) {
-                arena.msg(sender, "No battle definition loaded!");
+            if (this.loaded == null) {
+                this.arena.msg(sender, "No battle definition loaded!");
             } else {
-                arena.msg(sender, "Loaded definition: " + ChatColor.GREEN
-                        + loaded);
+                this.arena.msg(sender, "Loaded definition: " + ChatColor.GREEN
+                        + this.loaded);
             }
 
-            if (changed) {
-                arena.msg(sender, ChatColor.RED + "There unsaved changes!");
+            if (this.changed) {
+                this.arena.msg(sender, ChatColor.RED + "There unsaved changes!");
             } else {
-                arena.msg(sender, "No unsaved changes!");
+                this.arena.msg(sender, "No unsaved changes!");
             }
 
             return;
@@ -97,82 +96,82 @@ public class BattlefieldManager extends ArenaModule {
             if ("clear".equals(args[0])) {
                 // !bm update | update loaded definition with corrections/additions
 
-                if (loaded == null) {
-                    arena.msg(sender, MSG.ERROR_ERROR, "No definition loaded!");
+                if (this.loaded == null) {
+                    this.arena.msg(sender, MSG.ERROR_ERROR, "No definition loaded!");
                     return;
                 }
 
-                arena.getSpawns().clear();
-                arena.getBlocks().clear();
-                arena.getRegions().clear();
+                this.arena.getSpawns().clear();
+                this.arena.getBlocks().clear();
+                this.arena.getRegions().clear();
 
-                changed = false;
-                loaded = null;
+                this.changed = false;
+                this.loaded = null;
                 return;
 
             } else if ("update".equals(args[0])) {
                 // !bm update | update loaded definition with corrections/additions
 
-                if (loaded == null) {
-                    arena.msg(sender, MSG.ERROR_ERROR, "No definition loaded!");
+                if (this.loaded == null) {
+                    this.arena.msg(sender, MSG.ERROR_ERROR, "No definition loaded!");
                     return;
                 }
 
-                for (PASpawn spawn : arena.getSpawns()) {
-                    arena.getConfig().setManually(
-                            "spawns." + encrypt(spawn.getName(), loaded),
+                for (PASpawn spawn : this.arena.getSpawns()) {
+                    this.arena.getConfig().setManually(
+                            "spawns." + this.encrypt(spawn.getName(), this.loaded),
                             Config.parseToString(spawn.getPALocation()));
                 }
 
-                for (PABlock block : arena.getBlocks()) {
-                    arena.getConfig().setManually(
-                            "spawns." + encrypt(block.getName(), loaded),
+                for (PABlock block : this.arena.getBlocks()) {
+                    this.arena.getConfig().setManually(
+                            "spawns." + this.encrypt(block.getName(), this.loaded),
                             Config.parseToString(block.getLocation()));
                 }
 
-                changed = false;
+                this.changed = false;
                 return;
             }
             // !bm [name] | load definition [name]
-            Set<String> keys = arena.getConfig().getKeys("spawns");
+            Set<String> keys = this.arena.getConfig().getKeys("spawns");
 
             if (keys == null) {
                 return;
             }
 
-            arena.getSpawns().clear();
-            arena.getBlocks().clear();
+            this.arena.getSpawns().clear();
+            this.arena.getBlocks().clear();
 
             for (final String key : keys) {
-                if (key.startsWith(loaded + "->")) {
-                    final String value = (String) arena.getConfig().getUnsafe("spawns." + key);
+                if (key.startsWith(this.loaded + "->")) {
+                    final String value = (String) this.arena.getConfig().getUnsafe("spawns." + key);
                     try {
                         final PABlockLocation loc = Config.parseBlockLocation(value);
 
-                        final String[] split = ((String) arena.getConfig().getUnsafe("spawns." + key)).split(">");
+                        final String[] split = ((String) this.arena.getConfig().getUnsafe("spawns." + key)).split(">");
                         final String newKey = StringParser.joinArray(StringParser.shiftArrayBy(split, 1), "");
-                        arena.addBlock(new PABlock(loc, newKey, null));
+                        this.arena.addBlock(new PABlock(loc, newKey, null));
                     } catch (final IllegalArgumentException e) {
                         final PALocation loc = Config.parseLocation(value);
 
-                        final String[] split = ((String) arena.getConfig().getUnsafe("spawns." + key)).split(">");
+                        final String[] split = ((String) this.arena.getConfig().getUnsafe("spawns." + key)).split(">");
                         final String newKey = StringParser.joinArray(StringParser.shiftArrayBy(split, 1), "");
-                        arena.setSpawn(new PASpawn(loc, newKey, null, null));
+                        this.arena.setSpawn(new PASpawn(loc, newKey, null, null));
                     }
                 }
             }
 
-            keys = arena.getConfig().getKeys("arenaregion");
+            keys = this.arena.getConfig().getKeys("arenaregion");
 
             if (keys == null) {
                 return;
             }
 
-            arena.getRegions().clear();
+            this.arena.getRegions().clear();
 
             for (final String key : keys) {
-                if (key.startsWith(loaded + "->")) {
-                    arena.addRegion(Config.parseRegion(arena, arena.getConfig().getYamlConfiguration(), key));
+                if (key.startsWith(this.loaded + "->")) {
+                    this.arena.addRegion(Config.parseRegion(this.arena, this.arena.getConfig().getYamlConfiguration(), key));
                 }
             }
 
@@ -181,20 +180,20 @@ public class BattlefieldManager extends ArenaModule {
 
         // !bm save [name] | save to definition [name]
 
-        for (final PASpawn spawn : arena.getSpawns()) {
-            arena.getConfig().setManually(
-                    "spawns." + encrypt(spawn.getName(), args[1]),
+        for (final PASpawn spawn : this.arena.getSpawns()) {
+            this.arena.getConfig().setManually(
+                    "spawns." + this.encrypt(spawn.getName(), args[1]),
                     Config.parseToString(spawn.getPALocation()));
         }
 
-        for (final PABlock block : arena.getBlocks()) {
-            arena.getConfig().setManually(
-                    "spawns." + encrypt(block.getName(), args[1]),
+        for (final PABlock block : this.arena.getBlocks()) {
+            this.arena.getConfig().setManually(
+                    "spawns." + this.encrypt(block.getName(), args[1]),
                     Config.parseToString(block.getLocation()));
         }
 
-        changed = false;
-        loaded = args[1];
+        this.changed = false;
+        this.loaded = args[1];
     }
 
     private String encrypt(final String name, final String definition) {

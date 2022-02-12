@@ -8,6 +8,7 @@ import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.loadables.ArenaModule;
+import net.slipcor.pvparena.managers.PermissionManager;
 import net.slipcor.pvparena.modules.matchresultstats.JesiKat.MySQLConnection;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -37,7 +38,7 @@ public class MatchResultStats extends ArenaModule {
 
     @Override
     public String version() {
-        return getClass().getPackage().getImplementationVersion();
+        return this.getClass().getPackage().getImplementationVersion();
     }
 
     @Override
@@ -67,13 +68,12 @@ public class MatchResultStats extends ArenaModule {
         // !ss reset
         // !ss reset [player]
 
-        if (!PVPArena.hasAdminPerms(sender)
-                && !PVPArena.hasCreatePerms(sender, arena)) {
+        if (!PermissionManager.hasAdminPerm(sender) && !PermissionManager.hasBuilderPerm(sender, this.arena)) {
             Arena.pmsg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
-        if (!AbstractArenaCommand.argCountValid(sender, arena, args, new Integer[]{1, 2})) {
+        if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{1, 2})) {
         }
 
         // TODO: do something
@@ -99,22 +99,22 @@ public class MatchResultStats extends ArenaModule {
             dbTable = PVPArena.getInstance().getConfig().getString("MySQLtable", "pvparena_stats");
             dbPort = PVPArena.getInstance().getConfig().getInt("MySQLport", 3306);
 
-            if (sqlHandler == null) {
+            if (this.sqlHandler == null) {
                 try {
-                    sqlHandler = new MySQLConnection(dbHost, dbPort, dbDatabase, dbUser,
+                    this.sqlHandler = new MySQLConnection(dbHost, dbPort, dbDatabase, dbUser,
                             dbPass);
                 } catch (final InstantiationException | ClassNotFoundException | IllegalAccessException e1) {
                     e1.printStackTrace();
                 }
 
-                debug(arena, "MySQL Initializing");
+                debug(this.arena, "MySQL Initializing");
                 // Initialize MySQL Handler
 
-                if (sqlHandler.connect(true)) {
-                    debug(arena, "MySQL connection successful");
+                if (this.sqlHandler.connect(true)) {
+                    debug(this.arena, "MySQL connection successful");
                     // Check if the tables exist, if not, create them
-                    if (!sqlHandler.tableExists(dbDatabase, dbTable)) {
-                        debug(arena, "Creating table " + dbTable);
+                    if (!this.sqlHandler.tableExists(dbDatabase, dbTable)) {
+                        debug(this.arena, "Creating table " + dbTable);
                         final String query = "CREATE TABLE `" + dbTable + "` ( " +
                                 "`id` int(16) NOT NULL AUTO_INCREMENT, " +
                                 "`mid` int(8) not null default 0, " +
@@ -134,7 +134,7 @@ public class MatchResultStats extends ArenaModule {
 							 * `timespent`
 							 */
                         try {
-                            sqlHandler.executeQuery(query, true);
+                            this.sqlHandler.executeQuery(query, true);
                         } catch (final SQLException e) {
                             e.printStackTrace();
                         }
@@ -151,29 +151,31 @@ public class MatchResultStats extends ArenaModule {
 
     @Override
     public void giveRewards(final Player player) {
-        data.winning(player.getName());
+        this.data.winning(player.getName());
     }
 
     @Override
     public void parseJoin(final Player player, final ArenaTeam team) {
-        if (data == null) {
-            data = new PVPData(arena);
+        if (this.data == null) {
+            this.data = new PVPData(this.arena);
         }
-        data.join(player.getName(), team.getName());
+        this.data.join(player.getName(), team.getName());
     }
 
     @Override
     public void parsePlayerLeave(final Player player, final ArenaTeam team) {
-        data.losing(player.getName());
+        this.data.losing(player.getName());
     }
 
     @Override
     public void parseStart() {
-        data.start();
+        this.data.start();
     }
 
     @Override
     public void reset(final boolean force) {
-        data.reset(force);
+        if(this.data != null) {
+            this.data.reset(force);
+        }
     }
 }

@@ -10,6 +10,7 @@ import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.loadables.ArenaModule;
+import net.slipcor.pvparena.managers.PermissionManager;
 import net.slipcor.pvparena.regions.ArenaRegion;
 import net.slipcor.pvparena.regions.RegionType;
 import net.slipcor.pvparena.regionshapes.CuboidRegion;
@@ -24,7 +25,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
 import static net.slipcor.pvparena.config.Debugger.debug;
 
@@ -35,7 +39,7 @@ public class ChestFiller extends ArenaModule {
 
     @Override
     public String version() {
-        return getClass().getPackage().getImplementationVersion();
+        return this.getClass().getPackage().getImplementationVersion();
     }
 
     @Override
@@ -66,13 +70,12 @@ public class ChestFiller extends ArenaModule {
     public void commitCommand(final CommandSender sender, final String[] args) {
         // !cf clear | clear inventory definitions
         // !cf chest | set chestfiller chest
-        if (!PVPArena.hasAdminPerms(sender)
-                && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
+        if (!PermissionManager.hasAdminPerm(sender) && !PermissionManager.hasBuilderPerm(sender, this.arena)) {
+            this.arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
-        if (!AbstractArenaCommand.argCountValid(sender, arena, args, new Integer[]{2})) {
+        if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2})) {
             return;
         }
 
@@ -83,15 +86,15 @@ public class ChestFiller extends ArenaModule {
             }
             Player player = (Player) sender;
 
-            Block b = player.getTargetBlock((Set<Material>)null, 10);
+            Block b = player.getTargetBlock(null, 10);
             if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST) {
-                arena.msg(sender, MSG.ERROR_NO_CHEST);
+                this.arena.msg(sender, MSG.ERROR_NO_CHEST);
                 return;
             }
             PABlockLocation loc = new PABlockLocation(b.getLocation());
 
-            arena.getConfig().set(Config.CFG.MODULES_CHESTFILLER_CHESTLOCATION, loc.toString());
-            arena.getConfig().save();
+            this.arena.getConfig().set(Config.CFG.MODULES_CHESTFILLER_CHESTLOCATION, loc.toString());
+            this.arena.getConfig().save();
             sender.sendMessage(Language.parse(MSG.MODULE_CHESTFILLER_CHEST, loc.toString()));
             return;
         }
@@ -103,19 +106,19 @@ public class ChestFiller extends ArenaModule {
             }
             Player player = (Player) sender;
 
-            Block b = player.getTargetBlock((Set<Material>)null, 10);
+            Block b = player.getTargetBlock(null, 10);
             if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST) {
-                arena.msg(sender, MSG.ERROR_NO_CHEST);
+                this.arena.msg(sender, MSG.ERROR_NO_CHEST);
                 return;
             }
             PABlockLocation loc = new PABlockLocation(b.getLocation());
 
-            List<String> chests = arena.getConfig().getStringList("inventories", new ArrayList<String>());
+            List<String> chests = this.arena.getConfig().getStringList("inventories", new ArrayList<String>());
 
             chests.add(loc.toString());
 
-            arena.getConfig().setManually("inventories", chests);
-            arena.getConfig().save();
+            this.arena.getConfig().setManually("inventories", chests);
+            this.arena.getConfig().save();
             sender.sendMessage(Language.parse(MSG.MODULE_CHESTFILLER_FILLCHEST, loc.toString()));
             return;
         }
@@ -123,8 +126,8 @@ public class ChestFiller extends ArenaModule {
 
 
         if ("clear".equals(args[1])) {
-            arena.getConfig().setManually("inventories", null);
-            arena.getConfig().save();
+            this.arena.getConfig().setManually("inventories", null);
+            this.arena.getConfig().save();
 
             sender.sendMessage(Language.parse(MSG.MODULE_CHESTFILLER_CLEAR));
         }
@@ -133,13 +136,13 @@ public class ChestFiller extends ArenaModule {
 
     @Override
     public void displayInfo(final CommandSender sender) {
-        String content = arena.getConfig().getString(Config.CFG.MODULES_CHESTFILLER_CHESTLOCATION);
+        String content = this.arena.getConfig().getString(Config.CFG.MODULES_CHESTFILLER_CHESTLOCATION);
         sender.sendMessage("items: " + (content.equals("none")?
-                StringParser.getItems(arena.getConfig().getItems(Config.CFG.MODULES_CHESTFILLER_ITEMS)) :
+                StringParser.getItems(this.arena.getConfig().getItems(Config.CFG.MODULES_CHESTFILLER_ITEMS)) :
                 content));
-        sender.sendMessage("max: " + arena.getConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MAXITEMS)
+        sender.sendMessage("max: " + this.arena.getConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MAXITEMS)
                 + " | " +
-                "min: " + arena.getConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MINITEMS));
+                "min: " + this.arena.getConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MINITEMS));
 
     }
 
@@ -152,7 +155,7 @@ public class ChestFiller extends ArenaModule {
     public void parseStart() {
         final ItemStack[] items;
         try {
-            items = arena.getConfig().getItems(Config.CFG.MODULES_CHESTFILLER_ITEMS);
+            items = this.arena.getConfig().getItems(Config.CFG.MODULES_CHESTFILLER_ITEMS);
         } catch (final Exception e) {
             e.printStackTrace();
             return;
@@ -160,16 +163,16 @@ public class ChestFiller extends ArenaModule {
 
         final boolean clear;
         try {
-            clear = arena.getConfig().getBoolean(Config.CFG.MODULES_CHESTFILLER_CLEAR);
+            clear = this.arena.getConfig().getBoolean(Config.CFG.MODULES_CHESTFILLER_CLEAR);
         } catch (final Exception e) {
             e.printStackTrace();
             return;
         }
 
-        final int cmax = Integer.parseInt(String.valueOf(arena.getConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MAXITEMS)));
-        final int cmin = Integer.parseInt(String.valueOf(arena.getConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MINITEMS)));
+        final int cmax = Integer.parseInt(String.valueOf(this.arena.getConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MAXITEMS)));
+        final int cmin = Integer.parseInt(String.valueOf(this.arena.getConfig().getInt(Config.CFG.MODULES_CHESTFILLER_MINITEMS)));
 
-        String chest = arena.getConfig().getDefinedString(Config.CFG.MODULES_CHESTFILLER_CHESTLOCATION);
+        String chest = this.arena.getConfig().getDefinedString(Config.CFG.MODULES_CHESTFILLER_CHESTLOCATION);
         ItemStack[] contents = new ItemStack[0];
         if (chest != null) {
             try {
@@ -196,20 +199,20 @@ public class ChestFiller extends ArenaModule {
 
         // ----------------------------------------
 
-        if (!arena.getConfig().getStringList("inventories", new ArrayList<String>()).isEmpty()) {
+        if (!this.arena.getConfig().getStringList("inventories", new ArrayList<String>()).isEmpty()) {
 
-            final List<String> tempList = arena.getConfig()
+            final List<String> tempList = this.arena.getConfig()
                     .getStringList("inventories", null);
 
             debug("reading inventories");
 
             for (final String s : tempList) {
-                final Location loc = parseStringToLocation(s);
+                final Location loc = this.parseStringToLocation(s);
                 if (loc == null) {
-                    PVPArena.getInstance().getLogger().warning("Invalid inventory in "+arena.getName()+": "+s);
+                    PVPArena.getInstance().getLogger().warning("Invalid inventory in "+ this.arena.getName()+": "+s);
                     continue;
                 }
-                fill(loc, clear, cmin, cmax, stacks);
+                this.fill(loc, clear, cmin, cmax, stacks);
             }
 
             return;
@@ -218,7 +221,7 @@ public class ChestFiller extends ArenaModule {
 
         final List<String> result = new ArrayList<>();
 
-        for (final ArenaRegion bfRegion : arena.getRegionsByType(RegionType.BATTLE)) {
+        for (final ArenaRegion bfRegion : this.arena.getRegionsByType(RegionType.BATTLE)) {
             final PABlockLocation min = bfRegion.getShape().getMinimumLocation();
             final PABlockLocation max = bfRegion.getShape().getMaximumLocation();
 
@@ -237,13 +240,13 @@ public class ChestFiller extends ArenaModule {
                 for (x = min.getX(); x <= max.getX(); x++) {
                     for (y = min.getY(); y <= max.getY(); y++) {
                         for (z = min.getZ(); z <= max.getZ(); z++) {
-                            final Location loc = saveBlock(world, x, y, z);
+                            final Location loc = this.saveBlock(world, x, y, z);
                             if (loc == null) {
                                 continue;
                             }
                             debug("loc not null: {}", loc);
-                            result.add(parseLocationToString(loc));
-                            fill(loc, clear, cmin, cmax, stacks);
+                            result.add(this.parseLocationToString(loc));
+                            this.fill(loc, clear, cmin, cmax, stacks);
                         }
                     }
                 }
@@ -252,13 +255,13 @@ public class ChestFiller extends ArenaModule {
                 for (x = min.getX(); x <= max.getX(); x++) {
                     for (y = min.getY(); y <= max.getY(); y++) {
                         for (z = min.getZ(); z <= max.getZ(); z++) {
-                            final Location loc = saveBlock(world, x, y, z);
+                            final Location loc = this.saveBlock(world, x, y, z);
                             if (loc == null) {
                                 continue;
                             }
                             debug("loc not null: {}", loc);
-                            result.add(parseLocationToString(loc));
-                            fill(loc, clear, cmin, cmax, stacks);
+                            result.add(this.parseLocationToString(loc));
+                            this.fill(loc, clear, cmin, cmax, stacks);
                         }
                     }
                 }
@@ -266,8 +269,8 @@ public class ChestFiller extends ArenaModule {
         }
 
 
-        arena.getConfig().setManually("inventories", result);
-        arena.getConfig().save();
+        this.arena.getConfig().setManually("inventories", result);
+        this.arena.getConfig().save();
 
         // ----------------------------------------
 

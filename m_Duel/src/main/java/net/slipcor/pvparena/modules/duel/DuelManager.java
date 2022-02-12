@@ -11,6 +11,7 @@ import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.ArenaManager;
+import net.slipcor.pvparena.managers.PermissionManager;
 import net.slipcor.pvparena.modules.vaultsupport.VaultSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -28,7 +29,7 @@ public class DuelManager extends ArenaModule {
 
     @Override
     public String version() {
-        return getClass().getPackage().getImplementationVersion();
+        return this.getClass().getPackage().getImplementationVersion();
     }
 
     private String duelSender = null;
@@ -37,7 +38,7 @@ public class DuelManager extends ArenaModule {
 
     @Override
     public boolean checkCommand(final String s) {
-        return "duel".equals(s.toLowerCase()) || "accept".equals(s.toLowerCase()) || "decline".equals(s.toLowerCase());
+        return "duel".equalsIgnoreCase(s) || "accept".equalsIgnoreCase(s) || "decline".equalsIgnoreCase(s);
     }
 
     @Override
@@ -58,11 +59,6 @@ public class DuelManager extends ArenaModule {
     }
 
     @Override
-    public boolean hasPerms(final CommandSender sender, final Arena arena) {
-        return super.hasPerms(sender, arena) || PVPArena.hasPerms(sender, arena);
-    }
-
-    @Override
     public void checkJoin(Player player) throws GameplayException {
         if (!player.getName().equals(this.duelReceiver) && !player.getName().equals(this.duelSender)) {
             throw new GameplayException(Language.parse(MSG.MODULE_DUEL_NODIRECTJOIN, this.arena.getName()));
@@ -71,38 +67,38 @@ public class DuelManager extends ArenaModule {
 
     @Override
     public void commitCommand(final CommandSender sender, final String[] args) {
-        if (arena.isFightInProgress()) {
-            arena.msg(sender, MSG.ERROR_FIGHT_IN_PROGRESS);
+        if (this.arena.isFightInProgress()) {
+            this.arena.msg(sender, MSG.ERROR_FIGHT_IN_PROGRESS);
             return;
         }
         String arenaName = null;
 
-        if (!PVPArena.hasOverridePerms(sender) && ArenaManager.isUsingShortcuts()) {
+        if (!PermissionManager.hasOverridePerm(sender) && ArenaManager.isUsingShortcuts()) {
             Map<String, List<String>> vals = ArenaManager.getShortcutDefinitions();
             for (String key : vals.keySet()) {
-                if (vals.get(key).contains(arena.getName())) {
+                if (vals.get(key).contains(this.arena.getName())) {
                     arenaName = key;
                 }
             }
             if (arenaName == null) {
-                arenaName = arena.getName();
+                arenaName = this.arena.getName();
             }
         } else {
-            arenaName = arena.getName();
+            arenaName = this.arena.getName();
         }
-        if ("duel".equals(args[0].toLowerCase()) && args.length > 1) {
-            if (sender.getName().equals(duelSender)) {
-                arena.msg(sender, MSG.MODULE_DUEL_REQUESTED_ALREADY);
+        if ("duel".equalsIgnoreCase(args[0]) && args.length > 1) {
+            if (sender.getName().equals(this.duelSender)) {
+                this.arena.msg(sender, MSG.MODULE_DUEL_REQUESTED_ALREADY);
             } else {
                 final Player p = Bukkit.getPlayer(args[1]);
                 if (p == null) {
-                    arena.msg(sender, MSG.ERROR_PLAYER_NOTFOUND, args[1]);
+                    this.arena.msg(sender, MSG.ERROR_PLAYER_NOTFOUND, args[1]);
                     return;
                 }
 
                 ArenaPlayer ap = ArenaPlayer.fromPlayer(p);
                 if (ap.getArena() != null) {
-                    arena.msg(sender, MSG.MODULE_DUEL_BUSY, args[1]);
+                    this.arena.msg(sender, MSG.MODULE_DUEL_BUSY, args[1]);
                     return;
                 }
 
@@ -111,117 +107,117 @@ public class DuelManager extends ArenaModule {
                 if (args.length > 2) {
                     try {
                         int iAmount = Integer.parseInt(args[2]);
-                        for (ArenaModule mod : arena.getMods()) {
+                        for (ArenaModule mod : this.arena.getMods()) {
                             if (mod instanceof VaultSupport) {
                                 VaultSupport sup = (VaultSupport) mod;
                                 if (!sup.checkForBalance(this, sender, iAmount, true)) {
                                     return;
                                 }
                                 if (!sup.checkForBalance(this, p, iAmount, false)) {
-                                    arena.msg(sender, MSG.MODULE_VAULT_THEYNOTENOUGH, p.getName());
+                                    this.arena.msg(sender, MSG.MODULE_VAULT_THEYNOTENOUGH, p.getName());
                                     return;
                                 }
-                                message = sup.tryFormat(this, iAmount);
-                                amount = iAmount;
+                                message = VaultSupport.tryFormat(this, iAmount);
+                                this.amount = iAmount;
                             }
                         }
 
                     } catch( Exception e) {
-                        arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[2]);
+                        this.arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[2]);
                         return;
                     }
                 }
 
-                arena.msg(p, MSG.MODULE_DUEL_ANNOUNCE, sender.getName(), arenaName);
+                this.arena.msg(p, MSG.MODULE_DUEL_ANNOUNCE, sender.getName(), arenaName);
                 if (!message.equals("")) {
-                    arena.msg(p, MSG.MODULE_DUEL_ANNOUNCEMONEY, message);
+                    this.arena.msg(p, MSG.MODULE_DUEL_ANNOUNCEMONEY, message);
                 }
-                arena.msg(p, MSG.MODULE_DUEL_ANNOUNCE2, sender.getName(), arenaName);
-                arena.msg(sender, MSG.MODULE_DUEL_REQUESTED, p.getName());
-                duelSender = sender.getName();
-                duelReceiver = p.getName();
+                this.arena.msg(p, MSG.MODULE_DUEL_ANNOUNCE2, sender.getName(), arenaName);
+                this.arena.msg(sender, MSG.MODULE_DUEL_REQUESTED, p.getName());
+                this.duelSender = sender.getName();
+                this.duelReceiver = p.getName();
                 class LaterRunner implements Runnable {
                     @Override
                     public void run() {
-                        if (duelSender != null) {
+                        if (DuelManager.this.duelSender != null) {
                             if (p != null) {
-                                arena.msg(p, MSG.MODULE_DUEL_REQUEST_EXPIRED_RECEIVER);
+                                DuelManager.this.arena.msg(p, MSG.MODULE_DUEL_REQUEST_EXPIRED_RECEIVER);
                             }
                             if (sender != null) {
-                                arena.msg(sender, MSG.MODULE_DUEL_REQUEST_EXPIRED_SENDER);
+                                DuelManager.this.arena.msg(sender, MSG.MODULE_DUEL_REQUEST_EXPIRED_SENDER);
                             }
-                            duelSender = null;
-                            duelReceiver = null;
+                            DuelManager.this.duelSender = null;
+                            DuelManager.this.duelReceiver = null;
                         }
                     }
                 }
                 Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new LaterRunner(), 1200L);
             }
-        } else if ("accept".equals(args[0].toLowerCase())) {
-            if (duelSender != null && !arena.isFightInProgress()) {
+        } else if ("accept".equalsIgnoreCase(args[0])) {
+            if (this.duelSender != null && !this.arena.isFightInProgress()) {
 
-                final Player p = Bukkit.getPlayer(duelSender);
+                final Player p = Bukkit.getPlayer(this.duelSender);
                 if (p != null) {
-                    for (ArenaModule mod : arena.getMods()) {
+                    for (ArenaModule mod : this.arena.getMods()) {
                         if (mod instanceof VaultSupport) {
                             VaultSupport sup = (VaultSupport) mod;
-                            if (!sup.checkForBalance(this, sender, amount, true)) {
+                            if (!sup.checkForBalance(this, sender, this.amount, true)) {
                                 break;
                             }
-                            if (!sup.checkForBalance(this, p, amount, true)) {
+                            if (!sup.checkForBalance(this, p, this.amount, true)) {
                                 break;
                             }
-                            sup.tryWithdraw(this, sender, amount, true);
-                            sup.tryWithdraw(this, p, amount, true);
+                            sup.tryWithdraw(this, sender, this.amount, true);
+                            sup.tryWithdraw(this, p, this.amount, true);
                         }
                     }
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new DuelRunnable(this, duelSender, sender.getName()), 500L);
-                    arena.msg(p, MSG.MODULE_DUEL_ACCEPTED, sender.getName());
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new DuelRunnable(this, this.duelSender, sender.getName()), 500L);
+                    this.arena.msg(p, MSG.MODULE_DUEL_ACCEPTED, sender.getName());
                 }
-                duelSender = null;
-                duelReceiver = null;
-            } else if (arena.isFightInProgress()) {
-                arena.msg(sender, MSG.ERROR_FIGHT_IN_PROGRESS);
+                this.duelSender = null;
+                this.duelReceiver = null;
+            } else if (this.arena.isFightInProgress()) {
+                this.arena.msg(sender, MSG.ERROR_FIGHT_IN_PROGRESS);
             }
-        } else if ("decline".equals(args[0].toLowerCase()) && duelSender != null) {
-            ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(duelSender);
+        } else if ("decline".equalsIgnoreCase(args[0]) && this.duelSender != null) {
+            ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(this.duelSender);
             if (arenaPlayer != null && arenaPlayer.getPlayer() != null){
-                arena.msg(arenaPlayer.getPlayer(), MSG.MODULE_DUEL_DECLINED_SENDER);
+                this.arena.msg(arenaPlayer.getPlayer(), MSG.MODULE_DUEL_DECLINED_SENDER);
             }
-            arena.msg(sender, MSG.MODULE_DUEL_DECLINED_RECEIVER);
-            duelSender = null;
-            duelReceiver = null;
+            this.arena.msg(sender, MSG.MODULE_DUEL_DECLINED_RECEIVER);
+            this.duelSender = null;
+            this.duelReceiver = null;
         }
     }
     @Override
     public void resetPlayer(Player player, boolean force, boolean soft) {
         if (player == null ||
-                !player.getName().equals(duelReceiver) ||
-                !player.getName().equals(duelSender)) {
+                !player.getName().equals(this.duelReceiver) ||
+                !player.getName().equals(this.duelSender)) {
             // player invalid or not a duelling player, ignore!
             return;
         }
-        for (final ArenaPlayer ap : arena.getFighters()) {
+        for (final ArenaPlayer ap : this.arena.getFighters()) {
             if (ap == null || ap.getName().equals(player.getName())) {
                 continue;
             }
             if (ArenaPlayer.fromPlayer(player).getStatus() == PlayerStatus.LOUNGE) {
-                arena.msg(ap.getPlayer(), MSG.MODULE_DUEL_CANCELLED);
+                this.arena.msg(ap.getPlayer(), MSG.MODULE_DUEL_CANCELLED);
             }
-            if (amount > 0) {
-                for (ArenaModule mod : arena.getMods()) {
+            if (this.amount > 0) {
+                for (ArenaModule mod : this.arena.getMods()) {
                     if (mod instanceof VaultSupport) {
                         VaultSupport sup = (VaultSupport) mod;
 
                         if (ArenaPlayer.fromPlayer(player).getStatus() == PlayerStatus.LOUNGE) {
-                            sup.tryRefund(this, ap.getPlayer(), amount, true);
-                            sup.tryRefund(this, player, amount, true);
-                            amount = 0;
+                            sup.tryRefund(this, ap.getPlayer(), this.amount, true);
+                            sup.tryRefund(this, player, this.amount, true);
+                            this.amount = 0;
                             class RunLater implements Runnable {
 
                                 @Override
                                 public void run() {
-                                    new PAG_Leave().commit(getArena(), ap.getPlayer(), new String[]{});
+                                    new PAG_Leave().commit(DuelManager.this.getArena(), ap.getPlayer(), new String[]{});
                                 }
                             }
                             if (force) {
@@ -230,8 +226,8 @@ public class DuelManager extends ArenaModule {
                                 Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 3L);
                             }
                         } else {
-                            sup.tryDeposit(this, ap.getPlayer(), amount*2, true);
-                            amount = 0;
+                            sup.tryDeposit(this, ap.getPlayer(), this.amount *2, true);
+                            this.amount = 0;
                         }
                     }
                 }
@@ -240,7 +236,7 @@ public class DuelManager extends ArenaModule {
 
                     @Override
                     public void run() {
-                        new PAG_Leave().commit(getArena(), ap.getPlayer(), new String[]{});
+                        new PAG_Leave().commit(DuelManager.this.getArena(), ap.getPlayer(), new String[]{});
                     }
                 }
                 if (force) {

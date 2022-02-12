@@ -48,7 +48,7 @@ public class VaultSupport extends ArenaModule implements Listener {
 
     @Override
     public String version() {
-        return getClass().getPackage().getImplementationVersion();
+        return this.getClass().getPackage().getImplementationVersion();
     }
 
     @Override
@@ -108,7 +108,7 @@ public class VaultSupport extends ArenaModule implements Listener {
         }
         EconomyResponse res = economy.depositPlayer(sender.getName(), amount);
         if (res.transactionSuccess() && notify) {
-            arena.msg(Bukkit.getPlayer(sender.getName()), Language
+            this.arena.msg(Bukkit.getPlayer(sender.getName()), Language
                     .parse(MSG.MODULE_VAULT_YOUWON, economy.format(amount)));
             return true;
         }
@@ -134,7 +134,7 @@ public class VaultSupport extends ArenaModule implements Listener {
         }
         EconomyResponse res = economy.depositPlayer(sender.getName(), amount);
         if (res.transactionSuccess() && notify) {
-            arena.msg(Bukkit.getPlayer(sender.getName()), Language
+            this.arena.msg(Bukkit.getPlayer(sender.getName()), Language
                     .parse(MSG.MODULE_VAULT_REFUNDING, economy.format(amount)));
             return true;
         }
@@ -163,16 +163,11 @@ public class VaultSupport extends ArenaModule implements Listener {
         }
         EconomyResponse res = economy.withdrawPlayer(sender.getName(), amount);
         if (res.transactionSuccess() && notify) {
-            arena.msg(Bukkit.getPlayer(sender.getName()), Language
+            this.arena.msg(Bukkit.getPlayer(sender.getName()), Language
                     .parse(MSG.MODULE_VAULT_JOINPAY, economy.format(amount)));
             return true;
         }
         return false;
-    }
-
-    @Override
-    public boolean hasPerms(final CommandSender sender, final Arena arena) {
-        return super.hasPerms(sender, arena) || PVPArena.hasPerms(sender, arena);
     }
 
     @Override
@@ -205,7 +200,7 @@ public class VaultSupport extends ArenaModule implements Listener {
 
         // /pa bet [name] [amount]
         if (ap.getArenaTeam() != null) {
-            arena.msg(player, MSG.MODULE_VAULT_BETNOTYOURS);
+            this.arena.msg(player, MSG.MODULE_VAULT_BETNOTYOURS);
             return;
         }
 
@@ -215,9 +210,9 @@ public class VaultSupport extends ArenaModule implements Listener {
 
         if ("bet".equalsIgnoreCase(args[0])) {
 
-            final int maxTime = arena.getConfig().getInt(CFG.MODULES_VAULT_BETTIME);
-            if (maxTime > 0 && maxTime > arena.getPlayedSeconds()) {
-                arena.msg(player, MSG.ERROR_INVALID_VALUE, "2l8");
+            final int maxTime = this.arena.getConfig().getInt(CFG.MODULES_VAULT_BETTIME);
+            if (maxTime > 0 && maxTime > this.arena.getPlayedSeconds()) {
+                this.arena.msg(player, MSG.ERROR_INVALID_VALUE, "2l8");
                 return;
             }
 
@@ -225,9 +220,9 @@ public class VaultSupport extends ArenaModule implements Listener {
             if (p != null) {
                 ap = ArenaPlayer.fromPlayer(p);
             }
-            if (p == null && arena.getTeam(args[1]) == null
+            if (p == null && this.arena.getTeam(args[1]) == null
                     && ap.getArenaTeam() == null) {
-                arena.msg(player, MSG.MODULE_VAULT_BETOPTIONS);
+                this.arena.msg(player, MSG.MODULE_VAULT_BETOPTIONS);
                 return;
             }
 
@@ -236,7 +231,7 @@ public class VaultSupport extends ArenaModule implements Listener {
             try {
                 amount = Double.parseDouble(args[2]);
             } catch (final Exception e) {
-                arena.msg(player, MSG.MODULE_VAULT_INVALIDAMOUNT, args[2]);
+                this.arena.msg(player, MSG.MODULE_VAULT_INVALIDAMOUNT, args[2]);
                 return;
             }
             if (!economy.hasAccount(player.getName())) {
@@ -245,22 +240,22 @@ public class VaultSupport extends ArenaModule implements Listener {
             }
             if (!economy.has(player.getName(), amount)) {
                 // no money, no entry!
-                arena.msg(player, MSG.MODULE_VAULT_NOTENOUGH, economy.format(amount));
+                this.arena.msg(player, MSG.MODULE_VAULT_NOTENOUGH, economy.format(amount));
                 return;
             }
 
-            final double maxBet = arena.getConfig().getDouble(CFG.MODULES_VAULT_MAXIMUMBET);
+            final double maxBet = this.arena.getConfig().getDouble(CFG.MODULES_VAULT_MAXIMUMBET);
 
-            if (amount < arena.getConfig().getDouble(CFG.MODULES_VAULT_MINIMUMBET)
+            if (amount < this.arena.getConfig().getDouble(CFG.MODULES_VAULT_MINIMUMBET)
                     || maxBet > 0.01 && amount > maxBet) {
                 // wrong amount!
-                arena.msg(player, MSG.ERROR_INVALID_VALUE, economy.format(amount));
+                this.arena.msg(player, MSG.ERROR_INVALID_VALUE, economy.format(amount));
                 return;
             }
 
             economy.withdrawPlayer(player.getName(), amount);
-            arena.msg(player, MSG.MODULE_VAULT_BETPLACED, args[1]);
-            getPlayerBetMap().put(player.getName() + ':' + args[1], amount);
+            this.arena.msg(player, MSG.MODULE_VAULT_BETPLACED, args[1]);
+            this.getPlayerBetMap().put(player.getName() + ':' + args[1], amount);
         }
     }
 
@@ -269,25 +264,25 @@ public class VaultSupport extends ArenaModule implements Listener {
 
         if (economy != null) {
             debug("eConomy set, parse bets");
-            for (final String nKey : getPlayerBetMap().keySet()) {
+            for (final String nKey : this.getPlayerBetMap().keySet()) {
                 debug("bet: " + nKey);
                 final String[] nSplit = nKey.split(":");
 
-                if (arena.getTeam(nSplit[1]) == null
-                        || "free".equals(arena.getTeam(nSplit[1]).getName())) {
+                if (this.arena.getTeam(nSplit[1]) == null
+                        || "free".equals(this.arena.getTeam(nSplit[1]).getName())) {
                     continue;
                 }
 
                 if (nSplit[1].equalsIgnoreCase(aTeam.getName())) {
-                    double teamFactor = arena.getConfig()
+                    double teamFactor = this.arena.getConfig()
                             .getDouble(CFG.MODULES_VAULT_BETWINTEAMFACTOR)
-                            * arena.getTeamNames().size();
+                            * this.arena.getTeamNames().size();
                     if (teamFactor <= 0) {
                         teamFactor = 1;
                     }
-                    teamFactor *= arena.getConfig().getDouble(CFG.MODULES_VAULT_BETWINFACTOR);
+                    teamFactor *= this.arena.getConfig().getDouble(CFG.MODULES_VAULT_BETWINFACTOR);
 
-                    final double amount = getPlayerBetMap().get(nKey) * teamFactor;
+                    final double amount = this.getPlayerBetMap().get(nKey) * teamFactor;
 
                     if (!economy.hasAccount(nSplit[0])) {
                         debug("Account not found: {}", nSplit[0]);
@@ -297,7 +292,7 @@ public class VaultSupport extends ArenaModule implements Listener {
                     if (amount > 0) {
                         economy.depositPlayer(nSplit[0], amount);
                         try {
-                            arena.msg(Bukkit.getPlayer(nSplit[0]), Language
+                            this.arena.msg(Bukkit.getPlayer(nSplit[0]), Language
                                     .parse(MSG.MODULE_VAULT_YOUWON, economy.format(amount)));
                         } catch (final Exception e) {
                             // nothing
@@ -315,36 +310,36 @@ public class VaultSupport extends ArenaModule implements Listener {
     }
 
     private Map<String, Double> getPermList() {
-        if (list == null) {
-            list = new HashMap<>();
+        if (this.list == null) {
+            this.list = new HashMap<>();
 
-            if (arena.getConfig().getYamlConfiguration().contains("modules.vault.permfactors")) {
-                List<String> cs = arena.getConfig().getYamlConfiguration().
+            if (this.arena.getConfig().getYamlConfiguration().contains("modules.vault.permfactors")) {
+                List<String> cs = this.arena.getConfig().getYamlConfiguration().
                         getStringList("modules.vault.permfactors");
                 for (String node : cs) {
                     String[] split = node.split(":");
                     try {
-                        list.put(split[0], Double.parseDouble(split[1]));
+                        this.list.put(split[0], Double.parseDouble(split[1]));
                     } catch (Exception e) {
                         PVPArena.getInstance().getLogger().warning(
-                                "string '" + node + "' could not be read in node 'modules.vault.permfactors' in arena " + arena.getName());
+                                "string '" + node + "' could not be read in node 'modules.vault.permfactors' in arena " + this.arena.getName());
                     }
                 }
             } else {
 
-                list.put("pa.vault.supervip", 3.0d);
-                list.put("pa.vault.vip", 2.0d);
+                this.list.put("pa.vault.supervip", 3.0d);
+                this.list.put("pa.vault.vip", 2.0d);
 
                 List<String> stringList = new ArrayList<>();
 
-                for (Map.Entry<String, Double> stringDoubleEntry : list.entrySet()) {
+                for (Map.Entry<String, Double> stringDoubleEntry : this.list.entrySet()) {
                     stringList.add(stringDoubleEntry.getKey() + ':' + stringDoubleEntry.getValue());
                 }
-                arena.getConfig().setManually("modules.vault.permfactors", stringList);
-                arena.getConfig().save();
+                this.arena.getConfig().setManually("modules.vault.permfactors", stringList);
+                this.arena.getConfig().save();
             }
         }
-        return list;
+        return this.list;
     }
 
     /**
@@ -352,10 +347,10 @@ public class VaultSupport extends ArenaModule implements Listener {
      *
      */
     private Map<String, Double> getPlayerBetMap() {
-        if (playerBetMap == null) {
-            playerBetMap = new HashMap<>();
+        if (this.playerBetMap == null) {
+            this.playerBetMap = new HashMap<>();
         }
-        return playerBetMap;
+        return this.playerBetMap;
     }
 
     @Override
@@ -364,20 +359,20 @@ public class VaultSupport extends ArenaModule implements Listener {
             return;
         }
 
-        final int minPlayTime = arena.getConfig().getInt(CFG.MODULES_VAULT_MINPLAYTIME);
+        final int minPlayTime = this.arena.getConfig().getInt(CFG.MODULES_VAULT_MINPLAYTIME);
 
-        if (minPlayTime > arena.getPlayedSeconds()) {
+        if (minPlayTime > this.arena.getPlayedSeconds()) {
             debug("no rewards, game too short!");
             return;
         }
 
-        final int minPlayers = arena.getConfig().getInt(CFG.MODULES_VAULT_MINPLAYERS);
+        final int minPlayers = this.arena.getConfig().getInt(CFG.MODULES_VAULT_MINPLAYERS);
 
         Field field = null;
         try {
-            field = arena.getClass().getDeclaredField("startCount");
+            field = this.arena.getClass().getDeclaredField("startCount");
             field.setAccessible(true);
-            if (minPlayers > field.getInt(arena)) {
+            if (minPlayers > field.getInt(this.arena)) {
                 debug("no rewards, not enough players!");
                 return;
             }
@@ -390,7 +385,7 @@ public class VaultSupport extends ArenaModule implements Listener {
 
         debug(player, "giving Vault rewards to Player {}", player);
         int winners = 0;
-        for (final ArenaPlayer arenaPlayer : arena.getFighters()) {
+        for (final ArenaPlayer arenaPlayer : this.arena.getFighters()) {
             debug(arenaPlayer, "- checking fighter {}", arenaPlayer.getName());
             if (arenaPlayer.getStatus() != null && arenaPlayer.getStatus() == PlayerStatus.FIGHT) {
                 debug(arenaPlayer, "-- added!");
@@ -401,20 +396,20 @@ public class VaultSupport extends ArenaModule implements Listener {
 
         if (economy != null) {
             debug(player, "checking on bet amounts!");
-            for (final String nKey : getPlayerBetMap().keySet()) {
+            for (final String nKey : this.getPlayerBetMap().keySet()) {
                 final String[] nSplit = nKey.split(":");
 
                 if (nSplit[1].equalsIgnoreCase(player.getName())) {
-                    double playerFactor = arena.getFighters().size()
-                            * arena.getConfig().getDouble(CFG.MODULES_VAULT_BETWINPLAYERFACTOR);
+                    double playerFactor = this.arena.getFighters().size()
+                            * this.arena.getConfig().getDouble(CFG.MODULES_VAULT_BETWINPLAYERFACTOR);
 
                     if (playerFactor <= 0) {
                         playerFactor = 1;
                     }
 
-                    playerFactor *= arena.getConfig().getDouble(CFG.MODULES_VAULT_BETWINFACTOR);
+                    playerFactor *= this.arena.getConfig().getDouble(CFG.MODULES_VAULT_BETWINFACTOR);
 
-                    final double amount = getPlayerBetMap().get(nKey) * playerFactor;
+                    final double amount = this.getPlayerBetMap().get(nKey) * playerFactor;
 
                     debug("2 depositing {} to {}", amount, nSplit[0]);
                     if (amount > 0) {
@@ -422,10 +417,10 @@ public class VaultSupport extends ArenaModule implements Listener {
                         try {
 
                             ArenaModuleManager.announce(
-                                    arena,
+                                    this.arena,
                                     Language.parse(MSG.NOTICE_PLAYERAWARDED,
                                             economy.format(amount)), "PRIZE");
-                            arena.msg(Bukkit.getPlayer(nSplit[0]), Language
+                            this.arena.msg(Bukkit.getPlayer(nSplit[0]), Language
                                     .parse(MSG.MODULE_VAULT_YOUWON, economy.format(amount)));
                         } catch (final Exception e) {
                             // nothing
@@ -434,15 +429,15 @@ public class VaultSupport extends ArenaModule implements Listener {
                 }
             }
 
-            if (arena.getConfig().getBoolean(CFG.MODULES_VAULT_WINPOT)) {
+            if (this.arena.getConfig().getBoolean(CFG.MODULES_VAULT_WINPOT)) {
                 debug(player, "calculating win pot!");
-                double amount = winners > 0 ? pot / winners : 0;
+                double amount = winners > 0 ? this.pot / winners : 0;
 
 
                 double factor = 1.0d;
-                for (final String node : getPermList().keySet()) {
+                for (final String node : this.getPermList().keySet()) {
                     if (player.hasPermission(node)) {
-                        factor = Math.max(factor, getPermList().get(node));
+                        factor = Math.max(factor, this.getPermList().get(node));
                     }
                 }
 
@@ -451,28 +446,28 @@ public class VaultSupport extends ArenaModule implements Listener {
                 debug("3 depositing {} to {}", amount, player.getName());
                 if (amount > 0) {
                     economy.depositPlayer(player.getName(), amount);
-                    arena.msg(player, MSG.NOTICE_AWARDED, economy.format(amount));
+                    this.arena.msg(player, MSG.NOTICE_AWARDED, economy.format(amount));
                 }
-            } else if (arena.getConfig().getInt(CFG.MODULES_VAULT_WINREWARD, 0) > 0) {
+            } else if (this.arena.getConfig().getInt(CFG.MODULES_VAULT_WINREWARD, 0) > 0) {
 
-                double amount = arena.getConfig().getInt(CFG.MODULES_VAULT_WINREWARD, 0);
+                double amount = this.arena.getConfig().getInt(CFG.MODULES_VAULT_WINREWARD, 0);
                 debug(player, "calculating win reward: {}", amount);
 
 
                 double factor;
 
                 try {
-                    factor = Math.pow(arena.getConfig().getDouble(CFG.MODULES_VAULT_WINREWARDPLAYERFACTOR)
-                            , field.getInt(arena));
+                    factor = Math.pow(this.arena.getConfig().getDouble(CFG.MODULES_VAULT_WINREWARDPLAYERFACTOR)
+                            , field.getInt(this.arena));
                 } catch (final Exception e) {
                     PVPArena.getInstance().getLogger().warning("Failed to get playedPlayers, using winners!");
-                    factor = Math.pow(arena.getConfig().getDouble(CFG.MODULES_VAULT_WINREWARDPLAYERFACTOR)
+                    factor = Math.pow(this.arena.getConfig().getDouble(CFG.MODULES_VAULT_WINREWARDPLAYERFACTOR)
                             , winners);
                 }
 
-                for (final String node : getPermList().keySet()) {
+                for (final String node : this.getPermList().keySet()) {
                     if (player.hasPermission(node)) {
-                        factor = Math.max(factor, getPermList().get(node));
+                        factor = Math.max(factor, this.getPermList().get(node));
                         debug(player, "has perm '{}'; factor set to {}", node, factor);
                     }
                 }
@@ -482,7 +477,7 @@ public class VaultSupport extends ArenaModule implements Listener {
                 debug("4 depositing {} to {}", amount, player.getName());
                 if (amount > 0) {
                     economy.depositPlayer(player.getName(), amount);
-                    arena.msg(player, MSG.NOTICE_AWARDED, economy.format(amount));
+                    this.arena.msg(player, MSG.NOTICE_AWARDED, economy.format(amount));
                 }
             }
         }
@@ -496,7 +491,7 @@ public class VaultSupport extends ArenaModule implements Listener {
         if (player == null) {
             return;
         }
-        double amount = arena.getConfig()
+        double amount = this.arena.getConfig()
                 .getDouble(CFG.MODULES_VAULT_KILLREWARD);
 
         if (amount < 0.01) {
@@ -509,9 +504,9 @@ public class VaultSupport extends ArenaModule implements Listener {
         }
 
         double factor = 1.0d;
-        for (final String node : getPermList().keySet()) {
+        for (final String node : this.getPermList().keySet()) {
             if (player.hasPermission(node)) {
-                factor = Math.max(factor, getPermList().get(node));
+                factor = Math.max(factor, this.getPermList().get(node));
             }
         }
 
@@ -521,7 +516,7 @@ public class VaultSupport extends ArenaModule implements Listener {
         if (amount > 0) {
             economy.depositPlayer(player.getName(), amount);
             try {
-                arena.msg(Bukkit.getPlayer(player.getName()), Language
+                this.arena.msg(Bukkit.getPlayer(player.getName()), Language
                         .parse(MSG.MODULE_VAULT_YOUWON, economy.format(amount)));
             } catch (final Exception e) {
                 // nothing
@@ -532,44 +527,44 @@ public class VaultSupport extends ArenaModule implements Listener {
     @Override
     public void displayInfo(final CommandSender player) {
         player.sendMessage("entryfee: "
-                + StringParser.colorVar(arena.getConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE))
+                + StringParser.colorVar(this.arena.getConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE))
                 + " || reward: "
-                + StringParser.colorVar(arena.getConfig().getInt(CFG.MODULES_VAULT_WINREWARD))
+                + StringParser.colorVar(this.arena.getConfig().getInt(CFG.MODULES_VAULT_WINREWARD))
                 + " || rewardPlayerFactor: "
-                + StringParser.colorVar(arena.getConfig().getDouble(CFG.MODULES_VAULT_WINREWARDPLAYERFACTOR))
+                + StringParser.colorVar(this.arena.getConfig().getDouble(CFG.MODULES_VAULT_WINREWARDPLAYERFACTOR))
                 + " || killreward: "
-                + StringParser.colorVar(arena.getConfig().getDouble(CFG.MODULES_VAULT_KILLREWARD))
+                + StringParser.colorVar(this.arena.getConfig().getDouble(CFG.MODULES_VAULT_KILLREWARD))
                 + " || winFactor: "
-                + StringParser.colorVar(arena.getConfig().getDouble(CFG.MODULES_VAULT_WINFACTOR)));
+                + StringParser.colorVar(this.arena.getConfig().getDouble(CFG.MODULES_VAULT_WINFACTOR)));
 
         player.sendMessage("minbet: "
-                + StringParser.colorVar(arena.getConfig().getDouble(CFG.MODULES_VAULT_MINIMUMBET))
+                + StringParser.colorVar(this.arena.getConfig().getDouble(CFG.MODULES_VAULT_MINIMUMBET))
                 + " || maxbet: "
-                + StringParser.colorVar(arena.getConfig().getDouble(CFG.MODULES_VAULT_MAXIMUMBET))
+                + StringParser.colorVar(this.arena.getConfig().getDouble(CFG.MODULES_VAULT_MAXIMUMBET))
                 + " || minplayers: "
-                + StringParser.colorVar(arena.getConfig().getInt(CFG.MODULES_VAULT_MINPLAYERS))
+                + StringParser.colorVar(this.arena.getConfig().getInt(CFG.MODULES_VAULT_MINPLAYERS))
                 + " || betWinFactor: "
-                + StringParser.colorVar(arena.getConfig().getDouble(CFG.MODULES_VAULT_BETWINFACTOR)));
+                + StringParser.colorVar(this.arena.getConfig().getDouble(CFG.MODULES_VAULT_BETWINFACTOR)));
 
         player.sendMessage("betTeamWinFactor: "
-                + StringParser.colorVar(arena.getConfig().getDouble(CFG.MODULES_VAULT_BETWINTEAMFACTOR))
+                + StringParser.colorVar(this.arena.getConfig().getDouble(CFG.MODULES_VAULT_BETWINTEAMFACTOR))
                 + " || betPlayerWinFactor: "
-                + StringParser.colorVar(arena.getConfig().getDouble(CFG.MODULES_VAULT_BETWINPLAYERFACTOR)));
+                + StringParser.colorVar(this.arena.getConfig().getDouble(CFG.MODULES_VAULT_BETWINPLAYERFACTOR)));
 
         player.sendMessage(StringParser.colorVar(
-                "bet pot", arena.getConfig().getBoolean(
+                "bet pot", this.arena.getConfig().getBoolean(
                         CFG.MODULES_VAULT_BETPOT))
                 + " || "
                 + StringParser.colorVar(
-                "win pot", arena.getConfig().getBoolean(
+                "win pot", this.arena.getConfig().getBoolean(
                         CFG.MODULES_VAULT_WINPOT)));
     }
 
     @Override
     public void onThisLoad() {
         if (economy == null && Bukkit.getServer().getPluginManager().getPlugin("Vault") != null) {
-            setupEconomy();
-            setupPermission();
+            this.setupEconomy();
+            this.setupPermission();
 
             Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
         }
@@ -577,12 +572,12 @@ public class VaultSupport extends ArenaModule implements Listener {
 
     @Override
     public void parseJoin(final Player player, final ArenaTeam team) {
-        final int entryfee = arena.getConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE, 0);
+        final int entryfee = this.arena.getConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE, 0);
         if (entryfee > 0) {
             if (economy != null) {
                 economy.withdrawPlayer(player.getName(), entryfee);
-                arena.msg(player, MSG.MODULE_VAULT_JOINPAY, economy.format(entryfee));
-                pot += entryfee;
+                this.arena.msg(player, MSG.MODULE_VAULT_JOINPAY, economy.format(entryfee));
+                this.pot += entryfee;
             }
         }
     }
@@ -590,11 +585,11 @@ public class VaultSupport extends ArenaModule implements Listener {
     @Override
     public void parsePlayerDeath(final Player p,
                                  final EntityDamageEvent cause) {
-        killreward(ArenaPlayer.getLastDamagingPlayer(cause));
+        this.killreward(ArenaPlayer.getLastDamagingPlayer(cause));
     }
 
     void pay(final Set<String> result) {
-        if (result == null || result.size() == arena.getTeamNames().size()) {
+        if (result == null || result.size() == this.arena.getTeamNames().size()) {
             return;
         }
         debug("Paying winners: {}", StringParser.joinSet(result, ", "));
@@ -606,19 +601,19 @@ public class VaultSupport extends ArenaModule implements Listener {
         double pot = 0;
         double winpot = 0;
 
-        for (final String s : getPlayerBetMap().keySet()) {
+        for (final String s : this.getPlayerBetMap().keySet()) {
             final String[] nSplit = s.split(":");
 
-            pot += getPlayerBetMap().get(s);
+            pot += this.getPlayerBetMap().get(s);
 
             if (result.contains(nSplit)) {
-                winpot += getPlayerBetMap().get(s);
+                winpot += this.getPlayerBetMap().get(s);
             }
         }
 
-        for (final String nKey : getPlayerBetMap().keySet()) {
+        for (final String nKey : this.getPlayerBetMap().keySet()) {
             final String[] nSplit = nKey.split(":");
-            final ArenaTeam team = arena.getTeam(nSplit[1]);
+            final ArenaTeam team = this.arena.getTeam(nSplit[1]);
             if (team == null || "free".equals(team.getName())) {
                 if (Bukkit.getPlayerExact(nSplit[1]) == null) {
                     continue;
@@ -628,19 +623,19 @@ public class VaultSupport extends ArenaModule implements Listener {
             if (result.contains(nSplit[1])) {
                 double amount = 0;
 
-                if (arena.getConfig().getBoolean(CFG.MODULES_VAULT_BETPOT)) {
+                if (this.arena.getConfig().getBoolean(CFG.MODULES_VAULT_BETPOT)) {
                     if (winpot > 0) {
-                        amount = pot * getPlayerBetMap().get(nKey) / winpot;
+                        amount = pot * this.getPlayerBetMap().get(nKey) / winpot;
                     }
                 } else {
-                    double teamFactor = arena.getConfig()
+                    double teamFactor = this.arena.getConfig()
                             .getDouble(CFG.MODULES_VAULT_BETWINTEAMFACTOR)
-                            * arena.getTeamNames().size();
+                            * this.arena.getTeamNames().size();
                     if (teamFactor <= 0) {
                         teamFactor = 1;
                     }
-                    teamFactor *= arena.getConfig().getDouble(CFG.MODULES_VAULT_BETWINFACTOR);
-                    amount = getPlayerBetMap().get(nKey) * teamFactor;
+                    teamFactor *= this.arena.getConfig().getDouble(CFG.MODULES_VAULT_BETWINFACTOR);
+                    amount = this.getPlayerBetMap().get(nKey) * teamFactor;
                 }
 
                 if (!economy.hasAccount(nSplit[0])) {
@@ -654,9 +649,9 @@ public class VaultSupport extends ArenaModule implements Listener {
                     debug("Player is null!");
                 } else {
                     double factor = 1.0d;
-                    for (final String node : getPermList().keySet()) {
+                    for (final String node : this.getPermList().keySet()) {
                         if (player.hasPermission(node)) {
-                            factor = Math.max(factor, getPermList().get(node));
+                            factor = Math.max(factor, this.getPermList().get(node));
                         }
                     }
 
@@ -667,7 +662,7 @@ public class VaultSupport extends ArenaModule implements Listener {
                 if (amount > 0) {
                     economy.depositPlayer(nSplit[0], amount);
                     try {
-                        arena.msg(Bukkit.getPlayer(nSplit[0]), Language
+                        this.arena.msg(Bukkit.getPlayer(nSplit[0]), Language
                                 .parse(MSG.MODULE_VAULT_YOUWON, economy.format(amount)));
                     } catch (final Exception e) {
                         // nothing
@@ -679,8 +674,8 @@ public class VaultSupport extends ArenaModule implements Listener {
 
     @Override
     public void reset(final boolean force) {
-        getPlayerBetMap().clear();
-        pot = 0;
+        this.getPlayerBetMap().clear();
+        this.pot = 0;
     }
 
     @Override
@@ -697,18 +692,18 @@ public class VaultSupport extends ArenaModule implements Listener {
         }
         if (ap.getStatus() == PlayerStatus.LOUNGE ||
                 ap.getStatus() == PlayerStatus.READY) {
-            final int entryfee = arena.getConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE);
+            final int entryfee = this.arena.getConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE);
             if (entryfee < 1) {
                 return;
             }
-            arena.msg(player, MSG.MODULE_VAULT_REFUNDING, economy.format(entryfee));
+            this.arena.msg(player, MSG.MODULE_VAULT_REFUNDING, economy.format(entryfee));
             if (!economy.hasAccount(player.getName())) {
                 debug(player, "Account not found: {}", player.getName());
                 return;
             }
             debug("8 depositing {} to {}", entryfee, player.getName());
             economy.depositPlayer(player.getName(), entryfee);
-            pot -= entryfee;
+            this.pot -= entryfee;
 
         }
     }
@@ -736,14 +731,14 @@ public class VaultSupport extends ArenaModule implements Listener {
     }
 
     public void timedEnd(final HashSet<String> result) {
-        pay(result);
+        this.pay(result);
     }
 
     @EventHandler
     public void onClassChange(final PAPlayerClassChangeEvent event) {
-        if (event.getArena() != null && event.getArena().equals(arena)) {
+        if (event.getArena() != null && event.getArena().equals(this.arena)) {
 
-            final String autoClass = arena.getConfig().getDefinedString(CFG.READY_AUTOCLASS);
+            final String autoClass = this.arena.getConfig().getDefinedString(CFG.READY_AUTOCLASS);
 
             if (event.getArenaClass() == null || !event.getArenaClass().getName().equals(autoClass)) {
                 return; // class will be removed OR no autoClass OR no>T< autoClass
@@ -756,7 +751,7 @@ public class VaultSupport extends ArenaModule implements Listener {
             } catch (final Exception e) {
 
             }
-            final ArenaClass aClass = arena.getClass("autoClass_" + group);
+            final ArenaClass aClass = this.arena.getClass("autoClass_" + group);
             if (aClass != null) {
                 event.setArenaClass(aClass);
             }
@@ -767,7 +762,7 @@ public class VaultSupport extends ArenaModule implements Listener {
     public void onGoalScore(final PAGoalEvent event) {
 
 
-        if (event.getArena().equals(arena)) {
+        if (event.getArena().equals(this.arena)) {
             debug("it's us!");
             final String[] contents = event.getContents();
             /*
@@ -789,27 +784,27 @@ public class VaultSupport extends ArenaModule implements Listener {
                 node = node.toLowerCase();
                 if (node.contains("trigger")) {
                     lastTrigger = node.substring(8);
-                    newReward(lastTrigger, "TRIGGER");
+                    this.newReward(lastTrigger, "TRIGGER");
                 }
 
                 if (node.contains("playerDeath")) {
-                    newReward(node.substring(12), "DEATH");
+                    this.newReward(node.substring(12), "DEATH");
                 }
 
                 if (node.contains("playerKill")) {
                     final String[] val = node.split(":");
                     if (!val[1].equals(val[2])) {
-                        newReward(val[1], "KILL");
+                        this.newReward(val[1], "KILL");
                     }
                 }
 
                 if (node.contains("score")) {
                     final String[] val = node.split(":");
-                    newReward(val[1], "SCORE", Integer.parseInt(val[3]));
+                    this.newReward(val[1], "SCORE", Integer.parseInt(val[3]));
                 }
 
                 if (node != null && node.isEmpty() && lastTrigger != null && !lastTrigger.isEmpty()) {
-                    newReward(lastTrigger, "WIN");
+                    this.newReward(lastTrigger, "WIN");
                 }
             }
 
@@ -818,25 +813,25 @@ public class VaultSupport extends ArenaModule implements Listener {
 
     private void newReward(final String playerName, final String rewardType) {
         if (playerName == null || playerName.length() < 1) {
-            PVPArena.getInstance().getLogger().warning("winner is empty string in " + arena.getName());
+            PVPArena.getInstance().getLogger().warning("winner is empty string in " + this.arena.getName());
             return;
         }
         debug("new Reward: {} -> {}", playerName, rewardType);
-        newReward(playerName, rewardType, 1);
+        this.newReward(playerName, rewardType, 1);
     }
 
     private void newReward(final String playerName, final String rewardType, final int amount) {
         if (playerName == null || playerName.length() < 1) {
-            PVPArena.getInstance().getLogger().warning("winner is empty string in " + arena.getName());
+            PVPArena.getInstance().getLogger().warning("winner is empty string in " + this.arena.getName());
             return;
         }
         debug("new Reward: {}x {} -> {}", amount, playerName, rewardType);
         try {
 
-            double value = arena.getConfig().getDouble(
+            double value = this.arena.getConfig().getDouble(
                     CFG.valueOf("MODULES_VAULT_REWARD_" + rewardType), 0.0d);
 
-            final double maybevalue = arena.getConfig().getDouble(
+            final double maybevalue = this.arena.getConfig().getDouble(
                     CFG.valueOf("MODULES_VAULT_REWARD_" + rewardType), -1.0d);
 
             if (maybevalue < 0) {
@@ -845,9 +840,9 @@ public class VaultSupport extends ArenaModule implements Listener {
             final Player player = Bukkit.getPlayer(playerName);
             if (player != null) {
                 double factor = 1.0d;
-                for (final String node : getPermList().keySet()) {
+                for (final String node : this.getPermList().keySet()) {
                     if (player.hasPermission(node)) {
-                        factor = Math.max(factor, getPermList().get(node));
+                        factor = Math.max(factor, this.getPermList().get(node));
                     }
                 }
 
@@ -860,10 +855,10 @@ public class VaultSupport extends ArenaModule implements Listener {
                 try {
 
                     ArenaModuleManager.announce(
-                            arena,
+                            this.arena,
                             Language.parse(MSG.NOTICE_PLAYERAWARDED,
                                     economy.format(value)), "PRIZE");
-                    arena.msg(player, Language
+                    this.arena.msg(player, Language
                             .parse(MSG.MODULE_VAULT_YOUWON, economy.format(value)));
                 } catch (final Exception e) {
                     // nothing

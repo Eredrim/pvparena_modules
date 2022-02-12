@@ -1,6 +1,5 @@
 package net.slipcor.pvparena.modules.bettergears;
 
-import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaClass;
 import net.slipcor.pvparena.arena.ArenaPlayer;
@@ -12,6 +11,7 @@ import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.loadables.ArenaModule;
+import net.slipcor.pvparena.managers.PermissionManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -26,7 +26,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import static net.slipcor.pvparena.config.Debugger.debug;
 
@@ -42,7 +47,7 @@ public class BetterGears extends ArenaModule {
 
     @Override
     public String version() {
-        return getClass().getPackage().getImplementationVersion();
+        return this.getClass().getPackage().getImplementationVersion();
     }
 
     @Override
@@ -81,35 +86,34 @@ public class BetterGears extends ArenaModule {
         // !bg [teamname] color <R> <G> <B> | set color
         // !bg [classname] | show
         // !bg [classname] level <level> | protection level
-        if (!PVPArena.hasAdminPerms(sender)
-                && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
+        if (!PermissionManager.hasAdminPerm(sender) && !PermissionManager.hasBuilderPerm(sender, this.arena)) {
+            this.arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
-        if (!AbstractArenaCommand.argCountValid(sender, arena, args, new Integer[]{2,
+        if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2,
                 4, 6})) {
             return;
         }
 
-        final ArenaClass c = arena.getClass(args[1]);
+        final ArenaClass c = this.arena.getClass(args[1]);
 
         if (c == null) {
-            final ArenaTeam team = arena.getTeam(args[1]);
+            final ArenaTeam team = this.arena.getTeam(args[1]);
             if (team != null) {
                 // !bg [teamname] | show
                 // !bg [teamname] color <R> <G> <B> | set color
 
                 if (args.length == 2) {
-                    arena.msg(sender, Language.parse(
+                    this.arena.msg(sender, Language.parse(
                             MSG.MODULE_BETTERGEARS_SHOWTEAM,
                             team.getColoredName(),
-                            Arrays.toString(getColorMap().get(team))));
+                            Arrays.toString(this.getColorMap().get(team))));
                     return;
                 }
 
                 if (args.length != 6 || !"color".equalsIgnoreCase(args[2])) {
-                    printHelp(sender);
+                    this.printHelp(sender);
                     return;
                 }
 
@@ -118,80 +122,80 @@ public class BetterGears extends ArenaModule {
                     rgb[0] = Short.parseShort(args[3]);
                     rgb[1] = Short.parseShort(args[4]);
                     rgb[2] = Short.parseShort(args[5]);
-                    arena.getConfig().setManually(
+                    this.arena.getConfig().setManually(
                             "modules.bettergears.colors." + team.getName(),
                             StringParser.joinArray(rgb, ","));
-                    arena.getConfig().save();
-                    getColorMap().put(team, rgb);
-                    arena.msg(sender, Language.parse(
+                    this.arena.getConfig().save();
+                    this.getColorMap().put(team, rgb);
+                    this.arena.msg(sender, Language.parse(
                             MSG.MODULE_BETTERGEARS_TEAMDONE,
                             team.getColoredName(), args[3]));
                 } catch (final Exception e) {
-                    arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[3]);
+                    this.arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[3]);
                 }
 
                 return;
             }
             // no team AND no class!
 
-            arena.msg(sender, MSG.ERROR_CLASS_NOT_FOUND, args[1]);
-            arena.msg(sender, MSG.ERROR_TEAM_NOT_FOUND, args[1]);
-            printHelp(sender);
+            this.arena.msg(sender, MSG.ERROR_CLASS_NOT_FOUND, args[1]);
+            this.arena.msg(sender, MSG.ERROR_TEAM_NOT_FOUND, args[1]);
+            this.printHelp(sender);
             return;
         }
         // !bg [classname] | show
         // !bg [classname] level <level> | protection level
 
         if (args.length == 2) {
-            arena.msg(sender, MSG.MODULE_BETTERGEARS_SHOWCLASS, c.getName(), String.valueOf(getLevelMap().get(c)));
+            this.arena.msg(sender, MSG.MODULE_BETTERGEARS_SHOWCLASS, c.getName(), String.valueOf(this.getLevelMap().get(c)));
             return;
         }
 
         if (args.length != 4 || !"level".equalsIgnoreCase(args[2])) {
-            printHelp(sender);
+            this.printHelp(sender);
             return;
         }
 
         try {
             final short l = Short.parseShort(args[3]);
-            arena.getConfig().setManually(
+            this.arena.getConfig().setManually(
                     "modules.bettergears.levels." + c.getName(), l);
-            arena.getConfig().save();
-            getLevelMap().put(c, l);
-            arena.msg(sender, MSG.MODULE_BETTERGEARS_CLASSDONE, c.getName(), args[3]);
+            this.arena.getConfig().save();
+            this.getLevelMap().put(c, l);
+            this.arena.msg(sender, MSG.MODULE_BETTERGEARS_CLASSDONE, c.getName(), args[3]);
         } catch (final Exception e) {
-            arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[3]);
+            this.arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[3]);
         }
     }
 
     @Override
     public void configParse(final YamlConfiguration cfg) {
-        for (final ArenaClass c : arena.getClasses()) {
+        for (final ArenaClass c : this.arena.getClasses()) {
             if (cfg.get("modules.bettergears.levels." + c.getName()) == null) {
                 cfg.set("modules.bettergears.levels." + c.getName(),
-                        parseClassNameToDefaultProtection(c.getName()));
+                        this.parseClassNameToDefaultProtection(c.getName()));
             }
         }
-        for (final ArenaTeam t : arena.getTeams()) {
+        for (final ArenaTeam t : this.arena.getTeams()) {
             if (cfg.get("modules.bettergears.colors." + t.getName()) == null) {
                 cfg.set("modules.bettergears.colors." + t.getName(),
-                        parseTeamColorStringToRGB(t.getColor().name()));
+                        this.parseTeamColorStringToRGB(t.getColor().name()));
             }
         }
-        if (getColorMap().isEmpty()) {
-            setup();
+        if (this.getColorMap().isEmpty()) {
+            this.setup();
         }
     }
 
     @Override
     public void displayInfo(final CommandSender sender) {
-        for (final Map.Entry<ArenaTeam, Short[]> arenaTeamEntry : colorMap.entrySet()) {
+        for (final Map.Entry<ArenaTeam, Short[]> arenaTeamEntry : this.colorMap.entrySet()) {
             final Short[] colors = arenaTeamEntry.getValue();
             sender.sendMessage(arenaTeamEntry.getKey().getName() + ": " +
                     StringParser.joinArray(colors, ""));
         }
 
-        for (final Map.Entry<ArenaClass, Short> arenaClassShortEntry : levelMap.entrySet()) {
+        for (final Map.Entry<ArenaClass, Short> arenaClassShortEntry : this.levelMap.entrySet()) {
             sender.sendMessage(arenaClassShortEntry.getKey().getName() + ": " + arenaClassShortEntry.getValue());
         }
     }
@@ -199,24 +203,24 @@ public class BetterGears extends ArenaModule {
     void equip(final ArenaPlayer arenaPlayer) {
 
         Player player = arenaPlayer.getPlayer();
-        debug(arena, player, "equipping better gear!");
+        debug(this.arena, player, "equipping better gear!");
 
-        if (getColorMap().isEmpty()) {
-            setup();
+        if (this.getColorMap().isEmpty()) {
+            this.setup();
         }
 
         final short r;
         final short g;
         final short b;
 
-        if (getArena().isFreeForAll()) {
+        if (this.getArena().isFreeForAll()) {
             r = (short) new Random().nextInt(256);
             g = (short) new Random().nextInt(256);
             b = (short) new Random().nextInt(256);
         } else {
-            r = getColorMap().get(arenaPlayer.getArenaTeam())[0];
-            g = getColorMap().get(arenaPlayer.getArenaTeam())[1];
-            b = getColorMap().get(arenaPlayer.getArenaTeam())[2];
+            r = this.getColorMap().get(arenaPlayer.getArenaTeam())[0];
+            g = this.getColorMap().get(arenaPlayer.getArenaTeam())[1];
+            b = this.getColorMap().get(arenaPlayer.getArenaTeam())[2];
         }
 
 
@@ -234,12 +238,12 @@ public class BetterGears extends ArenaModule {
             isArmor[i].setItemMeta(lam);
         }
 
-        Short s = getLevelMap().get(arenaPlayer.getArenaClass());
+        Short s = this.getLevelMap().get(arenaPlayer.getArenaClass());
 
         if (s == null) {
-            final String autoClass = getArena().getConfig().getString(CFG.READY_AUTOCLASS);
-            final ArenaClass ac = getArena().getClass(autoClass);
-            s = getLevelMap().get(ac);
+            final String autoClass = this.getArena().getConfig().getString(CFG.READY_AUTOCLASS);
+            final ArenaClass ac = this.getArena().getClass(autoClass);
+            s = this.getLevelMap().get(ac);
         }
 
         if(s != null && s > 0) {
@@ -250,69 +254,69 @@ public class BetterGears extends ArenaModule {
             isArmor[0].addUnsafeEnchantment(Enchantment.PROTECTION_PROJECTILE, s);
         }
 
-        if (arena.getConfig().getBoolean(CFG.MODULES_BETTERGEARS_HEAD)) {
+        if (this.arena.getConfig().getBoolean(CFG.MODULES_BETTERGEARS_HEAD)) {
             this.replaceArmorItem(EquipmentSlot.HEAD, player, isArmor[0]);
         }
 
-        if (arena.getConfig().getBoolean(CFG.MODULES_BETTERGEARS_CHEST)) {
+        if (this.arena.getConfig().getBoolean(CFG.MODULES_BETTERGEARS_CHEST)) {
             this.replaceArmorItem(EquipmentSlot.CHEST, player, isArmor[1]);
         }
 
-        if (arena.getConfig().getBoolean(CFG.MODULES_BETTERGEARS_LEG)) {
+        if (this.arena.getConfig().getBoolean(CFG.MODULES_BETTERGEARS_LEG)) {
             this.replaceArmorItem(EquipmentSlot.LEGS, player, isArmor[2]);
         }
 
-        if (arena.getConfig().getBoolean(CFG.MODULES_BETTERGEARS_FOOT)) {
+        if (this.arena.getConfig().getBoolean(CFG.MODULES_BETTERGEARS_FOOT)) {
             this.replaceArmorItem(EquipmentSlot.FEET, player, isArmor[3]);
         }
     }
 
     private Map<ArenaTeam, Short[]> getColorMap() {
-        if (colorMap == null) {
-            colorMap = new HashMap<>();
+        if (this.colorMap == null) {
+            this.colorMap = new HashMap<>();
         }
-        return colorMap;
+        return this.colorMap;
     }
 
     private Map<ArenaClass, Short> getLevelMap() {
-        if (levelMap == null) {
-            levelMap = new HashMap<>();
+        if (this.levelMap == null) {
+            this.levelMap = new HashMap<>();
         }
-        return levelMap;
+        return this.levelMap;
     }
 
     @Override
     public void initiate(final Player player) {
-        if (getColorMap().isEmpty()) {
-            setup();
+        if (this.getColorMap().isEmpty()) {
+            this.setup();
         }
     }
 
     @Override
     public void lateJoin(final Player player) {
-        equip(ArenaPlayer.fromPlayer(player));
+        this.equip(ArenaPlayer.fromPlayer(player));
     }
 
     @Override
     public void reset(final boolean force) {
-        getColorMap().clear();
-        getLevelMap().clear();
+        this.getColorMap().clear();
+        this.getLevelMap().clear();
     }
 
     @Override
     public void parseClassChange(Player player, ArenaClass arenaClass) {
-        equip(ArenaPlayer.fromPlayer(player));
+        this.equip(ArenaPlayer.fromPlayer(player));
     }
 
     @Override
     public void parseStart() {
 
-        if (getColorMap().isEmpty()) {
-            setup();
+        if (this.getColorMap().isEmpty()) {
+            this.setup();
         }
         // debug();
 
-        for (final ArenaPlayer ap : arena.getFighters()) {
+        for (final ArenaPlayer ap : this.arena.getFighters()) {
             new EquipRunnable(ap, this);
         }
     }
@@ -337,7 +341,7 @@ public class BetterGears extends ArenaModule {
     public void parseRespawn(final Player player, final ArenaTeam team, final DamageCause cause,
                              final Entity damager) {
         final ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
-        if (arena.getConfig().getBoolean(CFG.PLAYER_REFILLINVENTORY)) {
+        if (this.arena.getConfig().getBoolean(CFG.PLAYER_REFILLINVENTORY)) {
             new EquipRunnable(ap, this);
         }
     }
@@ -402,36 +406,36 @@ public class BetterGears extends ArenaModule {
     }
 
     private void printHelp(final CommandSender sender) {
-        arena.msg(sender, "/pa [arenaname] !bg [teamname]  | show team color");
-        arena.msg(sender,
+        this.arena.msg(sender, "/pa [arenaname] !bg [teamname]  | show team color");
+        this.arena.msg(sender,
                 "/pa [arenaname] !bg [teamname] color " + ChatColor.RED + "<R> " + ChatColor.GREEN + "<G> " + ChatColor.BLUE + "<B>" + ChatColor.RESET + " | set color");
-        arena.msg(sender,
+        this.arena.msg(sender,
                 "/pa [arenaname] !bg [classname] | show protection level");
-        arena.msg(sender,
+        this.arena.msg(sender,
                 "/pa [arenaname] !bg [classname] level <level> | set protection level");
     }
 
     private void setup() {
         debug("Setting up BetterGears");
 
-        for (final ArenaClass c : arena.getClasses()) {
+        for (final ArenaClass c : this.arena.getClasses()) {
             Short s = 0;
             try {
                 s = Short
-                        .valueOf(String.valueOf(arena.getConfig()
+                        .valueOf(String.valueOf(this.arena.getConfig()
                                 .getUnsafe(
                                         "modules.bettergears.levels."
                                                 + c.getName())));
                 debug("{} : {}", c.getName(), s);
             } catch (final Exception e) {
             }
-            getLevelMap().put(c, s);
+            this.getLevelMap().put(c, s);
         }
 
-        for (final ArenaTeam t : arena.getTeams()) {
-            final Short[] s = parseRGBToShortArray(arena.getConfig().getUnsafe(
+        for (final ArenaTeam t : this.arena.getTeams()) {
+            final Short[] s = this.parseRGBToShortArray(this.arena.getConfig().getUnsafe(
                     "modules.bettergears.colors." + t.getName()));
-            getColorMap().put(t, s);
+            this.getColorMap().put(t, s);
             debug("{} : {}", t.getName(), StringParser.joinArray(s, ","));
         }
     }
@@ -440,22 +444,22 @@ public class BetterGears extends ArenaModule {
         PlayerInventory inventory = player.getInventory();
         switch (slot) {
             case HEAD:
-                inventory.setHelmet(getColoredItemStack(inventory.getHelmet(), setItem));
+                inventory.setHelmet(this.getColoredItemStack(inventory.getHelmet(), setItem));
                 break;
             case CHEST:
-                inventory.setChestplate(getColoredItemStack(inventory.getChestplate(), setItem));
+                inventory.setChestplate(this.getColoredItemStack(inventory.getChestplate(), setItem));
                 break;
             case LEGS:
-                inventory.setLeggings(getColoredItemStack(inventory.getLeggings(), setItem));
+                inventory.setLeggings(this.getColoredItemStack(inventory.getLeggings(), setItem));
                 break;
             case FEET:
-                inventory.setBoots(getColoredItemStack(inventory.getBoots(), setItem));
+                inventory.setBoots(this.getColoredItemStack(inventory.getBoots(), setItem));
                 break;
         }
     }
 
     private ItemStack getColoredItemStack(ItemStack checkItem, ItemStack setItem) {
-        if(!arena.getConfig().getBoolean(CFG.MODULES_BETTERGEARS_ONLYIFLEATHER)) {
+        if(!this.arena.getConfig().getBoolean(CFG.MODULES_BETTERGEARS_ONLYIFLEATHER)) {
             return setItem;
         } else if (checkItem != null && setItem != null && setItem.getType().equals(checkItem.getType())) {
             LeatherArmorMeta checkMeta = (LeatherArmorMeta) checkItem.getItemMeta();

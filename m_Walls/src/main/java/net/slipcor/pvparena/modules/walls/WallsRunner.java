@@ -19,22 +19,22 @@ public class WallsRunner extends ArenaRunnable {
     @Override
     protected void commit() {
 
-        if (module != null) {
-            module.removeWalls();
-            module.runnable = null;
+        if (this.module != null) {
+            this.module.removeWalls();
+            this.module.runnable = null;
         }
     }
 
     @Override
     protected void spam() {
         super.spam();
-        if (arena.getConfig().getBoolean(Config.CFG.MODULES_WALLS_SCOREBOARDCOUNTDOWN)) {
-            int mins = seconds / 60;
+        if (this.arena.getConfig().getBoolean(Config.CFG.MODULES_WALLS_SCOREBOARDCOUNTDOWN)) {
+            int mins = this.seconds / 60;
             int seconds = this.seconds % 60;
             String value = mins + ":" + String.format("%02d", seconds);
 
-            arena.getScoreboard().addCustomEntry(module, Language.parse(MSG.MODULE_WALLS_FALLINGIN, value), 99);
-            arena.getScoreboard().addCustomEntry(module, Language.parse(MSG.MODULE_WALLS_SEPARATOR), 98);
+            this.arena.getScoreboard().addCustomEntry(this.module, Language.parse(MSG.MODULE_WALLS_FALLINGIN, value), 99);
+            this.arena.getScoreboard().addCustomEntry(this.module, Language.parse(MSG.MODULE_WALLS_SEPARATOR), 98);
         }
     }
 

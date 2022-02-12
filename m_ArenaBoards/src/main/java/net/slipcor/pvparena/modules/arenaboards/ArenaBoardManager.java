@@ -8,6 +8,7 @@ import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.ArenaManager;
+import net.slipcor.pvparena.managers.PermissionManager;
 import net.slipcor.pvparena.managers.SpawnManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -118,9 +119,8 @@ public class ArenaBoardManager extends ArenaModule implements Listener {
             return;
         }
 
-        if (!PVPArena.hasAdminPerms(event.getPlayer())
-                && a != null && !PVPArena.hasCreatePerms(event.getPlayer(),
-                a)) {
+        if (!PermissionManager.hasAdminPerm(event.getPlayer())
+                && a != null && !PermissionManager.hasBuilderPerm(event.getPlayer(), a)) {
             a.msg(event.getPlayer(), MSG.ERROR_NOPERM, Language.parse(MSG.MODULE_ARENABOARDS_CREATE));
             return;
         }

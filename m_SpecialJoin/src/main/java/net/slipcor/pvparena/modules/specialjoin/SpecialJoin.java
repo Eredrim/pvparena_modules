@@ -13,6 +13,7 @@ import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.loadables.ArenaModule;
+import net.slipcor.pvparena.managers.PermissionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -28,7 +29,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.IllegalPluginAccessException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static net.slipcor.pvparena.config.Debugger.debug;
 
@@ -43,7 +48,7 @@ public class SpecialJoin extends ArenaModule implements Listener {
 
     @Override
     public String version() {
-        return getClass().getPackage().getImplementationVersion();
+        return this.getClass().getPackage().getImplementationVersion();
     }
 
     @Override
@@ -61,7 +66,7 @@ public class SpecialJoin extends ArenaModule implements Listener {
         try {
             final List<String> res = config.getStringList("modules.specialjoin.places");
             for (final String s : res) {
-                places.put(Config.parseBlockLocation(s), arena);
+                places.put(Config.parseBlockLocation(s), this.arena);
             }
         } catch (final Exception e) {
             e.printStackTrace();
@@ -70,9 +75,8 @@ public class SpecialJoin extends ArenaModule implements Listener {
 
     @Override
     public void commitCommand(final CommandSender sender, final String[] args) {
-        if (!PVPArena.hasAdminPerms(sender)
-                && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
+        if (!PermissionManager.hasAdminPerm(sender) && !PermissionManager.hasBuilderPerm(sender, this.arena)) {
+            this.arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
@@ -81,19 +85,19 @@ public class SpecialJoin extends ArenaModule implements Listener {
         if (selections.containsKey(sender.getName())) {
             // remove & announce
             selections.remove(sender.getName());
-            arena.msg(sender, MSG.MODULE_SPECIALJOIN_STOP);
+            this.arena.msg(sender, MSG.MODULE_SPECIALJOIN_STOP);
         } else {
             // add & announce
-            selections.put(sender.getName(), arena);
-            arena.msg(sender, MSG.MODULE_SPECIALJOIN_START);
+            selections.put(sender.getName(), this.arena);
+            this.arena.msg(sender, MSG.MODULE_SPECIALJOIN_START);
         }
     }
 
     @Override
     public void onThisLoad() {
-        if (!setup) {
+        if (!this.setup) {
             Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
-            setup = true;
+            this.setup = true;
         }
     }
 

@@ -1,6 +1,5 @@
 package net.slipcor.pvparena.modules.fixes;
 
-import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
@@ -10,6 +9,7 @@ import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
+import net.slipcor.pvparena.managers.PermissionManager;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -29,7 +29,7 @@ public class InventoryLoss extends ArenaModule {
 
     @Override
     public String version() {
-        return getClass().getPackage().getImplementationVersion();
+        return this.getClass().getPackage().getImplementationVersion();
     }
 
     @Override
@@ -80,13 +80,12 @@ public class InventoryLoss extends ArenaModule {
     public void commitCommand(final CommandSender sender, final String[] args) {
         // !fil [value]
 
-        if (!PVPArena.hasAdminPerms(sender)
-                && !PVPArena.hasCreatePerms(sender, arena)) {
-            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
+        if (!PermissionManager.hasAdminPerm(sender) && !PermissionManager.hasBuilderPerm(sender, this.arena)) {
+            this.arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
-        if (!AbstractArenaCommand.argCountValid(sender, arena, args, new Integer[]{2})) {
+        if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2})) {
             return;
         }
 
@@ -99,21 +98,21 @@ public class InventoryLoss extends ArenaModule {
         }
 
         if (c == null) {
-            arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "gamemode | inventory");
+            this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "gamemode | inventory");
             return;
         }
 
-        final boolean b = arena.getConfig().getBoolean(c);
-        arena.getConfig().set(c, !b);
-        arena.getConfig().save();
-        arena.msg(sender, MSG.SET_DONE, c.getNode(), String.valueOf(!b));
+        final boolean b = this.arena.getConfig().getBoolean(c);
+        this.arena.getConfig().set(c, !b);
+        this.arena.getConfig().save();
+        this.arena.msg(sender, MSG.SET_DONE, c.getNode(), String.valueOf(!b));
 
     }
 
     @Override
     public void displayInfo(final CommandSender player) {
-        player.sendMessage(StringParser.colorVar("gamemode", arena.getConfig().getBoolean(CFG.MODULES_FIXINVENTORYLOSS_GAMEMODE))
+        player.sendMessage(StringParser.colorVar("gamemode", this.arena.getConfig().getBoolean(CFG.MODULES_FIXINVENTORYLOSS_GAMEMODE))
                 + " || "
-                + StringParser.colorVar("inventory", arena.getConfig().getBoolean(CFG.MODULES_FIXINVENTORYLOSS_INVENTORY)));
+                + StringParser.colorVar("inventory", this.arena.getConfig().getBoolean(CFG.MODULES_FIXINVENTORYLOSS_INVENTORY)));
     }
 }

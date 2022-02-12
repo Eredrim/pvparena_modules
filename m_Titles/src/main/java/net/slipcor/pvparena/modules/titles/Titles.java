@@ -1,6 +1,5 @@
 package net.slipcor.pvparena.modules.titles;
 
-import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.ArenaTeam;
@@ -12,6 +11,7 @@ import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.ArenaManager;
+import net.slipcor.pvparena.managers.PermissionManager;
 import net.slipcor.pvparena.managers.TeamManager;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -76,8 +76,7 @@ public class Titles extends ArenaModule {
     public void commitCommand(final CommandSender sender, final String[] args) {
         // !tt [type]
 
-        if (!PVPArena.hasAdminPerms(sender)
-                && !PVPArena.hasCreatePerms(sender, arena)) {
+        if (!PermissionManager.hasAdminPerm(sender) && !PermissionManager.hasBuilderPerm(sender, arena)) {
             arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
@@ -162,7 +161,7 @@ public class Titles extends ArenaModule {
 
         if (TeamManager.countPlayersInTeams(arena) < 2) {
             final String arenaname =
-                    PVPArena.hasOverridePerms(player) ? arena.getName() : ArenaManager.getIndirectArenaName(arena);
+                    PermissionManager.hasOverridePerm(player) ? arena.getName() : ArenaManager.getIndirectArenaName(arena);
             Title.announce(arena, Title.type.ADVERT, Language
                     .parse(arena, CFG.MSG_STARTING, arenaname +
                             ChatColor.valueOf(arena.getConfig().getString(

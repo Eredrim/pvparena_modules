@@ -12,6 +12,7 @@ import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
+import net.slipcor.pvparena.managers.PermissionManager;
 import net.slipcor.pvparena.regions.ArenaRegion;
 import net.slipcor.pvparena.regions.RegionType;
 import org.bukkit.Bukkit;
@@ -147,7 +148,7 @@ public class BlockRestore extends ArenaModule implements Listener {
         // !br clearinv
         // !br offset X
 
-        if (!PVPArena.hasAdminPerms(sender) && !PVPArena.hasCreatePerms(sender, this.arena)) {
+        if (!PermissionManager.hasAdminPerm(sender) && !PermissionManager.hasBuilderPerm(sender, this.arena)) {
             Arena.pmsg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
