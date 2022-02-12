@@ -3,26 +3,21 @@ package net.slipcor.pvparena.modules.ssp;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.arena.ArenaTeam;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.classes.PALocation;
 import net.slipcor.pvparena.classes.PASpawn;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
-import net.slipcor.pvparena.core.RandomUtils;
 import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.ArenaManager;
+import net.slipcor.pvparena.managers.SpawnManager;
 import net.slipcor.pvparena.managers.TeleportManager;
 import net.slipcor.pvparena.managers.WorkflowManager;
-import net.slipcor.pvparena.managers.SpawnManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
 
 import static net.slipcor.pvparena.config.Debugger.debug;
 
@@ -78,8 +73,9 @@ public class SinglePlayerSupport extends ArenaModule {
 
             final Arena arena = arenaPlayer.getArena();
 
-            arenaPlayer.createState(arenaPlayer.getPlayer());
-            ArenaPlayer.backupAndClearInventory(arena, arenaPlayer.getPlayer());
+            // Important: clear inventory before setting player state to deal with armor modifiers (like health)
+            ArenaPlayer.backupAndClearInventory(this.arena, player);
+            arenaPlayer.createState(player);
             arenaPlayer.dump();
 
             if (arenaPlayer.getArenaTeam() != null && arenaPlayer.getArenaClass() == null) {
