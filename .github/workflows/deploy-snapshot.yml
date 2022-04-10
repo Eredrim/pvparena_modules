@@ -17,6 +17,9 @@ jobs:
           server-id: eredrim
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
+
+      - name: Build the package
+        run: mvn --batch-mode clean install -T4
         
       - name: Deploy the package
         run: mvn --batch-mode deploy -T4 -DaltDeploymentRepository="eredrim::default::https://repo.eredrim.fr/repository/maven-snapshots/"

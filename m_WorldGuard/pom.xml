@@ -4,7 +4,7 @@
     <parent>
         <groupId>net.slipcor.pvpa</groupId>
         <artifactId>modules</artifactId>
-        <version>1.15.2-SNAPSHOT</version>
+        <version>1.15.2</version>
     </parent>
 
     <artifactId>m_worldguard</artifactId>
@@ -34,16 +34,26 @@
         <dependency>
             <groupId>com.sk89q.worldedit</groupId>
             <artifactId>worldedit-bukkit</artifactId>
-            <version>7.0.0</version>
+            <version>7.2.0</version>
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.sk89q.worldguard</groupId>
             <artifactId>worldguard-bukkit</artifactId>
-            <version>7.0.0</version>
+            <version>7.0.5</version>
             <type>jar</type>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sk89q.worldedit</groupId>
+                    <artifactId>worldedit-bukkit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sk89q.worldedit</groupId>
+                    <artifactId>worldedit-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

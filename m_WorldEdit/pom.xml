@@ -4,7 +4,7 @@
     <parent>
         <groupId>net.slipcor.pvpa</groupId>
         <artifactId>modules</artifactId>
-        <version>1.15.2-SNAPSHOT</version>
+        <version>1.15.2</version>
     </parent>
 
     <artifactId>m_worldedit</artifactId>
@@ -34,7 +34,7 @@
         <dependency>
             <groupId>com.sk89q.worldedit</groupId>
             <artifactId>worldedit-bukkit</artifactId>
-            <version>7.0.0</version>
+            <version>7.2.0</version>
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
