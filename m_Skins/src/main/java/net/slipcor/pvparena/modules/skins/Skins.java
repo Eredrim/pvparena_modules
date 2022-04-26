@@ -90,7 +90,7 @@ public class Skins extends ArenaModule {
             return;
         }
 
-        final ArenaClass c = this.arena.getClass(args[1]);
+        final ArenaClass c = this.arena.getArenaClass(args[1]);
 
         if (c == null) {
             final ArenaTeam team = this.arena.getTeam(args[1]);

@@ -751,7 +751,7 @@ public class VaultSupport extends ArenaModule implements Listener {
             } catch (final Exception e) {
 
             }
-            final ArenaClass aClass = this.arena.getClass("autoClass_" + group);
+            final ArenaClass aClass = this.arena.getArenaClass("autoClass_" + group);
             if (aClass != null) {
                 event.setArenaClass(aClass);
             }

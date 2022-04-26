@@ -184,7 +184,7 @@ public class BetterClasses extends ArenaModule {
             return;
         }
 
-        final ArenaClass c = this.arena.getClass(args[1]);
+        final ArenaClass c = this.arena.getArenaClass(args[1]);
 
         if (c == null) {
             this.arena.msg(sender, MSG.ERROR_CLASS_NOT_FOUND, args[1]);

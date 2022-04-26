@@ -96,7 +96,7 @@ public class BetterGears extends ArenaModule {
             return;
         }
 
-        final ArenaClass c = this.arena.getClass(args[1]);
+        final ArenaClass c = this.arena.getArenaClass(args[1]);
 
         if (c == null) {
             final ArenaTeam team = this.arena.getTeam(args[1]);
@@ -242,7 +242,7 @@ public class BetterGears extends ArenaModule {
 
         if (s == null) {
             final String autoClass = this.getArena().getConfig().getString(CFG.READY_AUTOCLASS);
-            final ArenaClass ac = this.getArena().getClass(autoClass);
+            final ArenaClass ac = this.getArena().getArenaClass(autoClass);
             s = this.getLevelMap().get(ac);
         }
 
