@@ -7,15 +7,19 @@ import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaClass;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.arena.ArenaTeam;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
-import net.slipcor.pvparena.events.PAGoalEvent;
+import net.slipcor.pvparena.events.PADeathEvent;
+import net.slipcor.pvparena.events.PAKillEvent;
 import net.slipcor.pvparena.events.PAPlayerClassChangeEvent;
+import net.slipcor.pvparena.events.PAWinEvent;
+import net.slipcor.pvparena.events.goal.PAGoalScoreEvent;
+import net.slipcor.pvparena.events.goal.PAGoalTriggerEvent;
 import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.loadables.ArenaModuleManager;
@@ -30,7 +34,13 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static net.slipcor.pvparena.config.Debugger.debug;
 
@@ -76,15 +86,15 @@ public class VaultSupport extends ArenaModule implements Listener {
 
     public boolean checkForBalance(ArenaModule module, CommandSender sender, int amount, boolean notify) {
         debug(sender, "module "+module+" tries to check account "+sender.getName());
+        Player player = Bukkit.getPlayer(sender.getName());
         if (economy == null) {
             return false;
         }
-        if (!economy.hasAccount(sender.getName())) {
+        if (!economy.hasAccount(player)) {
             debug(sender, "Account not found: " + sender.getName());
             return false;
         }
-        if (!economy.has(sender.getName(),
-                amount)) {
+        if (!economy.has(player, amount)) {
             // no money, no entry!
             if (notify) {
                 module.getArena().msg(sender, Language.parse(MSG.MODULE_VAULT_NOTENOUGH, economy
@@ -99,17 +109,17 @@ public class VaultSupport extends ArenaModule implements Listener {
 
     public boolean tryDeposit(ArenaModule module, CommandSender sender, int amount, boolean notify) {
         debug(sender, "module "+module+" tries to deposit "+amount+" to "+sender.getName());
+        Player player = Bukkit.getPlayer(sender.getName());
         if (economy == null) {
             return false;
         }
-        if (!economy.hasAccount(sender.getName())) {
+        if (!economy.hasAccount(player)) {
             debug(sender, "Account not found: " + sender.getName());
             return false;
         }
-        EconomyResponse res = economy.depositPlayer(sender.getName(), amount);
+        EconomyResponse res = economy.depositPlayer(player, amount);
         if (res.transactionSuccess() && notify) {
-            this.arena.msg(Bukkit.getPlayer(sender.getName()), Language
-                    .parse(MSG.MODULE_VAULT_YOUWON, economy.format(amount)));
+            this.arena.msg(player, Language.parse(MSG.MODULE_VAULT_YOUWON, economy.format(amount)));
             return true;
         }
         return false;
@@ -125,17 +135,17 @@ public class VaultSupport extends ArenaModule implements Listener {
 
     public boolean tryRefund(ArenaModule module, CommandSender sender, int amount, boolean notify) {
         debug(sender, "module {} tries to refund {} to {}", module, amount, sender.getName());
+        Player player = Bukkit.getPlayer(sender.getName());
         if (economy == null) {
             return false;
         }
-        if (!economy.hasAccount(sender.getName())) {
+        if (!economy.hasAccount(player)) {
             debug(sender, "Account not found: {}", sender.getName());
             return false;
         }
-        EconomyResponse res = economy.depositPlayer(sender.getName(), amount);
+        EconomyResponse res = economy.depositPlayer(player, amount);
         if (res.transactionSuccess() && notify) {
-            this.arena.msg(Bukkit.getPlayer(sender.getName()), Language
-                    .parse(MSG.MODULE_VAULT_REFUNDING, economy.format(amount)));
+            this.arena.msg(player, Language.parse(MSG.MODULE_VAULT_REFUNDING, economy.format(amount)));
             return true;
         }
         return false;
@@ -143,15 +153,15 @@ public class VaultSupport extends ArenaModule implements Listener {
 
     public boolean tryWithdraw(ArenaModule module, CommandSender sender, int amount, boolean notify) {
         debug(sender, "module {} tries to withdraw {} from {}", module, amount, sender.getName());
+        Player player = Bukkit.getPlayer(sender.getName());
         if (economy == null) {
             return false;
         }
-        if (!economy.hasAccount(sender.getName())) {
+        if (!economy.hasAccount(player)) {
             debug(sender, "Account not found: {}", sender.getName());
             return false;
         }
-        if (!economy.has(sender.getName(),
-                amount)) {
+        if (!economy.has(player, amount)) {
             // no money, no entry!
             if (notify) {
                 module.getArena().msg(sender, Language.parse(MSG.MODULE_VAULT_NOTENOUGH, economy
@@ -161,10 +171,9 @@ public class VaultSupport extends ArenaModule implements Listener {
             }
             return false;
         }
-        EconomyResponse res = economy.withdrawPlayer(sender.getName(), amount);
+        EconomyResponse res = economy.withdrawPlayer(player, amount);
         if (res.transactionSuccess() && notify) {
-            this.arena.msg(Bukkit.getPlayer(sender.getName()), Language
-                    .parse(MSG.MODULE_VAULT_JOINPAY, economy.format(amount)));
+            this.arena.msg(player, Language.parse(MSG.MODULE_VAULT_JOINPAY, economy.format(amount)));
             return true;
         }
         return false;
@@ -174,11 +183,11 @@ public class VaultSupport extends ArenaModule implements Listener {
     public void checkJoin(Player player) throws GameplayException {
         if (this.arena.getConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE) > 0) {
             if (economy != null) {
-                if (!economy.hasAccount(player.getName())) {
+                if (!economy.hasAccount(player)) {
                     debug(player, "Account not found: {}", player.getName());
                     throw new GameplayException("Account not found: " + player.getName());
                 }
-                if (!economy.has(player.getName(), this.arena.getConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE))) {
+                if (!economy.has(player, this.arena.getConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE))) {
                     // no money, no entry!
                     throw new GameplayException(Language.parse(MSG.MODULE_VAULT_NOTENOUGH, economy
                             .format(this.arena.getConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE))));
@@ -234,11 +243,11 @@ public class VaultSupport extends ArenaModule implements Listener {
                 this.arena.msg(player, MSG.MODULE_VAULT_INVALIDAMOUNT, args[2]);
                 return;
             }
-            if (!economy.hasAccount(player.getName())) {
+            if (!economy.hasAccount(player)) {
                 debug(sender, "Account not found: " + player.getName());
                 return;
             }
-            if (!economy.has(player.getName(), amount)) {
+            if (!economy.has(player, amount)) {
                 // no money, no entry!
                 this.arena.msg(player, MSG.MODULE_VAULT_NOTENOUGH, economy.format(amount));
                 return;
@@ -253,7 +262,7 @@ public class VaultSupport extends ArenaModule implements Listener {
                 return;
             }
 
-            economy.withdrawPlayer(player.getName(), amount);
+            economy.withdrawPlayer(player, amount);
             this.arena.msg(player, MSG.MODULE_VAULT_BETPLACED, args[1]);
             this.getPlayerBetMap().put(player.getName() + ':' + args[1], amount);
         }
@@ -445,7 +454,7 @@ public class VaultSupport extends ArenaModule implements Listener {
 
                 debug("3 depositing {} to {}", amount, player.getName());
                 if (amount > 0) {
-                    economy.depositPlayer(player.getName(), amount);
+                    economy.depositPlayer(player, amount);
                     this.arena.msg(player, MSG.NOTICE_AWARDED, economy.format(amount));
                 }
             } else if (this.arena.getConfig().getInt(CFG.MODULES_VAULT_WINREWARD, 0) > 0) {
@@ -476,7 +485,7 @@ public class VaultSupport extends ArenaModule implements Listener {
 
                 debug("4 depositing {} to {}", amount, player.getName());
                 if (amount > 0) {
-                    economy.depositPlayer(player.getName(), amount);
+                    economy.depositPlayer(player, amount);
                     this.arena.msg(player, MSG.NOTICE_AWARDED, economy.format(amount));
                 }
             }
@@ -498,7 +507,7 @@ public class VaultSupport extends ArenaModule implements Listener {
             return;
         }
 
-        if (!economy.hasAccount(player.getName())) {
+        if (!economy.hasAccount(player)) {
             debug(player, "Account not found: {}", player.getName());
             return;
         }
@@ -514,7 +523,7 @@ public class VaultSupport extends ArenaModule implements Listener {
         debug("6 depositing {} to {}", amount, player.getName());
 
         if (amount > 0) {
-            economy.depositPlayer(player.getName(), amount);
+            economy.depositPlayer(player, amount);
             try {
                 this.arena.msg(Bukkit.getPlayer(player.getName()), Language
                         .parse(MSG.MODULE_VAULT_YOUWON, economy.format(amount)));
@@ -575,7 +584,7 @@ public class VaultSupport extends ArenaModule implements Listener {
         final int entryfee = this.arena.getConfig().getInt(CFG.MODULES_VAULT_ENTRYFEE, 0);
         if (entryfee > 0) {
             if (economy != null) {
-                economy.withdrawPlayer(player.getName(), entryfee);
+                economy.withdrawPlayer(player, entryfee);
                 this.arena.msg(player, MSG.MODULE_VAULT_JOINPAY, economy.format(entryfee));
                 this.pot += entryfee;
             }
@@ -638,32 +647,33 @@ public class VaultSupport extends ArenaModule implements Listener {
                     amount = this.getPlayerBetMap().get(nKey) * teamFactor;
                 }
 
-                if (!economy.hasAccount(nSplit[0])) {
-                    debug("Account not found: {}", nSplit[0]);
+                final Player player = Bukkit.getPlayer(nSplit[0]);
+                if (player == null) {
+                    debug("Player is null!");
                     continue;
                 }
 
-                final Player player = Bukkit.getPlayer(nSplit[0]);
+                String playerName = player.getName();
 
-                if (player == null) {
-                    debug("Player is null!");
-                } else {
-                    double factor = 1.0d;
-                    for (final String node : this.getPermList().keySet()) {
-                        if (player.hasPermission(node)) {
-                            factor = Math.max(factor, this.getPermList().get(node));
-                        }
-                    }
-
-                    amount *= factor;
+                if (!economy.hasAccount(player)) {
+                    debug("Account not found: {}", playerName);
+                    continue;
                 }
 
-                debug("7 depositing {} to {}", amount, nSplit[0]);
+                double factor = 1.0d;
+                for (final String node : this.getPermList().keySet()) {
+                    if (player.hasPermission(node)) {
+                        factor = Math.max(factor, this.getPermList().get(node));
+                    }
+                }
+
+                amount *= factor;
+
+                debug("7 depositing {} to {}", amount, playerName);
                 if (amount > 0) {
-                    economy.depositPlayer(nSplit[0], amount);
+                    economy.depositPlayer(player, amount);
                     try {
-                        this.arena.msg(Bukkit.getPlayer(nSplit[0]), Language
-                                .parse(MSG.MODULE_VAULT_YOUWON, economy.format(amount)));
+                        this.arena.msg(player, Language.parse(MSG.MODULE_VAULT_YOUWON, economy.format(amount)));
                     } catch (final Exception e) {
                         // nothing
                     }
@@ -697,12 +707,12 @@ public class VaultSupport extends ArenaModule implements Listener {
                 return;
             }
             this.arena.msg(player, MSG.MODULE_VAULT_REFUNDING, economy.format(entryfee));
-            if (!economy.hasAccount(player.getName())) {
+            if (!economy.hasAccount(player)) {
                 debug(player, "Account not found: {}", player.getName());
                 return;
             }
             debug("8 depositing {} to {}", entryfee, player.getName());
-            economy.depositPlayer(player.getName(), entryfee);
+            economy.depositPlayer(player, entryfee);
             this.pot -= entryfee;
 
         }
@@ -759,73 +769,42 @@ public class VaultSupport extends ArenaModule implements Listener {
     }
 
     @EventHandler
-    public void onGoalScore(final PAGoalEvent event) {
+    public void onPADeathEvent(PADeathEvent event) {
+        this.newReward(event.getPlayer(), "DEATH");
+    }
 
+    @EventHandler
+    public void onPAKillEvent(PAKillEvent event) {
+        this.newReward(event.getPlayer(), "KILL");
+    }
 
-        if (event.getArena().equals(this.arena)) {
-            debug("it's us!");
-            final String[] contents = event.getContents();
-            /*
-			* content.length == 1
-			* * content[0] = "" => end!
-			* 
-			* content[X].contains(playerDeath) => "playerDeath:playerName"
-			* content[X].contains(playerKill) => "playerKill:playerKiller:playerKilled"
-			* content[X].contains(trigger) => "trigger:playerName" triggered a score
-			* content[X].equals(tank) => player is tank
-			* content[X].equals(infected) => player is infected
-			* content[X].equals(doesRespawn) => player will respawn
-			* content[X].contains(score) => "score:player:team:value"
-			*
-			*/
+    @EventHandler
+    public void onPAScoreEvent(PAGoalScoreEvent event) {
+        this.newReward(event.getArenaPlayer().getPlayer(), "SCORE", event.getPoints());
+    }
 
-            String lastTrigger = "";
-            for (String node : contents) {
-                node = node.toLowerCase();
-                if (node.contains("trigger")) {
-                    lastTrigger = node.substring(8);
-                    this.newReward(lastTrigger, "TRIGGER");
-                }
+    @EventHandler
+    public void onPAWinEvent(PAWinEvent event) {
+        this.newReward(event.getPlayer(), "WIN");
+    }
 
-                if (node.contains("playerDeath")) {
-                    this.newReward(node.substring(12), "DEATH");
-                }
-
-                if (node.contains("playerKill")) {
-                    final String[] val = node.split(":");
-                    if (!val[1].equals(val[2])) {
-                        this.newReward(val[1], "KILL");
-                    }
-                }
-
-                if (node.contains("score")) {
-                    final String[] val = node.split(":");
-                    this.newReward(val[1], "SCORE", Integer.parseInt(val[3]));
-                }
-
-                if (node != null && node.isEmpty() && lastTrigger != null && !lastTrigger.isEmpty()) {
-                    this.newReward(lastTrigger, "WIN");
-                }
-            }
-
+    @EventHandler
+    public void onWinTriggerEvent(PAGoalTriggerEvent event) {
+        if(event.getTriggerPlayer() != null) {
+            this.newReward(event.getTriggerPlayer().getPlayer(), "TRIGGER");
         }
     }
 
-    private void newReward(final String playerName, final String rewardType) {
-        if (playerName == null || playerName.length() < 1) {
-            PVPArena.getInstance().getLogger().warning("winner is empty string in " + this.arena.getName());
-            return;
-        }
-        debug("new Reward: {} -> {}", playerName, rewardType);
-        this.newReward(playerName, rewardType, 1);
+    private void newReward(final Player player, final String rewardType) {
+        this.newReward(player, rewardType, 1);
     }
 
-    private void newReward(final String playerName, final String rewardType, final int amount) {
-        if (playerName == null || playerName.length() < 1) {
-            PVPArena.getInstance().getLogger().warning("winner is empty string in " + this.arena.getName());
+    private void newReward(final Player player, final String rewardType, final long amount) {
+        if (player == null) {
+            PVPArena.getInstance().getLogger().warning("[Vault] winner is unknown for " + this.arena.getName());
             return;
         }
-        debug("new Reward: {}x {} -> {}", amount, playerName, rewardType);
+        debug("new Reward: {}x {} -> {}", amount, player.getName(), rewardType);
         try {
 
             double value = this.arena.getConfig().getDouble(
@@ -837,21 +816,19 @@ public class VaultSupport extends ArenaModule implements Listener {
             if (maybevalue < 0) {
                 PVPArena.getInstance().getLogger().warning("config value is not set: " + CFG.valueOf("MODULES_VAULT_REWARD_" + rewardType).getNode());
             }
-            final Player player = Bukkit.getPlayer(playerName);
-            if (player != null) {
-                double factor = 1.0d;
-                for (final String node : this.getPermList().keySet()) {
-                    if (player.hasPermission(node)) {
-                        factor = Math.max(factor, this.getPermList().get(node));
-                    }
-                }
 
-                value *= factor;
+            double factor = 1.0d;
+            for (final String node : this.getPermList().keySet()) {
+                if (player.hasPermission(node)) {
+                    factor = Math.max(factor, this.getPermList().get(node));
+                }
             }
 
-            debug("9 depositing {} to {}", value, playerName);
+            value *= factor;
+
+            debug("9 depositing {} to {}", value, player.getName());
             if (value > 0) {
-                economy.depositPlayer(playerName, value);
+                economy.depositPlayer(player, value);
                 try {
 
                     ArenaModuleManager.announce(

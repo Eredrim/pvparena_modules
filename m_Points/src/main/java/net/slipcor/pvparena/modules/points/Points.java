@@ -6,8 +6,12 @@ import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
-import net.slipcor.pvparena.events.PAGoalEvent;
+import net.slipcor.pvparena.events.PADeathEvent;
+import net.slipcor.pvparena.events.PAKillEvent;
 import net.slipcor.pvparena.events.PAPlayerClassChangeEvent;
+import net.slipcor.pvparena.events.PAWinEvent;
+import net.slipcor.pvparena.events.goal.PAGoalScoreEvent;
+import net.slipcor.pvparena.events.goal.PAGoalTriggerEvent;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.loadables.ArenaModuleManager;
 import org.bukkit.Bukkit;
@@ -159,59 +163,42 @@ public class Points extends ArenaModule implements Listener {
     }
 
     @EventHandler
-    public void onGoalScore(final PAGoalEvent event) {
+    public void onPADeathEvent(PADeathEvent event) {
+        this.newReward(event.getPlayer(), "DEATH");
+    }
 
+    @EventHandler
+    public void onPAKillEvent(PAKillEvent event) {
+        this.newReward(event.getPlayer(), "KILL");
+    }
 
-        if (event.getArena().equals(arena)) {
-            debug(arena, "[POINTS] it's us!");
-            final String[] contents = event.getContents();
+    @EventHandler
+    public void onPAScoreEvent(PAGoalScoreEvent event) {
+        this.newReward(event.getArenaPlayer().getPlayer(), "SCORE", event.getPoints());
+    }
 
-            String lastTrigger = "";
-            for (String node : contents) {
-                node = node.toLowerCase();
-                if (node.contains("trigger")) {
-                    lastTrigger = node.substring(8);
-                    newReward(lastTrigger, "TRIGGER");
-                }
+    @EventHandler
+    public void onPAWinEvent(PAWinEvent event) {
+        this.newReward(event.getPlayer(), "WIN");
+    }
 
-                if (node.contains("playerDeath")) {
-                    newReward(node.substring(12), "DEATH");
-                }
-
-                if (node.contains("playerKill")) {
-                    final String[] val = node.split(":");
-                    if (!val[1].equals(val[2])) {
-                        newReward(val[1], "KILL");
-                    }
-                }
-
-                if (node.contains("score")) {
-                    final String[] val = node.split(":");
-                    newReward(val[1], "SCORE", Integer.parseInt(val[3]));
-                }
-
-                if (node != null && node.isEmpty() && lastTrigger != null && !lastTrigger.isEmpty()) {
-                    newReward(lastTrigger, "WIN");
-                }
-            }
-
+    @EventHandler
+    public void onWinTriggerEvent(PAGoalTriggerEvent event) {
+        if(event.getTriggerPlayer() != null) {
+            this.newReward(event.getTriggerPlayer().getPlayer(), "TRIGGER");
         }
     }
 
-    private void newReward(final String playerName, final String rewardType) {
-        if (playerName == null || playerName.length() < 1) {
-            PVPArena.getInstance().getLogger().warning("winner is empty string in " + arena.getName());
-            return;
-        }
-        debug(arena, "new Reward: " + playerName + " -> " + rewardType);
-        newReward(playerName, rewardType, 1);
+    private void newReward(final Player player, final String rewardType) {
+        this.newReward(player, rewardType, 1);
     }
 
-    private void newReward(final String playerName, final String rewardType, final int amount) {
-        if (playerName == null || playerName.length() < 1) {
-            PVPArena.getInstance().getLogger().warning("winner is empty string in " + arena.getName());
+    private void newReward(final Player player, final String rewardType, final long amount) {
+        if (player == null) {
+            PVPArena.getInstance().getLogger().warning("[Points] winner is unknown for " + this.arena.getName());
             return;
         }
+        String playerName = player.getName();
         debug(arena, "new Reward: " + amount + "x " + playerName + " -> " + rewardType);
         try {
 
@@ -227,7 +214,7 @@ public class Points extends ArenaModule implements Listener {
 
             debug(arena, "9 depositing " + value + " to " + playerName);
             if (value > 0) {
-                add(playerName, value);
+                this.add(playerName, value);
                 try {
 
                     ArenaModuleManager.announce(

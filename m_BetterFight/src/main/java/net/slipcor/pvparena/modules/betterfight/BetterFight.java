@@ -10,7 +10,8 @@ import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
-import net.slipcor.pvparena.events.PAGoalEvent;
+import net.slipcor.pvparena.events.goal.PAGoalEvent;
+import net.slipcor.pvparena.events.goal.PAGoalScoreEvent;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.PermissionManager;
 import org.bukkit.Bukkit;
@@ -318,8 +319,8 @@ public class BetterFight extends ArenaModule {
 
         final String msg = (String) this.arena.getConfig().getUnsafe("modules.betterfight.messages.m" + killcount);
 
-        final PAGoalEvent scoreEvent = new PAGoalEvent(this.arena, null, "BetterFight",
-                String.format("score:%s:%s:%d", p.getName(), ArenaPlayer.fromPlayer(p).getArenaTeam().getName(), killcount));
+        ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(p);
+        final PAGoalEvent scoreEvent = new PAGoalScoreEvent(this.arena, null, arenaPlayer, arenaPlayer.getArenaTeam(), (long) killcount);
         Bukkit.getPluginManager().callEvent(scoreEvent);
 
         // content[X].contains(score) => "score:player:team:value"
