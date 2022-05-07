@@ -8,7 +8,7 @@
     <name>PVP Arena Modules</name>
     <groupId>net.slipcor.pvpa</groupId>
     <artifactId>modules</artifactId>
-    <version>1.15.2</version>
+    <version>1.15.3-SNAPSHOT</version>
     <packaging>pom</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -38,7 +38,7 @@
             <dependency>
                 <groupId>net.slipcor</groupId>
                 <artifactId>pvparena</artifactId>
-                <version>1.15.2-SNAPSHOT</version>
+                <version>1.15.3-SNAPSHOT</version>
                 <type>jar</type>
             </dependency>
         </dependencies>
