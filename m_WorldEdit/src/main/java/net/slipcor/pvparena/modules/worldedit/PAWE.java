@@ -35,6 +35,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 
 public class PAWE extends ArenaModule {
@@ -276,13 +277,16 @@ public class PAWE extends ArenaModule {
                 throw new IllegalArgumentException("Unrecognized WE format: " + loadFile.getName());
             }
 
-            try (ClipboardReader reader = format.getReader(new FileInputStream(loadFile))) {
+            try (ClipboardReader reader = format.getReader(Files.newInputStream(loadFile.toPath()))) {
                 Clipboard clipboard = reader.read();
                 ClipboardHolder holder = new ClipboardHolder(clipboard);
                 BukkitWorld bukkitWorld = new BukkitWorld(ars.getWorld());
 
-                final EditSession editSession = worldEdit.getEditSessionFactory().getEditSession(bukkitWorld, size);
-                editSession.setReorderMode(EditSession.ReorderMode.FAST);
+                final EditSession editSession = worldEdit.newEditSessionBuilder()
+                        .world(bukkitWorld)
+                        .maxBlocks(size)
+                        .build();
+                editSession.setReorderMode(EditSession.ReorderMode.MULTI_STAGE);
                 editSession.setFastMode(true);
                 BlockVector3 to = BlockVector3.at(loc.getX(), loc.getY(), loc.getZ());
                 Operation operation=holder.createPaste(editSession)
@@ -290,7 +294,7 @@ public class PAWE extends ArenaModule {
                         .ignoreAirBlocks(!this.arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_REPLACEAIR))
                         .build();
                 Operations.completeLegacy(operation);
-                editSession.flushSession();
+                editSession.close();
             }
         } catch (IllegalArgumentException e) {
             PVPArena.getInstance().getLogger().severe(e.getMessage());
