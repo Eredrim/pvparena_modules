@@ -31,6 +31,8 @@ public class EventActions extends ArenaModule {
         super("EventActions");
     }
 
+    private PAListener listener;
+
     @Override
     public String version() {
         return getClass().getPackage().getImplementationVersion();
@@ -65,7 +67,8 @@ public class EventActions extends ArenaModule {
         if (setup) {
             return;
         }
-        Bukkit.getPluginManager().registerEvents(new PAListener(this), PVPArena.instance);
+        //Bukkit.getPluginManager().registerEvents(new PAListener(this), PVPArena.instance);
+        this.getListener();
         setup = true;
     }
 
@@ -199,5 +202,13 @@ public class EventActions extends ArenaModule {
                 p.sendMessage(split[1]);
             }
         }
+    }
+
+    private PAListener getListener() {
+        if (listener == null) {
+            listener = new PAListener(this);
+            Bukkit.getPluginManager().registerEvents(listener, PVPArena.instance);
+        }
+        return listener;
     }
 }

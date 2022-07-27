@@ -30,7 +30,7 @@ class PAListener implements Listener {
         final Player p = event.getPlayer();
         ea.catchEvent("death", p, a);
     }
-
+ 
     @EventHandler
     public void onEnd(final PAEndEvent event) {
         final Arena a = event.getArena();
@@ -44,7 +44,7 @@ class PAListener implements Listener {
         ea.catchEvent("exit", p, a);
     }
 
-    @EventHandler
+     @EventHandler
     public void onJoin(final PAJoinEvent event) {
         final Arena a = event.getArena();
         final Player p = event.getPlayer();
@@ -104,13 +104,13 @@ class PAListener implements Listener {
 
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public boolean playerInteract(final PlayerInteractEvent event) {
+    public void onPlayerInteract(final PlayerInteractEvent event) {
         if (!event.hasBlock()) {
-            return false;
+            return;
         }
-
+ 
         if (event.getHand() == null || event.getHand().equals(EquipmentSlot.OFF_HAND)) {
-            return false;
+            return;
         }
 //		debug.i("interact eventactions", event.getPlayer());
         final Arena a = PAA_Edit.activeEdits.get(event.getPlayer().getName() + "_power");
@@ -129,7 +129,7 @@ class PAListener implements Listener {
                     );
                     if (loc.equals(locc.toLocation())) {
                         PVPArena.instance.getLogger().warning("Block already exists!");
-                        return true;
+                        return;
                     }
 
                     node = node.replace(s, "");
@@ -141,9 +141,9 @@ class PAListener implements Listener {
 
             SpawnManager.setBlock(a, new PABlockLocation(loc), s + i);
             Arena.pmsg(event.getPlayer(), Language.parse(MSG.SPAWN_SET, s + i));
-            return true;
+            return;
         }
 
-        return false;
+        return;
     }
 }
