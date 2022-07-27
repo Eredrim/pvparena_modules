@@ -66,7 +66,7 @@ public class SinglePlayerSupport extends ArenaModule {
         team.add(arenaPlayer);
 
         TeleportManager.teleportPlayerToSpawnForJoin(this.arena, arenaPlayer,
-                SpawnManager.selectSpawnsForPlayer(this.arena, arenaPlayer, PASpawn.SPAWN), true);
+                SpawnManager.selectSpawnsForPlayer(this.arena, arenaPlayer, PASpawn.FIGHT), true);
 
         if (arenaPlayer.getState() == null) {
 
