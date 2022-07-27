@@ -7,12 +7,11 @@ import net.slipcor.pvparena.arena.ArenaTeam;
 import net.slipcor.pvparena.classes.PABlock;
 import net.slipcor.pvparena.commands.PAA_Edit;
 import net.slipcor.pvparena.core.Config.CFG;
-import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.loadables.ArenaModule;
-import net.slipcor.pvparena.regions.ArenaRegion;
 import net.slipcor.pvparena.managers.SpawnManager;
+import net.slipcor.pvparena.regions.ArenaRegion;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -25,7 +24,8 @@ import java.util.List;
 
 
 public class EventActions extends ArenaModule {
-    private boolean setup;
+
+    private PAListener listener;
 
     public EventActions() {
         super("EventActions");
@@ -38,7 +38,7 @@ public class EventActions extends ArenaModule {
 
     @Override
     public boolean checkCommand(final String s) {
-        return "setpower".equals(s.toLowerCase());
+        return "setpower".equalsIgnoreCase(s);
     }
 
     @Override
@@ -62,11 +62,10 @@ public class EventActions extends ArenaModule {
 
     @Override
     public void configParse(final YamlConfiguration config) {
-        if (setup) {
-            return;
+        if (this.listener == null) {
+            this.listener = new PAListener(this);
+            Bukkit.getPluginManager().registerEvents(this.listener, PVPArena.getInstance());
         }
-        Bukkit.getPluginManager().registerEvents(new PAListener(this), PVPArena.getInstance());
-        setup = true;
     }
 
     void catchEvent(final String string, final Player p, final Arena a) {

@@ -6,7 +6,16 @@ import net.slipcor.pvparena.classes.PABlockLocation;
 import net.slipcor.pvparena.commands.PAA_Edit;
 import net.slipcor.pvparena.core.Config;
 import net.slipcor.pvparena.core.Language.MSG;
-import net.slipcor.pvparena.events.*;
+import net.slipcor.pvparena.events.PADeathEvent;
+import net.slipcor.pvparena.events.PAEndEvent;
+import net.slipcor.pvparena.events.PAExitEvent;
+import net.slipcor.pvparena.events.PAJoinEvent;
+import net.slipcor.pvparena.events.PAKillEvent;
+import net.slipcor.pvparena.events.PALeaveEvent;
+import net.slipcor.pvparena.events.PALoseEvent;
+import net.slipcor.pvparena.events.PAPlayerClassChangeEvent;
+import net.slipcor.pvparena.events.PAStartEvent;
+import net.slipcor.pvparena.events.PAWinEvent;
 import net.slipcor.pvparena.managers.SpawnManager;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -105,19 +114,16 @@ class PAListener implements Listener {
 
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public boolean playerInteract(final PlayerInteractEvent event) {
-        if (!event.hasBlock()) {
-            return false;
+    public void playerInteract(final PlayerInteractEvent event) {
+
+        if (!event.hasBlock() || event.getHand() == null || event.getHand().equals(EquipmentSlot.OFF_HAND)) {
+            return;
         }
 
-        if (event.getHand() == null || event.getHand().equals(EquipmentSlot.OFF_HAND)) {
-            return false;
-        }
-//		debug.i("interact eventactions", event.getPlayer());
         final Arena a = PAA_Edit.activeEdits.get(event.getPlayer().getName() + "_power");
 
         if (a != null) {
-//			debug.i("found edit arena", event.getPlayer());
+
             final Location loc = event.getClickedBlock().getLocation();
 
             final String s = "power";
@@ -130,7 +136,8 @@ class PAListener implements Listener {
                     );
                     if (loc.equals(locc.toLocation())) {
                         PVPArena.getInstance().getLogger().warning("Block already exists!");
-                        return true;
+                        event.setCancelled(true);
+                        return;
                     }
 
                     node = node.replace(s, "");
@@ -142,9 +149,7 @@ class PAListener implements Listener {
 
             SpawnManager.setBlock(a, new PABlockLocation(loc), s + i, null);
             Arena.pmsg(event.getPlayer(), MSG.SPAWN_SET, s + i);
-            return true;
+            event.setCancelled(true);
         }
-
-        return false;
     }
 }
