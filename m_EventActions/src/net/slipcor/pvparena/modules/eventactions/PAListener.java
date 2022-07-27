@@ -30,7 +30,7 @@ class PAListener implements Listener {
         final Player p = event.getPlayer();
         ea.catchEvent("death", p, a);
     }
-
+ 
     @EventHandler
     public void onEnd(final PAEndEvent event) {
         final Arena a = event.getArena();
@@ -104,32 +104,30 @@ class PAListener implements Listener {
 
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public boolean playerInteract(final PlayerInteractEvent event) {
-        if (!event.hasBlock()) {
-            return false;
-        }
+    public void onPlayerInteract(final PlayerInteractEvent event) {
 
-        if (event.getHand() == null || event.getHand().equals(EquipmentSlot.OFF_HAND)) {
-            return false;
+        if (!event.hasBlock() || event.getHand() == null || event.getHand().equals(EquipmentSlot.OFF_HAND)) {
+            return;
         }
 //		debug.i("interact eventactions", event.getPlayer());
-        final Arena a = PAA_Edit.activeEdits.get(event.getPlayer().getName() + "_power");
+        final Arena arena = PAA_Edit.activeEdits.get(event.getPlayer().getName() + "_power");
 
-        if (a != null) {
+        if (arena != null) {
 //			debug.i("found edit arena", event.getPlayer());
             final Location loc = event.getClickedBlock().getLocation();
 
             final String s = "power";
             int i = 0;
-            for (String node : a.getArenaConfig().getKeys("spawns")) {
+            for (String node : arena.getArenaConfig().getKeys("spawns")) {
                 if (node.startsWith(s) && !node.contains("powerup")) {
 
                     final PABlockLocation locc = Config.parseBlockLocation(
-                            (String) a.getArenaConfig().getUnsafe("spawns." + node)
+                            (String) arena.getArenaConfig().getUnsafe("spawns." + node)
                     );
                     if (loc.equals(locc.toLocation())) {
                         PVPArena.instance.getLogger().warning("Block already exists!");
-                        return true;
+                        event.setCancelled(true);
+                        return;
                     }
 
                     node = node.replace(s, "");
@@ -139,11 +137,9 @@ class PAListener implements Listener {
                 }
             }
 
-            SpawnManager.setBlock(a, new PABlockLocation(loc), s + i);
+            SpawnManager.setBlock(arena, new PABlockLocation(loc), s + i);
             Arena.pmsg(event.getPlayer(), Language.parse(MSG.SPAWN_SET, s + i));
-            return true;
+            event.setCancelled(true);
         }
-
-        return false;
     }
 }

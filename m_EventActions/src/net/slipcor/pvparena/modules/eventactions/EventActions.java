@@ -31,6 +31,8 @@ public class EventActions extends ArenaModule {
         super("EventActions");
     }
 
+    private PAListener listener;
+
     @Override
     public String version() {
         return getClass().getPackage().getImplementationVersion();
@@ -62,11 +64,10 @@ public class EventActions extends ArenaModule {
 
     @Override
     public void configParse(final YamlConfiguration config) {
-        if (setup) {
-            return;
+        if (this.listener == null) {
+            this.listener = new PAListener(this);
+            Bukkit.getPluginManager().registerEvents(listener, PVPArena.instance);
         }
-        Bukkit.getPluginManager().registerEvents(new PAListener(this), PVPArena.instance);
-        setup = true;
     }
 
     void catchEvent(final String string, final Player p, final Arena a) {
