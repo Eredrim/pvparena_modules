@@ -48,7 +48,6 @@
     <modules>
         <module>m_AfterMatch</module>
         <module>m_Announcements</module>
-        <module>m_ArenaBoards</module>
         <module>m_ArenaMaps</module>
         <module>m_ArenaRotate</module>
         <module>m_AutoSneak</module>

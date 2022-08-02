@@ -29,12 +29,6 @@
         </dependency>
         <dependency>
             <groupId>net.slipcor.pvpa</groupId>
-            <artifactId>m_arenaboards</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_arenamaps</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
