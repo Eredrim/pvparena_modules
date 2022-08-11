@@ -286,7 +286,7 @@ public class PowerupManager extends ArenaModule implements Listener {
         return s.toLowerCase().startsWith("powerup");
     }
 
-    private static final String POWERUPSTRING = ChatColor.RED + "Power\nUp";
+    private static final String POWERUPSTRING = ChatColor.RED + "Power‗Up";
 
     private ItemStack getTaggedItem(final Material material) {
         ItemStack itemStack = new ItemStack(material);
