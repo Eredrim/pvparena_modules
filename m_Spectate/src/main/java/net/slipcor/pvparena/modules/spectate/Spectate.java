@@ -12,6 +12,7 @@ import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
+import net.slipcor.pvparena.loadables.ModuleType;
 import net.slipcor.pvparena.managers.ArenaManager;
 import net.slipcor.pvparena.managers.SpawnManager;
 import net.slipcor.pvparena.managers.TeleportManager;
@@ -38,6 +39,11 @@ public class Spectate extends ArenaModule {
     @Override
     public int getPriority() {
         return PRIORITY;
+    }
+
+    @Override
+    public ModuleType getType() {
+        return ModuleType.SPECTATE;
     }
 
     @Override
@@ -89,31 +95,14 @@ public class Spectate extends ArenaModule {
             return;
         }
 
+        this.teleportAndChangeState(player);
+        arenaPlayer.setStatus(PlayerStatus.WATCH);
+    }
 
-        final long delay = this.arena.getConfig().getBoolean(CFG.PERMS_FLY) ? 6L : 5L;
-        final long delay2 = this.arena.getConfig().getBoolean(CFG.PERMS_FLY) ? 20L : 24L;
-        class RunLater implements Runnable {
-
-            @Override
-            public void run() {
-                TeleportManager.teleportPlayerToSpawnForJoin(Spectate.this.arena, arenaPlayer,
-                        SpawnManager.getPASpawnsStartingWith(Spectate.this.arena, PASpawn.SPECTATOR), false);
-                Spectate.this.arena.msg(player, MSG.NOTICE_WELCOME_SPECTATOR);
-                arenaPlayer.setStatus(PlayerStatus.WATCH);
-            }
-        }
-        class RunEvenLater implements Runnable {
-
-            @Override
-            public void run() {
-                if (Spectate.this.arena.getConfig().getGameMode(CFG.GENERAL_GAMEMODE) != null) {
-                    player.setGameMode(GameMode.SPECTATOR);
-                }
-                player.setFlySpeed(0.2f);
-            }
-        }
-        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new RunLater(), delay);
-        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new RunEvenLater(), delay2);
+    @Override
+    public void switchToSpectate(Player player) {
+        debug(player, "becoming spectator using Spectate");
+        this.teleportAndChangeState(player);
     }
 
     @Override
@@ -131,6 +120,35 @@ public class Spectate extends ArenaModule {
 
         player.setAllowFlight(false);
         player.setFlying(false);
+    }
+
+    private void teleportAndChangeState(Player player) {
+        ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
+        this.getListener().addSpectator(player);
+
+        final long delay = this.arena.getConfig().getBoolean(CFG.PERMS_FLY) ? 6L : 5L;
+        final long delay2 = this.arena.getConfig().getBoolean(CFG.PERMS_FLY) ? 20L : 24L;
+        class RunLater implements Runnable {
+
+            @Override
+            public void run() {
+                TeleportManager.teleportPlayerToRandomSpawn(Spectate.this.arena, arenaPlayer, SpawnManager.getPASpawnsStartingWith(Spectate.this.arena, PASpawn.SPECTATOR));
+                Spectate.this.arena.msg(player, MSG.NOTICE_WELCOME_SPECTATOR);
+                arenaPlayer.setSpectating(true);
+            }
+        }
+        class RunEvenLater implements Runnable {
+
+            @Override
+            public void run() {
+                if (Spectate.this.arena.getConfig().getGameMode(CFG.GENERAL_GAMEMODE) != null) {
+                    player.setGameMode(GameMode.SPECTATOR);
+                }
+                player.setFlySpeed(0.2f);
+            }
+        }
+        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new RunLater(), delay);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new RunEvenLater(), delay2);
     }
 
     private SpectateListener getListener() {

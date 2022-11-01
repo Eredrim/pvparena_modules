@@ -4,12 +4,13 @@ package net.slipcor.pvparena.modules.realspectate;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.arena.ArenaTeam;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.classes.PALocation;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
+import net.slipcor.pvparena.loadables.ModuleType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -38,6 +39,11 @@ public class RealSpectate extends ArenaModule {
     }
 
     @Override
+    public ModuleType getType() {
+        return ModuleType.SPECTATE;
+    }
+
+    @Override
     public boolean handleSpectate(Player p) throws GameplayException {
         if (this.arena.getFighters().size() < 1) {
             throw new GameplayException(MSG.ERROR_NOPLAYERFOUND);
@@ -53,6 +59,7 @@ public class RealSpectate extends ArenaModule {
 
         arenaPlayer.setArena(arena);
         arenaPlayer.setStatus(PlayerStatus.WATCH);
+        arenaPlayer.setSpectating(true);
 
         if (arenaPlayer.getState() == null) {
 
@@ -63,8 +70,15 @@ public class RealSpectate extends ArenaModule {
             arenaPlayer.dump();
         }
 
-        this.arena.getScoreboard().setupPlayer(arenaPlayer);
+        debug(player, "switching:");
+        this.getListener().switchPlayer(player, null, true);
+    }
 
+    @Override
+    public void switchToSpectate(Player player) {
+        debug(player, "becoming spectator using RealSpectate");
+        ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
+        arenaPlayer.setSpectating(true);
         debug(player, "switching:");
         this.getListener().switchPlayer(player, null, true);
     }

@@ -10,10 +10,10 @@ import net.slipcor.pvparena.classes.PALocation;
 import net.slipcor.pvparena.classes.PASpawn;
 import net.slipcor.pvparena.commands.PAG_Leave;
 import net.slipcor.pvparena.core.Config.CFG;
-import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
+import net.slipcor.pvparena.loadables.ModuleType;
 import net.slipcor.pvparena.managers.SpawnManager;
 import net.slipcor.pvparena.managers.TeleportManager;
 import org.bukkit.Bukkit;
@@ -39,6 +39,11 @@ public class FlySpectate extends ArenaModule {
     @Override
     public int getPriority(){
         return PRIORITY;
+    }
+
+    @Override
+    public ModuleType getType() {
+        return ModuleType.SPECTATE;
     }
 
     @Override
@@ -77,8 +82,8 @@ public class FlySpectate extends ArenaModule {
 
         arenaPlayer.setArena(arena);
         arenaPlayer.setTeleporting(true);
+        arenaPlayer.setStatus(PlayerStatus.WATCH);
         debug(player, "switching:");
-        this.getListener().hidePlayerLater(player);
 
         if (arenaPlayer.getState() == null) {
 
@@ -93,22 +98,12 @@ public class FlySpectate extends ArenaModule {
             return;
         }
 
+        this.teleportAndChangeState(player);
+    }
 
-        final long delay = this.arena.getConfig().getBoolean(CFG.PERMS_FLY) ? 6L : 5L;
-        TeleportManager.teleportPlayerToSpawnForJoin(arena, arenaPlayer,
-                SpawnManager.getPASpawnsStartingWith(arena, PASpawn.SPECTATOR), false);
-
-        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), () -> {
-            if (this.arena.getConfig().getGameMode(CFG.GENERAL_GAMEMODE) != null) {
-                player.setGameMode(GameMode.CREATIVE);
-            }
-            player.setAllowFlight(true);
-            player.setFlying(true);
-            player.setCollidable(false);
-            this.arena.msg(player, MSG.NOTICE_WELCOME_SPECTATOR);
-            arenaPlayer.setStatus(PlayerStatus.WATCH);
-            arenaPlayer.setTeleporting(false);
-        }, delay);
+    public void switchToSpectate(Player player) {
+        debug(player, "becoming spectator using FlySpectate");
+        this.teleportAndChangeState(player);
     }
 
     @Override
@@ -134,6 +129,26 @@ public class FlySpectate extends ArenaModule {
         player.setAllowFlight(false);
         player.setFlying(false);
         player.setCollidable(true);
+    }
+
+    private void teleportAndChangeState(Player player) {
+        ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
+        this.getListener().hidePlayerLater(player);
+
+        final long delay = this.arena.getConfig().getBoolean(CFG.PERMS_FLY) ? 6L : 5L;
+        TeleportManager.teleportPlayerToRandomSpawn(this.arena, arenaPlayer, SpawnManager.getPASpawnsStartingWith(this.arena, PASpawn.SPECTATOR));
+
+        Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), () -> {
+            if (this.arena.getConfig().getGameMode(CFG.GENERAL_GAMEMODE) != null) {
+                player.setGameMode(GameMode.CREATIVE);
+            }
+            player.setAllowFlight(true);
+            player.setFlying(true);
+            player.setCollidable(false);
+            this.arena.msg(player, MSG.NOTICE_WELCOME_SPECTATOR);
+            arenaPlayer.setSpectating(true);
+            arenaPlayer.setTeleporting(false);
+        }, delay);
     }
 
     private FlySpectateListener getListener() {
