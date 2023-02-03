@@ -71,8 +71,9 @@ public class BetterClasses extends ArenaModule {
         debug(this.arena, player, "max: " +max);
         debug(this.arena, player, "gmax: "+globalmax);
 
+        ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
         if (!(max < 1 && globalmax < 1)) {
-            final ArenaTeam team = ArenaPlayer.fromPlayer(player).getArenaTeam();
+            final ArenaTeam team = arenaPlayer.getArenaTeam();
 
             if (team == null) {
                 debug(this.arena, player, "arenaTeam NULL");
@@ -107,7 +108,7 @@ public class BetterClasses extends ArenaModule {
         }
 
         for (ArenaTeam at : this.teamSwitches.keySet()) {
-            if (!at.hasPlayer(player)) {
+            if (!at.hasPlayer(arenaPlayer)) {
                 continue;
             }
             if (this.teamSwitches.get(at) == 0) {

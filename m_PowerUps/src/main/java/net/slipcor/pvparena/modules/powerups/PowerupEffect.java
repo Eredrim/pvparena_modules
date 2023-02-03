@@ -230,7 +230,7 @@ class PowerupEffect {
 
                     if (arena.getConfig().getBoolean(CFG.USES_DEATHMESSAGES)) {
                         arena.broadcast(Language.parse(MSG.FIGHT_KILLED_BY,
-                                team.colorizePlayer(player) + ChatColor.YELLOW,
+                                team.colorizePlayer(arenaPlayer) + ChatColor.YELLOW,
                                 arena.parseDeathCause(player,
                                         DamageCause.MAGIC, player)));
                     }
