@@ -160,8 +160,7 @@ public class Titles extends ArenaModule {
         debug(player, "parseJoin ... ");
 
         if (TeamManager.countPlayersInTeams(arena) < 2) {
-            final String arenaname =
-                    PermissionManager.hasOverridePerm(player) ? arena.getName() : ArenaManager.getIndirectArenaName(arena);
+            final String arenaname = arena.getName();
             Title.announce(arena, Title.type.ADVERT, Language
                     .parse(arena, CFG.MSG_STARTING, arenaname +
                             ChatColor.valueOf(arena.getConfig().getString(

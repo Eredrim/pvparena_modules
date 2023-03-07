@@ -11,7 +11,6 @@ import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.loadables.ArenaModule;
-import net.slipcor.pvparena.managers.ArenaManager;
 import net.slipcor.pvparena.managers.PermissionManager;
 import net.slipcor.pvparena.managers.TeamManager;
 import net.slipcor.pvparena.modules.WarmupJoin;
@@ -155,8 +154,7 @@ public class AnnouncementManager extends ArenaModule {
         }
 
         if (TeamManager.countPlayersInTeams(this.arena) < 2) {
-            final String arenaname =
-                    PermissionManager.hasOverridePerm(player) ? this.arena.getName() : ArenaManager.getIndirectArenaName(this.arena);
+            final String arenaname = this.arena.getName();
             Announcement.announce(this.arena, Announcement.type.ADVERT, Language
                     .parse(this.arena, CFG.MSG_STARTING, arenaname +
                             ChatColor.valueOf(this.arena.getConfig().getString(

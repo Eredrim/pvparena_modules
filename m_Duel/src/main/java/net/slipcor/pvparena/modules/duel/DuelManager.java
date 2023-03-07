@@ -10,8 +10,6 @@ import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
-import net.slipcor.pvparena.managers.ArenaManager;
-import net.slipcor.pvparena.managers.PermissionManager;
 import net.slipcor.pvparena.modules.vaultsupport.VaultSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -20,7 +18,6 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class DuelManager extends ArenaModule {
     public DuelManager() {
@@ -71,21 +68,9 @@ public class DuelManager extends ArenaModule {
             this.arena.msg(sender, MSG.ERROR_FIGHT_IN_PROGRESS);
             return;
         }
-        String arenaName = null;
 
-        if (!PermissionManager.hasOverridePerm(sender) && ArenaManager.isUsingShortcuts()) {
-            Map<String, List<String>> vals = ArenaManager.getShortcutDefinitions();
-            for (String key : vals.keySet()) {
-                if (vals.get(key).contains(this.arena.getName())) {
-                    arenaName = key;
-                }
-            }
-            if (arenaName == null) {
-                arenaName = this.arena.getName();
-            }
-        } else {
-            arenaName = this.arena.getName();
-        }
+        String arenaName =  this.arena.getName();
+
         if ("duel".equalsIgnoreCase(args[0]) && args.length > 1) {
             if (sender.getName().equals(this.duelSender)) {
                 this.arena.msg(sender, MSG.MODULE_DUEL_REQUESTED_ALREADY);

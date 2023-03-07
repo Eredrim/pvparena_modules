@@ -13,7 +13,6 @@ import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.loadables.ModuleType;
-import net.slipcor.pvparena.managers.ArenaManager;
 import net.slipcor.pvparena.managers.SpawnManager;
 import net.slipcor.pvparena.managers.TeleportManager;
 import org.bukkit.Bukkit;
@@ -73,7 +72,7 @@ public class Spectate extends ArenaModule {
 
         final ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
         if (this.arena.equals(arenaPlayer.getArena())) {
-            this.arena.msg(player, MSG.ERROR_ARENA_ALREADY_PART_OF, ArenaManager.getIndirectArenaName(this.arena));
+            this.arena.msg(player, MSG.ERROR_ARENA_ALREADY_PART_OF, this.arena.getName());
             return;
         }
 

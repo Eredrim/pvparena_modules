@@ -11,7 +11,6 @@ import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.loadables.ArenaModule;
-import net.slipcor.pvparena.managers.ArenaManager;
 import net.slipcor.pvparena.managers.SpawnManager;
 import net.slipcor.pvparena.managers.TeleportManager;
 import net.slipcor.pvparena.managers.WorkflowManager;
@@ -49,7 +48,7 @@ public class SinglePlayerSupport extends ArenaModule {
 
         if (aPlayer.getArena() != null) {
             debug(aPlayer.getArena(), player, this.getName());
-            throw new GameplayException(Language.parse(MSG.ERROR_ARENA_ALREADY_PART_OF, ArenaManager.getIndirectArenaName(aPlayer.getArena())));
+            throw new GameplayException(Language.parse(MSG.ERROR_ARENA_ALREADY_PART_OF, aPlayer.getArena().getName()));
         }
 
         return true;

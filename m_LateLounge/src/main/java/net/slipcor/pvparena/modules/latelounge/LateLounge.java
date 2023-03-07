@@ -4,12 +4,10 @@ import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.PAG_Join;
 import net.slipcor.pvparena.core.Config.CFG;
-import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.exceptions.GameplayException;
 import net.slipcor.pvparena.exceptions.GameplayExceptionNotice;
 import net.slipcor.pvparena.loadables.ArenaModule;
-import net.slipcor.pvparena.managers.ArenaManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -57,7 +55,7 @@ public class LateLounge extends ArenaModule {
             for (final Player p : Bukkit.getOnlinePlayers()) {
                 if (!p.equals(player)) {
                     try {
-                        this.arena.msg(p, MSG.MODULE_LATELOUNGE_ANNOUNCE, ArenaManager.getIndirectArenaName(this.arena), player.getName());
+                        this.arena.msg(p, MSG.MODULE_LATELOUNGE_ANNOUNCE, this.arena.getName(), player.getName());
                     } catch (Exception ignored) {
 
                     }
