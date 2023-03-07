@@ -151,7 +151,7 @@ public class EventActions extends ArenaModule {
 
             if (split.length == 3) {
                 if ("minplayers".equals(split[2])) {
-                    if (arena.getPlayedPlayers().size() < arena.getConfig().getInt(CFG.ITEMS_MINPLAYERS)) {
+                    if (arena.getPlayedPlayers().size() < arena.getConfig().getInt(CFG.READY_MINPLAYERS)) {
                         return;
                     }
                 }
