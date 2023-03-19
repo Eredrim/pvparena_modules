@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - '2.0'
 
 jobs:
   deploy:
@@ -17,7 +18,10 @@ jobs:
           server-id: eredrim
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
-        
+
+      - name: Build the package
+        run: mvn --batch-mode clean install -T4
+
       - name: Deploy the package
         run: mvn --batch-mode deploy -T4 -DaltDeploymentRepository="eredrim::default::https://repo.eredrim.fr/repository/maven-snapshots/"
         env:
@@ -26,7 +30,7 @@ jobs:
           
       - name: Post discord notification
         run: |
-          commits="${{ join(github.event.commits.*.message, '\n - ') }}"
+          commits=`echo "${{ join(github.event.commits.*.message, '\n - ') }}" | tr '\n' ' '`
           avatar_url=https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
           bot_username="Build notification (modules)"
           filename=$(ls dist/target | grep .zip)
