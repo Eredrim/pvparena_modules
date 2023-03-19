@@ -54,7 +54,7 @@ public class PowerupManager extends ArenaModule implements Listener {
 
     private static final String POWERUPS_CFG = "modules.powerups.items";
     private static final String POWERUP = "powerup";
-    private static final String POWERUP_STRING = ChatColor.RED + "Power\nUp";
+    private static final String POWERUP_STRING = ChatColor.RED + "Power‗Up";
 
     private Powerups usesPowerups;
 
