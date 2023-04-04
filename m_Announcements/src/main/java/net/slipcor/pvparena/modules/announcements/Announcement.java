@@ -36,21 +36,17 @@ public final class Announcement {
         }
         debug("announce [{}] type: {}:{}", a, t, message);
 
-        for (final Player p : Bukkit.getOnlinePlayers()) {
-            if (a.hasPlayer(p) || ArenaPlayer.fromPlayer(p).isIgnoringAnnouncements()) {
-                continue;
-            }
-            send(a, p, message.replace(
-                    ChatColor.WHITE.toString(),
-                    ChatColor.valueOf(
-                            a.getConfig().getString(
-                                    CFG.MODULES_ANNOUNCEMENTS_COLOR))
-                            .toString()));
-        }
+        Bukkit.getOnlinePlayers().stream()
+                .filter(p -> !a.hasPlayer(p) && !ArenaPlayer.fromPlayer(p).isIgnoringAnnouncements())
+                .forEach(p -> send(a, p, message.replace(
+                                ChatColor.WHITE.toString(),
+                                ChatColor.valueOf(a.getConfig().getString(CFG.MODULES_ANNOUNCEMENTS_COLOR)).toString())
+                        )
+                );
     }
 
     /**
-     * check the arena for the announcement tyoe
+     * check the arena for the announcement type
      *
      * @param a the arena to check
      * @param t the announcement type to check
@@ -70,21 +66,16 @@ public final class Announcement {
      * @param message the message to send
      */
     private static void send(final Arena a, final Player p, final String message) {
-        if (a.getConfig().getInt(CFG.MODULES_ANNOUNCEMENTS_RADIUS) > 0) {
-            final Set<ArenaRegion> bfs = a
-                    .getRegionsByType(RegionType.BATTLE);
+        int radius = a.getConfig().getInt(CFG.MODULES_ANNOUNCEMENTS_RADIUS);
+        if (radius > 0) {
+            final Set<ArenaRegion> bfs = a.getRegionsByType(RegionType.BATTLE);
             for (final ArenaRegion ars : bfs) {
-                if (ars.getShape().tooFarAway(
-                        a.getConfig().getInt(
-                                CFG.MODULES_ANNOUNCEMENTS_RADIUS),
-                        p.getLocation())) {
+                if (ars.getShape().tooFarAway(radius, p.getLocation())) {
                     return; // too far away: out (checks world!)
                 }
             }
         }
-        a.msg(p,
-                ChatColor.valueOf(a.getConfig().getString(
-                        CFG.MODULES_ANNOUNCEMENTS_COLOR)) + message);
+        a.msg(p, ChatColor.valueOf(a.getConfig().getString(CFG.MODULES_ANNOUNCEMENTS_COLOR)) + message);
     }
 
 }

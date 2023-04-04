@@ -62,7 +62,7 @@ public class AfterMatch extends ArenaModule {
 
         try {
             this.afterTask.cancel();
-        } catch (final Exception e) {
+        } catch (final Exception ignored) {
 
         }
         this.afterTask = null;
@@ -95,9 +95,7 @@ public class AfterMatch extends ArenaModule {
     @Override
     public Set<PASpawn> checkForMissingSpawns(final Set<PASpawn> spawns) {
         final Set<PASpawn> missing = new HashSet<>();
-        if (spawns.stream().noneMatch(spawn ->
-                (spawn.getName().equals(AFTER))
-                        && spawn.getTeamName() == null)) {
+        if (spawns.stream().noneMatch(spawn -> spawn.getName().equals(AFTER) && spawn.getTeamName() == null)) {
             missing.add(new PASpawn(null, AFTER, null, null));
         }
         return missing;
@@ -148,20 +146,17 @@ public class AfterMatch extends ArenaModule {
 
     @Override
     public void configParse(final YamlConfiguration config) {
-        final String pu = config.getString(CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), "off");
+        final String amCfg = config.getString(CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), "off");
 
-        if (!pu.startsWith("death") && !pu.startsWith("time")) {
-            PVPArena.getInstance().getLogger().warning("error activating aftermatch module");
+        if (!amCfg.startsWith("death") && !amCfg.startsWith("time")) {
+            PVPArena.getInstance().getLogger().warning("Error activating aftermatch module: config value should be 'off' or 'death:X' or 'time:X'");
         }
     }
 
     @Override
     public void displayInfo(final CommandSender player) {
-        player.sendMessage("active: "
-                + StringParser.colorVar(!"off".equals(this.arena.getConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH)))
-                + '('
-                + StringParser.colorVar(this.arena.getConfig()
-                .getString(CFG.MODULES_AFTERMATCH_AFTERMATCH)) + ')');
+        String amCfg = this.arena.getConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH);
+        player.sendMessage(String.format("active: %s(%s)", StringParser.colorVar(!"off".equals(amCfg)), StringParser.colorVar(amCfg)));
     }
 
     @Override
@@ -172,33 +167,28 @@ public class AfterMatch extends ArenaModule {
     @Override
     public void parsePlayerDeath(final Player player,
                                  final EntityDamageEvent cause) {
-        final String pu = this.arena.getConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH);
+        final String amCfg = this.arena.getConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH);
 
-        if ("off".equals(pu) || this.isAfterMatch) {
+        if ("off".equals(amCfg) || this.isAfterMatch) {
             return;
         }
 
-        final String[] ss = pu.split(":");
-        if (pu.startsWith("time") || this.afterTask != null) {
+        if (amCfg.startsWith("time") || this.afterTask != null) {
             return;
         }
 
-        int i = Integer.parseInt(ss[1]);
+        final String[] cfgArray = amCfg.split(":");
+        int countTrigger = Integer.parseInt(cfgArray[1]);
 
-        for (final ArenaTeam t : this.arena.getTeams()) {
-            for (final ArenaPlayer p : t.getTeamMembers()) {
-                if (p.getStatus() != PlayerStatus.FIGHT) {
-                    continue;
-                }
-                if (--i < 0) {
-                    return;
-                }
-            }
+        long fightingPlayers = this.arena.getTeams().stream()
+                .flatMap(team -> team.getTeamMembers().stream())
+                .filter(p -> p.getStatus() == PlayerStatus.FIGHT)
+                .count();
+
+        if(fightingPlayers <= countTrigger) {
+            this.afterTask = null;
+            this.afterMatch();
         }
-
-        this.afterTask = null;
-
-        this.afterMatch();
     }
 
     @Override
@@ -212,26 +202,23 @@ public class AfterMatch extends ArenaModule {
 
     @Override
     public void parseStart() {
-        final String pu = this.arena.getConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH);
+        final String amCfg = this.arena.getConfig().getString(CFG.MODULES_AFTERMATCH_AFTERMATCH);
 
         if (this.afterTask != null) {
             this.afterTask.cancel();
             this.afterTask = null;
         }
 
-        final int i;
-        final String[] ss = pu.split(":");
-        if (pu.startsWith("time")) {
-            // arena.powerupTrigger = "time";
-            i = Integer.parseInt(ss[1]);
-        } else {
-            return;
-        }
+        final String[] cfgArray = amCfg.split(":");
+        if (amCfg.startsWith("time")) {
 
-        debug("using aftermatch : {}:{}", pu, i);
-        if (i > 0) {
-            debug("aftermatch time trigger!");
-            this.afterTask = new AfterRunnable(this, i);
+            int timer = Integer.parseInt(cfgArray[1]);
+            debug("using aftermatch : {}:{}", amCfg, timer);
+
+            if (timer > 0) {
+                debug("aftermatch time trigger!");
+                this.afterTask = new AfterRunnable(this, timer);
+            }
         }
     }
 }

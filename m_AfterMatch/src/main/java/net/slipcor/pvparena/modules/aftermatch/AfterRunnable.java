@@ -7,20 +7,19 @@ import net.slipcor.pvparena.runnables.ArenaRunnable;
 import static net.slipcor.pvparena.config.Debugger.debug;
 
 public class AfterRunnable extends ArenaRunnable {
-    private final AfterMatch pum;
+    private final AfterMatch module;
 
-    public AfterRunnable(final AfterMatch pm, final int i) {
-        super(MSG.MODULE_AFTERMATCH_STARTINGIN.getNode(), i, null, pm.getArena(), false);
-        pum = pm;
+    public AfterRunnable(final AfterMatch afterMatch, final int i) {
+        super(MSG.MODULE_AFTERMATCH_STARTINGIN.getNode(), i, null, afterMatch.getArena(), false);
+        this.module = afterMatch;
         debug("AfterRunnable constructor");
     }
 
     @Override
     protected void commit() {
         debug("AfterRunnable commiting");
-        if (!pum.getArena().isLocked()) {
-
-            pum.afterMatch();
+        if (!this.module.getArena().isLocked()) {
+            this.module.afterMatch();
         }
     }
 

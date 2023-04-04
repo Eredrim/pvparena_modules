@@ -6,6 +6,7 @@ import net.slipcor.pvparena.arena.ArenaTeam;
 import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
+import net.slipcor.pvparena.core.Config;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
@@ -23,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static net.slipcor.pvparena.config.Debugger.debug;
+import static net.slipcor.pvparena.modules.announcements.Announcement.type.*;
 
 public class AnnouncementManager extends ArenaModule {
 
@@ -73,8 +75,7 @@ public class AnnouncementManager extends ArenaModule {
             return;
         }
 
-        if (!AbstractArenaCommand.argCountValid(sender, this.arena, args,
-                new Integer[]{2})) {
+        if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2})) {
             return;
         }
 
@@ -82,11 +83,9 @@ public class AnnouncementManager extends ArenaModule {
 
             for (final Announcement.type t : Announcement.type.values()) {
                 if (t.name().equalsIgnoreCase(args[1])) {
-                    final boolean b = this.arena.getConfig().getBoolean(
-                            CFG.valueOf("MODULES_ANNOUNCEMENTS_" + t.name()));
-                    this.arena.getConfig().set(
-                            CFG.valueOf("MODULES_ANNOUNCEMENTS_" + t.name()),
-                            !b);
+                    CFG cfgEntry = CFG.valueOf("MODULES_ANNOUNCEMENTS_" + t.name());
+                    final boolean b = this.arena.getConfig().getBoolean(cfgEntry);
+                    this.arena.getConfig().set(cfgEntry, !b);
                     this.arena.getConfig().save();
 
                     this.arena.msg(sender, MSG.SET_DONE, t.name(), String.valueOf(!b));
@@ -94,53 +93,33 @@ public class AnnouncementManager extends ArenaModule {
                 }
             }
 
-            final String list = StringParser.joinArray(Announcement.type.values(),
-                    ", ");
+            final String list = StringParser.joinArray(Announcement.type.values(), ", ");
             this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], list);
         }
     }
 
     @Override
     public void parsePlayerDeath(final Player player, final EntityDamageEvent cause) {
-        Announcement.announce(this.arena, Announcement.type.LOSER, Language.parse(
-                MSG.FIGHT_KILLED_BY,
-                player.getName(),
-                this.arena.parseDeathCause(player, cause.getCause(),
-                        ArenaPlayer.getLastDamagingPlayer(cause))));
+        String deathCause = this.arena.parseDeathCause(player, cause.getCause(), ArenaPlayer.getLastDamagingPlayer(cause));
+        Announcement.announce(this.arena, LOSER, Language.parse(MSG.FIGHT_KILLED_BY, player.getName(), deathCause));
     }
 
     @Override
     public void displayInfo(final CommandSender player) {
         player.sendMessage("");
-        player.sendMessage("radius: "
-                + StringParser.colorVar(this.arena.getConfig().getInt(
-                CFG.MODULES_ANNOUNCEMENTS_RADIUS, 0))
-                + " || color: "
-                + StringParser.colorVar(this.arena.getConfig().getString(
-                CFG.MODULES_ANNOUNCEMENTS_COLOR)));
-        player.sendMessage(StringParser.colorVar("advert", this.arena.getConfig()
-                .getBoolean(CFG.MODULES_ANNOUNCEMENTS_ADVERT))
-                + " || "
-                + StringParser.colorVar("custom", this.arena.getConfig()
-                .getBoolean(CFG.MODULES_ANNOUNCEMENTS_CUSTOM))
-                + " || "
-                + StringParser.colorVar("end", this.arena.getConfig()
-                .getBoolean(CFG.MODULES_ANNOUNCEMENTS_END))
-                + " || "
-                + StringParser.colorVar("join", this.arena.getConfig()
-                .getBoolean(CFG.MODULES_ANNOUNCEMENTS_JOIN))
-                + " || "
-                + StringParser.colorVar("loser", this.arena.getConfig()
-                .getBoolean(CFG.MODULES_ANNOUNCEMENTS_LOSER))
-                + " || "
-                + StringParser.colorVar("prize", this.arena.getConfig()
-                .getBoolean(CFG.MODULES_ANNOUNCEMENTS_PRIZE))
-                + " || "
-                + StringParser.colorVar("start", this.arena.getConfig()
-                .getBoolean(CFG.MODULES_ANNOUNCEMENTS_START))
-                + " || "
-                + StringParser.colorVar("winner", this.arena.getConfig()
-                .getBoolean(CFG.MODULES_ANNOUNCEMENTS_WINNER)));
+        Config cfg = this.arena.getConfig();
+        player.sendMessage(String.format("radius: %s || color: %s",
+                StringParser.colorVar(cfg.getInt(CFG.MODULES_ANNOUNCEMENTS_RADIUS, 0)),
+                StringParser.colorVar(cfg.getString(CFG.MODULES_ANNOUNCEMENTS_COLOR))));
+        player.sendMessage(String.format("%s || %s || %s || %s || %s || %s || %s || %s",
+                StringParser.colorVar("advert", cfg.getBoolean(CFG.MODULES_ANNOUNCEMENTS_ADVERT)),
+                StringParser.colorVar("custom", cfg.getBoolean(CFG.MODULES_ANNOUNCEMENTS_CUSTOM)),
+                StringParser.colorVar("end", cfg.getBoolean(CFG.MODULES_ANNOUNCEMENTS_END)),
+                StringParser.colorVar("join", cfg.getBoolean(CFG.MODULES_ANNOUNCEMENTS_JOIN)),
+                StringParser.colorVar("loser", cfg.getBoolean(CFG.MODULES_ANNOUNCEMENTS_LOSER)),
+                StringParser.colorVar("prize", cfg.getBoolean(CFG.MODULES_ANNOUNCEMENTS_PRIZE)),
+                StringParser.colorVar("start", cfg.getBoolean(CFG.MODULES_ANNOUNCEMENTS_START)),
+                StringParser.colorVar("winner", cfg.getBoolean(CFG.MODULES_ANNOUNCEMENTS_WINNER))));
     }
 
     @Override
@@ -153,55 +132,32 @@ public class AnnouncementManager extends ArenaModule {
             return;
         }
 
+        String color = this.arena.getConfig().getString(CFG.MODULES_ANNOUNCEMENTS_COLOR);
         if (TeamManager.countPlayersInTeams(this.arena) < 2) {
-            final String arenaname = this.arena.getName();
-            Announcement.announce(this.arena, Announcement.type.ADVERT, Language
-                    .parse(this.arena, CFG.MSG_STARTING, arenaname +
-                            ChatColor.valueOf(this.arena.getConfig().getString(
-                                    CFG.MODULES_ANNOUNCEMENTS_COLOR))));
+            final String arenaName = this.arena.getName();
+            Announcement.announce(this.arena, ADVERT, Language.parse(this.arena, CFG.MSG_STARTING, arenaName + ChatColor.valueOf(color)));
         }
 
         if (this.arena.isFreeForAll()) {
-            Announcement.announce(this.arena, Announcement.type.JOIN,
-                    this.arena.getConfig().getString(CFG.MSG_PLAYERJOINED)
-                            .replace("%1%", player.getName() +
-                                    ChatColor.valueOf(this.arena.getConfig().getString(
-                                            CFG.MODULES_ANNOUNCEMENTS_COLOR))));
+            Announcement.announce(this.arena, JOIN, Language.parse(this.arena, CFG.MSG_PLAYERJOINED, player.getName() + ChatColor.valueOf(color)));
         } else {
-            Announcement.announce(
-                    this.arena,
-                    Announcement.type.JOIN,
-                    this.arena.getConfig().getString(CFG.MSG_PLAYERJOINEDTEAM)
-                            .replace("%1%", player.getName() +
-                                    ChatColor.valueOf(this.arena.getConfig().getString(
-                                            CFG.MODULES_ANNOUNCEMENTS_COLOR)))
-                            .replace("%2%", team.getColoredName() +
-                                    ChatColor.valueOf(this.arena.getConfig().getString(
-                                            CFG.MODULES_ANNOUNCEMENTS_COLOR))));
+            String msg = Language.parse(this.arena, CFG.MSG_PLAYERJOINEDTEAM, player.getName() + ChatColor.valueOf(color), team.getColoredName() + ChatColor.valueOf(color));
+            Announcement.announce(this.arena, JOIN, msg);
         }
     }
 
     @Override
     public void parsePlayerLeave(final Player player, final ArenaTeam team) {
+        String color = this.arena.getConfig().getString(CFG.MODULES_ANNOUNCEMENTS_COLOR);
         if (team == null) {
-            Announcement.announce(this.arena, Announcement.type.LOSER,
-                    Language.parse(MSG.FIGHT_PLAYER_LEFT, player.getName() +
-                            ChatColor.valueOf(this.arena.getConfig().getString(
-                                    CFG.MODULES_ANNOUNCEMENTS_COLOR))));
+            Announcement.announce(this.arena, LOSER, Language.parse(MSG.FIGHT_PLAYER_LEFT, player.getName() + ChatColor.valueOf(color)));
         } else {
-            Announcement.announce(
-                    this.arena,
-                    Announcement.type.LOSER,
-                    Language.parse(MSG.FIGHT_PLAYER_LEFT,
-                            team.colorizePlayer(player) +
-                                    ChatColor.valueOf(this.arena.getConfig().getString(
-                                            CFG.MODULES_ANNOUNCEMENTS_COLOR))));
+            Announcement.announce(this.arena, LOSER, Language.parse(MSG.FIGHT_PLAYER_LEFT, team.colorizePlayer(player) + ChatColor.valueOf(color)));
         }
     }
 
     @Override
     public void parseStart() {
-        Announcement.announce(this.arena, Announcement.type.START,
-                Language.parse(MSG.FIGHT_BEGINS));
+        Announcement.announce(this.arena, START, Language.parse(MSG.FIGHT_BEGINS));
     }
 }
