@@ -1,2 +1,2 @@
 name: ArenaMaps
-main-class: net.slipcor.pvparena.modules.maps.Maps
+main-class: net.slipcor.pvparena.modules.maps.ArenaMaps

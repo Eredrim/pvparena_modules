@@ -7,17 +7,18 @@ import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 
 class MapListener implements Listener {
-    private final Maps maps;
+    private final ArenaMaps module;
 
-    public MapListener(final Maps m) {
-        maps = m;
+    public MapListener(final ArenaMaps mod) {
+        this.module = mod;
     }
 
     @EventHandler
     public void onMapInit(final MapInitializeEvent event) {
-        final MapView map = event.getMap();
+        MapView mapView = event.getMap();
+        mapView.setUnlimitedTracking(true);
 
-        final MapRenderer mr = new MyRenderer(maps);
-        map.addRenderer(mr);
+        MapRenderer mr = new ArenaMapsRenderer(this.module);
+        mapView.addRenderer(mr);
     }
 }
