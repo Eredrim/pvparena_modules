@@ -1,5 +1,6 @@
 package net.slipcor.pvparena.modules.maps;
 
+import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.classes.PABlockLocation;
@@ -20,35 +21,37 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static net.slipcor.pvparena.modules.maps.MapElementVisibility.*;
+
 class ArenaMapsRenderer extends MapRenderer {
-    private String playerName;
+    private ArenaPlayer arenaPlayer;
     private Arena arena;
-    private final boolean showPlayers;
-    private final boolean showSpawns;
-    private final boolean showBlocks;
+    private final MapElementVisibility showPlayers;
+    private final MapElementVisibility showSpawns;
+    private final MapElementVisibility showBlocks;
     private final boolean showScore;
     private final ArenaMaps mod;
 
     public ArenaMapsRenderer(final ArenaMaps mod) {
         super(true);
-        this.playerName = null;
+        this.arenaPlayer = null;
         this.arena = mod.getArena();
         this.mod = mod;
-        this.showSpawns = this.arena.getConfig().getBoolean(CFG.MODULES_ARENAMAPS_SHOWSPAWNS);
-        this.showBlocks = this.arena.getConfig().getBoolean(CFG.MODULES_ARENAMAPS_SHOWBLOCKS);
-        this.showPlayers = this.arena.getConfig().getBoolean(CFG.MODULES_ARENAMAPS_SHOWPLAYERS);
         this.showScore = this.arena.getConfig().getBoolean(CFG.MODULES_ARENAMAPS_SHOWSCORE);
+        this.showPlayers = this.tryLoadVisibilitySetting(CFG.MODULES_ARENAMAPS_SHOWPLAYERS);
+        this.showSpawns = this.tryLoadVisibilitySetting(CFG.MODULES_ARENAMAPS_SHOWSPAWNS);
+        this.showBlocks = this.tryLoadVisibilitySetting(CFG.MODULES_ARENAMAPS_SHOWBLOCKS);
     }
 
     @Override
     public void render(@NotNull MapView mapView, @NotNull MapCanvas canvas, @NotNull Player player) {
-        if (this.playerName == null) {
+        if (this.arenaPlayer == null) {
             // first initialisation
             Map<String, MapView> playerMaps = this.mod.getPlayerMaps();
             if (playerMaps.containsKey(player.getName()) && playerMaps.get(player.getName()) == null) {
 
-                this.playerName = player.getName();
-                this.arena = ArenaPlayer.fromPlayer(this.playerName).getArena();
+                this.arenaPlayer = ArenaPlayer.fromPlayer(player);
+                this.arena = arenaPlayer.getArena();
 
                 playerMaps.put(player.getName(), mapView);
                 this.defineMapViewScale(mapView);
@@ -56,7 +59,7 @@ class ArenaMapsRenderer extends MapRenderer {
             return;
         }
 
-        if (!player.getName().equals(this.playerName)) {
+        if (!player.getName().equals(this.arenaPlayer.getName())) {
             return;
         }
 
@@ -73,15 +76,16 @@ class ArenaMapsRenderer extends MapRenderer {
         }
 
         this.mod.getMapElements().forEach(mapElement -> {
-            if (this.showBlocks && mapElement.getType() == MapElementType.BLOCK) {
+            if (mapElement.getType() == MapElementType.BLOCK && mapElement.isVisible(this.showBlocks, this.arenaPlayer)) {
                 // Render spawns and blocks
                 renderBlock(canvas, mapCenterX, mapCenterZ, scaleFactor, mapElement);
 
-            } else if (this.showSpawns && mapElement.getType() == MapElementType.SPAWN) {
+            } else if (mapElement.getType() == MapElementType.SPAWN && mapElement.isVisible(this.showSpawns, this.arenaPlayer)) {
                 // Render spawns and blocks
                 renderSpawn(canvas, mapCenterX, mapCenterZ, scaleFactor, mapElement);
 
-            } else if (this.showPlayers && mapElement.getType() == MapElementType.PLAYER && !mapElement.getName().equals(this.playerName)) {
+            } else if (mapElement.getType() == MapElementType.PLAYER && !mapElement.getName().equals(this.arenaPlayer.getName())
+                    && mapElement.isVisible(this.showPlayers, this.arenaPlayer)) {
                 // Render players
                 renderPlayerPoint(canvas, mapCenterX, mapCenterZ, scaleFactor, mapElement);
             }
@@ -180,7 +184,7 @@ class ArenaMapsRenderer extends MapRenderer {
             if (strBuilder.length() > 0) {
                 strBuilder.append(" | ");
             }
-            strBuilder.append(formatScoreText(team.getName(), lives));
+            strBuilder.append(String.format("%s: %s",team.getName(), lives));
         });
         try {
             canvas.drawText(2, 2, MinecraftFont.Font, strBuilder.toString());
@@ -261,28 +265,12 @@ class ArenaMapsRenderer extends MapRenderer {
         return Scale.FARTHEST;
     }
 
-    private static String formatScoreText(String s, Integer i) {
-        if(i > 99) {
-            return String.format("%s: %s", s, arabicToRoman(i));
+    private MapElementVisibility tryLoadVisibilitySetting(CFG cfgEntry) {
+        try {
+            return valueOf(this.arena.getConfig().getString(cfgEntry).toUpperCase());
+        } catch (IllegalArgumentException e) {
+            PVPArena.getInstance().getLogger().warning("[%s] ArenaMaps setting \"%s\" has an incorrect value. It will be ignored for this game.");
+            return NONE;
         }
-        return String.format("%s: %s", s, i);
-    }
-
-    // Parallel arrays used in the conversion process.
-    private static final String[] RCODE = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
-    private static final int[] AVAL = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
-
-    private static String arabicToRoman(int binary) {
-        StringBuilder roman = new StringBuilder(); // Roman notation will be accumualated here.
-
-        // Loop from biggest value to smallest, successively subtracting,
-        // from the arabic value while adding to the roman representation.
-        for (int i = 0; i < RCODE.length; i++) {
-            while (binary >= AVAL[i]) {
-                binary -= AVAL[i];
-                roman.append(RCODE[i]);
-            }
-        }
-        return roman.toString();
     }
 }

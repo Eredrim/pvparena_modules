@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
 
@@ -71,24 +72,25 @@ public class ArenaMaps extends ArenaModule {
     @Override
     public CommandTree<String> getSubs(final Arena arena) {
         final CommandTree<String> result = new CommandTree<>(null);
-        result.define(new String[]{"align", "true"});
-        result.define(new String[]{"align", "false"});
-        result.define(new String[]{"lives", "true"});
-        result.define(new String[]{"lives", "false"});
-        result.define(new String[]{"players", "true"});
-        result.define(new String[]{"players", "false"});
-        result.define(new String[]{"blocks", "true"});
-        result.define(new String[]{"blocks", "false"});
-        result.define(new String[]{"spawns", "true"});
-        result.define(new String[]{"spawns", "false"});
+        Stream.of("true", "false").forEach(val -> {
+            result.define(new String[]{"align", val});
+            result.define(new String[]{"score", val});
+        });
+
+        for (String val : MapElementVisibility.stringValues()) {
+            result.define(new String[]{"players", val});
+            result.define(new String[]{"blocks", val});
+            result.define(new String[]{"spawns", val});
+        }
         return result;
     }
 
     @Override
     public void commitCommand(final CommandSender sender, final String[] args) {
         // !map align
-        // !map lives
+        // !map score
         // !map players
+        // !map blocks
         // !map spawns
 
 
@@ -97,36 +99,48 @@ public class ArenaMaps extends ArenaModule {
             return;
         }
 
-        if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2})) {
+        if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{3})) {
             return;
         }
 
         if ("!map".equals(args[0]) || "arenamaps".equals(args[0])) {
-            CFG c = null;
+            CFG cfgNode;
+            Object newValue;
             if ("align".equals(args[1])) {
-                c = CFG.MODULES_ARENAMAPS_ALIGNTOPLAYER;
-            }
-            if ("lives".equals(args[1])) {
-                c = CFG.MODULES_ARENAMAPS_SHOWSCORE;
-            }
-            if ("players".equals(args[1])) {
-                c = CFG.MODULES_ARENAMAPS_SHOWPLAYERS;
-            }
-            if ("blocks".equals(args[1])) {
-                c = CFG.MODULES_ARENAMAPS_SHOWBLOCKS;
-            }
-            if ("spawns".equals(args[1])) {
-                c = CFG.MODULES_ARENAMAPS_SHOWSPAWNS;
-            }
-            if (c == null) {
+                cfgNode = CFG.MODULES_ARENAMAPS_ALIGNTOPLAYER;
+                newValue = !this.arena.getConfig().getBoolean(cfgNode);
+            } else if ("score".equals(args[1])) {
+                cfgNode = CFG.MODULES_ARENAMAPS_SHOWSCORE;
+                newValue = !this.arena.getConfig().getBoolean(cfgNode);
+            } else {
+                if ("players".equals(args[1])) {
+                    cfgNode = CFG.MODULES_ARENAMAPS_SHOWPLAYERS;
+                } else if ("blocks".equals(args[1])) {
+                    cfgNode = CFG.MODULES_ARENAMAPS_SHOWBLOCKS;
+                } else if ("spawns".equals(args[1])) {
+                    cfgNode = CFG.MODULES_ARENAMAPS_SHOWSPAWNS;
+                } else {
+                    this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "align | score | players | blocks | spawns");
+                    return;
+                }
 
-                this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "align | lives | players | block | spawns");
-                return;
+                if(args.length == 3) {
+                    String strValue = args[2];
+                    try {
+                        newValue = MapElementVisibility.valueOf(strValue.toUpperCase()).name();
+                    } catch (IllegalArgumentException e) {
+                        this.arena.msg(sender, MSG.ERROR_ARGUMENT, strValue, String.join(" | ", MapElementVisibility.stringValues()));
+                        return;
+                    }
+                } else {
+                    this.arena.msg(sender, MSG.ERROR_INVALID_ARGUMENT_COUNT, String.valueOf(args.length - 1), "2");
+                    return;
+                }
             }
-            final boolean b = this.arena.getConfig().getBoolean(c);
-            this.arena.getConfig().set(c, !b);
+
+            this.arena.getConfig().set(cfgNode, newValue);
             this.arena.getConfig().save();
-            this.arena.msg(sender, MSG.SET_DONE, c.getNode(), String.valueOf(!b));
+            this.arena.msg(sender, MSG.SET_DONE, cfgNode.getNode(), String.valueOf(newValue));
         }
     }
 
@@ -136,9 +150,10 @@ public class ArenaMaps extends ArenaModule {
         sender.sendMessage(String.format("%s||%s||%s||%s||%s",
                 StringParser.colorVar("playerAlign", config.getBoolean(CFG.MODULES_ARENAMAPS_ALIGNTOPLAYER)),
                 StringParser.colorVar("showScore", config.getBoolean(CFG.MODULES_ARENAMAPS_SHOWSCORE)),
-                StringParser.colorVar("showPlayers", config.getBoolean(CFG.MODULES_ARENAMAPS_SHOWPLAYERS)),
-                StringParser.colorVar("showBlocks", config.getBoolean(CFG.MODULES_ARENAMAPS_SHOWBLOCKS)),
-                StringParser.colorVar("showSpawns", config.getBoolean(CFG.MODULES_ARENAMAPS_SHOWSPAWNS))));
+                String.format("showPlayers : %s", config.getString(CFG.MODULES_ARENAMAPS_SHOWPLAYERS)),
+                String.format("showBlocks : %s", config.getString(CFG.MODULES_ARENAMAPS_SHOWBLOCKS)),
+                String.format("showSpawns : %s", config.getString(CFG.MODULES_ARENAMAPS_SHOWSPAWNS))
+        ));
     }
 
     public List<MapElement> getMapElements() {
@@ -148,7 +163,6 @@ public class ArenaMaps extends ArenaModule {
     void trySetup() {
         if (!this.setup) {
             Bukkit.getPluginManager().registerEvents(new MapListener(this), PVPArena.getInstance());
-            this.prepareSpawnLocations();
             this.setup = true;
         }
     }
@@ -156,29 +170,27 @@ public class ArenaMaps extends ArenaModule {
     @Override
     public void parseJoin(final Player player, final ArenaTeam team) {
         this.trySetup();
+        if(this.mapElements.isEmpty()) {
+            this.prepareSpawnLocations();
+        }
         this.playerMaps.putIfAbsent(player.getName(), null);
-        this.mapElements.add(new MapElement(player, team.getColor()));
+        this.mapElements.add(new MapElement(player, team));
     }
 
     private void prepareSpawnLocations() {
-        if (!this.mapElements.isEmpty()) {
-            this.mapElements.clear();
-            // recalculate, in case admin added stuff
-        }
-
         Set<MapElement> locations = new HashSet<>();
 
         for (final ArenaTeam team : this.arena.getTeams()) {
             for (final PASpawn spawn : this.arena.getSpawns()) {
                 if (team.getName().equals(spawn.getTeamName())) {
-                    locations.add(new MapElement(spawn, team.getColor()));
+                    locations.add(new MapElement(spawn, team));
                 }
             }
 
             if (this.arena.getGoal() instanceof AbstractFlagGoal) {
                 for (final PABlock block : this.arena.getBlocks()) {
                     if (block.getTeamName().equals(team.getName()) && block.getName().startsWith("flag")) {
-                        locations.add(new MapElement(block, team.getColor()));
+                        locations.add(new MapElement(block, team));
                     }
                 }
             }
