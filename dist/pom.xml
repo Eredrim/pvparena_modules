@@ -35,18 +35,6 @@
         </dependency>
         <dependency>
             <groupId>net.slipcor.pvpa</groupId>
-            <artifactId>m_arenarotate</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.slipcor.pvpa</groupId>
-            <artifactId>m_autosneak</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_bankick</artifactId>
             <version>${project.version}</version>
             <type>jar</type>

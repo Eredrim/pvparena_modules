@@ -55,8 +55,6 @@
         <module>m_AfterMatch</module>
         <module>m_Announcements</module>
         <module>m_ArenaMaps</module>
-        <module>m_ArenaRotate</module>
-        <module>m_AutoSneak</module>
         <module>m_BanKick</module>
         <module>m_BattlefieldGuard</module>
         <module>m_BattlefieldManager</module>
