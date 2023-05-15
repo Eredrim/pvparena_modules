@@ -2,6 +2,8 @@ package net.slipcor.pvparena.command;
 
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
+import net.slipcor.pvparena.arena.ArenaPlayer;
+import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config.CFG;
@@ -20,16 +22,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class BanKick extends ArenaModule {
-    private static final List<String> commands = new ArrayList<>();
+import static java.lang.Math.round;
+import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.*;
 
-    static {
-        commands.add("ban");
-        commands.add("kick");
-        commands.add("tempban");
-        commands.add("unban");
-        commands.add("tempunban");
-    }
+public class BanKick extends ArenaModule {
+    private static final List<String> COMMANDS = asList(
+            "ban",
+            "kick",
+            "tempban",
+            "unban",
+            "tempunban"
+    );
 
     public BanKick() {
         super("BanKick");
@@ -40,16 +44,18 @@ public class BanKick extends ArenaModule {
         return this.getClass().getPackage().getImplementationVersion();
     }
 
-    private List<String> banList;
+    private Set<String> permBanList = new HashSet<>();
+    private Set<String> tempBanList = new HashSet<>();
+    private Set<String> tempUnbanList = new HashSet<>();
 
     @Override
     public boolean checkCommand(final String s) {
-        return commands.contains(s.toLowerCase());
+        return COMMANDS.contains(s.toLowerCase());
     }
 
     @Override
     public List<String> getMain() {
-        return commands;
+        return COMMANDS;
     }
 
     @Override
@@ -60,17 +66,14 @@ public class BanKick extends ArenaModule {
     @Override
     public CommandTree<String> getSubs(final Arena arena) {
         final CommandTree<String> result = new CommandTree<>(null);
-        result.define(new String[]{"kick", "{Player}"});
-        result.define(new String[]{"tempban", "{Player}"});
-        result.define(new String[]{"ban", "{Player}"});
-        result.define(new String[]{"unban"});
-        result.define(new String[]{"tempunban"});
+        result.define(new String[]{"{Player}"});
         return result;
     }
 
     @Override
     public void checkJoin(Player player) throws GameplayException {
-        if (this.getBans().contains(player.getName())) {
+        if (this.tempBanList.contains(player.getName()) ||
+                (this.permBanList.contains(player.getName()) && !this.tempUnbanList.contains(player.getName()))) {
             throw new GameplayException(Language.parse(MSG.MODULE_BANVOTE_YOUBANNED, this.arena.getName()));
         }
     }
@@ -83,7 +86,7 @@ public class BanKick extends ArenaModule {
     @Override
     public void commitCommand(final CommandSender sender, final String[] args) {
 
-        if (!commands.contains(args[0].toLowerCase())) {
+        if (!COMMANDS.contains(args[0].toLowerCase())) {
             return;
         }
 
@@ -92,7 +95,7 @@ public class BanKick extends ArenaModule {
             return;
         }
 
-		/*
+        /*
         /pa [arenaname] kick [player]
         /pa [arenaname] tempban [player] [timediff*]
         /pa [arenaname] ban [player]
@@ -100,138 +103,136 @@ public class BanKick extends ArenaModule {
         /pa [arenaname] tempunban [player] [timediff*]
 		 */
 
-        final String cmd = args[0].toLowerCase();
-
-        final Player p = Bukkit.getPlayer(args[1]);
-        if (p != null) {
-            args[1] = p.getName();
+        String cmd = args[0].toLowerCase();
+        Player player = Bukkit.getPlayer(args[1]);
+        String playerName;
+        if (player != null) {
+            playerName = player.getName();
+        } else {
+            this.arena.msg(sender, MSG.MODULE_BANVOTE_NOTONLINE, args[1]);
+            return;
         }
 
-        if ("kick".equals(cmd)) {
-            if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2})) {
-                return;
+        switch (cmd) {
+            case "kick":
+                if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2})) {
+                    return;
+                }
+                this.tryKick(sender, playerName);
+                break;
+            case "tempban": {
+                if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{3})) {
+                    return;
+                }
+                this.tryKick(sender, playerName);
+                long time = this.parseStringToSeconds(args[2]);
+                BanRunnable unbanTask = new BanRunnable(this, sender, playerName, false);
+                unbanTask.runTaskLaterAsynchronously(PVPArena.getInstance(), 20 * time);
+                this.doTempBan(sender, playerName);
+                break;
             }
-            this.tryKick(sender, args[1]);
-        } else if ("tempban".equals(cmd)) {
-            if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{3})) {
-                return;
+            case "ban":
+                if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2})) {
+                    return;
+                }
+                this.tryKick(sender, playerName);
+                this.doBan(sender, playerName);
+                break;
+            case "unban":
+                if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2})) {
+                    return;
+                }
+                this.doUnban(sender, playerName);
+                break;
+            case "tempunban": {
+                if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{3})) {
+                    return;
+                }
+                long time = this.parseStringToSeconds(args[2]);
+                BanRunnable banTask = new BanRunnable(this, sender, playerName, true);
+                banTask.runTaskLaterAsynchronously(PVPArena.getInstance(), 20 * time);
+                this.doTempUnban(sender, playerName);
+                break;
             }
-            this.tryKick(sender, args[1]);
-            final long time = this.parseStringToSeconds(args[2]);
-            final BanRunnable run = new BanRunnable(this, sender, args[1], false);
-            Bukkit.getScheduler().runTaskLaterAsynchronously(PVPArena.getInstance(), run, 20 * time);
-            this.doBan(sender, args[1]);
-        } else if ("ban".equals(cmd)) {
-            if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2})) {
-                return;
-            }
-            this.tryKick(sender, args[1]);
-            this.doBan(sender, args[1]);
-        } else if ("unban".equals(cmd)) {
-            if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2})) {
-                return;
-            }
-            this.doUnBan(sender, args[1]);
-        } else if ("tempunban".equals(cmd)) {
-            if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{3})) {
-                return;
-            }
-            final long time = this.parseStringToSeconds(args[2]);
-            final BanRunnable run = new BanRunnable(this, sender, args[1], true);
-            Bukkit.getScheduler().runTaskLaterAsynchronously(PVPArena.getInstance(), run, 20 * time);
-            this.doUnBan(sender, args[1]);
         }
     }
 
     @Override
     public void configParse(final YamlConfiguration config) {
-        final List<String> lBans = config.getStringList("bans");
-
-        final Set<String> hsBans = new HashSet<>();
-
-
-        for (final String s : lBans) {
-            hsBans.add(s);
-        }
-
-        this.getBans().clear();
-        for (final String s : hsBans) {
-            this.getBans().add(s);
-        }
+        this.permBanList = new HashSet<>(config.getStringList("bans"));
     }
 
-    private List<String> getBans() {
-        if (this.banList == null) {
-            this.banList = new ArrayList<>();
-        }
-        return this.banList;
+    private List<String> getPermBanList() {
+        return new ArrayList<>(this.permBanList);
     }
 
     void doBan(final CommandSender admin, final String player) {
-        this.getBans().add(player);
+        this.permBanList.add(player);
+        this.tempUnbanList.remove(player);
         if (admin != null) {
             this.arena.msg(admin, MSG.MODULE_BANVOTE_BANNED, player);
         }
         this.tryNotify(Language.parse(MSG.MODULE_BANVOTE_YOUBANNED, this.arena.getName()));
-        this.arena.getConfig().setManually("bans", this.getBans());
+        this.arena.getConfig().setManually("bans", this.getPermBanList());
         this.arena.getConfig().save();
     }
 
-    void doUnBan(final CommandSender admin, final String player) {
-        this.getBans().remove(player);
+    void doTempBan(final CommandSender admin, final String player) {
+        this.tempBanList.add(player);
+        if (admin != null) {
+            this.arena.msg(admin, MSG.MODULE_BANVOTE_BANNED, player);
+        }
+        this.tryNotify(Language.parse(MSG.MODULE_BANVOTE_YOUBANNED, this.arena.getName()));
+    }
+
+    void doUnban(final CommandSender admin, final String player) {
+        this.permBanList.remove(player);
+        this.tempBanList.remove(player);
         if (admin != null) {
             this.arena.msg(admin, MSG.MODULE_BANVOTE_UNBANNED, player);
         }
-        this.tryNotify(Language.parse(MSG.MODULE_BANVOTE_YOUBANNED, this.arena.getName()));
-        this.arena.getConfig().setManually("bans", this.getBans());
+        this.tryNotify(Language.parse(MSG.MODULE_BANVOTE_YOUUNBANNED, this.arena.getName()));
+        this.arena.getConfig().setManually("bans", this.getPermBanList());
         this.arena.getConfig().save();
     }
 
+    void doTempUnban(final CommandSender admin, final String player) {
+        this.tempUnbanList.add(player);
+        if (admin != null) {
+            this.arena.msg(admin, MSG.MODULE_BANVOTE_UNBANNED, player);
+        }
+        this.tryNotify(Language.parse(MSG.MODULE_BANVOTE_YOUUNBANNED, this.arena.getName()));
+    }
+
     private long parseStringToSeconds(final String string) {
-        String input = "";
+        String[] computedStr = string.split("(?=[dhms])", 2);
+        String value = computedStr[0];
+        String quantifier = "s";
+        try {
+            quantifier = computedStr[1].substring(0, 1);
+        } catch (IndexOutOfBoundsException ignored) {}
 
-        int pos = 0;
-        char type = 's';
+        double time = Double.parseDouble(value);
 
-        while (pos < string.length()) {
-            final Character c = string.charAt(pos);
-
-            try {
-                final int i = Integer.parseInt(String.valueOf(c));
-                input += String.valueOf(i);
-            } catch (final Exception e) {
-                if (c == '.' || c == ',') {
-                    input += ".";
-                } else {
-                    type = c;
-                    break;
-                }
-            }
-
-            pos++;
+        if ("d".equals(quantifier)) {
+            return round(SECONDS.convert(1, DAYS) * time);
         }
 
-        float time = Float.parseFloat(input);
-
-        if (type == 'd') {
-            time *= 24;
-            type = 'h';
-        }
-        if (type == 'h') {
-            time *= 60;
-            type = 'm';
-        }
-        if (type == 'm') {
-            time *= 60;
+        if ("h".equals(quantifier)) {
+            return round(SECONDS.convert(1, HOURS) * time);
         }
 
-        return (long) time;
+        if ("m".equals(quantifier)) {
+            return round(SECONDS.convert(1, MINUTES) * time);
+        }
+
+        return round(time);
     }
 
     private void tryKick(final CommandSender sender, final String string) {
         final Player p = Bukkit.getPlayer(string);
-        if (p == null) {
-            this.arena.msg(sender, MSG.MODULE_BANVOTE_NOTKICKED, string);
+        ArenaPlayer ap = ArenaPlayer.fromPlayer(string);
+        if (p != null && ap.getStatus() == PlayerStatus.NULL) {
             return;
         }
         this.arena.playerLeave(p, CFG.TP_EXIT, true, true, false);
@@ -246,10 +247,4 @@ public class BanKick extends ArenaModule {
         }
         this.arena.msg(p, string);
     }
-	/*
-/pa tempban [player] [timediff*]                             <----- This means banning the Player temporary from ALL Arenas!
-/pa ban [player]                                                     <----- The Player can't play PVP-Arena anymore. He is banned from ALL Arenas!
-/pa unban [player]                                                 <----- Unbans a Player from ALL Arenas!
-/pa tempunban [player] [timediff*]                         <----- Unbans a Player temporary from ALL Arenas!
-	 */
 }
