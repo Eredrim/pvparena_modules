@@ -41,12 +41,6 @@
         </dependency>
         <dependency>
             <groupId>net.slipcor.pvpa</groupId>
-            <artifactId>m_battlefieldguard</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_battlefieldmanager</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
