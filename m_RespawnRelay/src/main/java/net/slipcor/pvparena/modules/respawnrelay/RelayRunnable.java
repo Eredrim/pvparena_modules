@@ -19,34 +19,27 @@ import static net.slipcor.pvparena.config.Debugger.debug;
 
 public class RelayRunnable extends ArenaRunnable {
     private final ArenaPlayer ap;
-    private final Player maybePlayer;
     private final PADeathInfo deathInfo;
     private final List<ItemStack> keptItems;
     private final RespawnRelay mod;
 
     public RelayRunnable(RespawnRelay relay, Arena arena, ArenaPlayer arenaPlayer, PADeathInfo deathInfo, List<ItemStack> keptItems) {
-
         super(MSG.MODULE_RESPAWNRELAY_RESPAWNING.getNode(), arena.getConfig().getInt(CFG.MODULES_RESPAWNRELAY_INTERVAL), arenaPlayer.getPlayer(), null, false);
         this.mod = relay;
         this.ap = arenaPlayer;
         this.deathInfo = deathInfo;
         this.keptItems = keptItems;
-        this.maybePlayer = arenaPlayer.getPlayer();
     }
 
     @Override
     protected void commit() {
         debug(this.ap, "RelayRunnable commiting");
 
-        Player maybePlayer = this.maybePlayer;
+        Player maybePlayer = this.ap.getPlayer();
 
-        if (this.ap.getPlayer() == null) {
-            if (maybePlayer == null) {
-                PVPArena.getInstance().getLogger().warning("player null: " + this.ap.getName());
+        if (!this.ap.getPlayer().isOnline()) {
+                PVPArena.getInstance().getLogger().warning("player offline: " + this.ap.getName());
                 return;
-            }
-        } else {
-            maybePlayer = this.ap.getPlayer();
         }
 
         if (this.ap.getArena() == null) {
@@ -54,16 +47,13 @@ public class RelayRunnable extends ArenaRunnable {
         }
 
         new InventoryRefillRunnable(this.ap.getArena(), maybePlayer, this.keptItems);
-        final String spawn = this.mod.overrideMap.get(this.ap.getName());
+        final String spawn = this.mod.getSpawnPointOverrideMap().get(this.ap.getName());
         SpawnManager.respawn(this.ap, spawn);
 
-        if (this.ap.getArena() == null) {
-            return;
-        }
         this.ap.revive(this.deathInfo);
         this.ap.setStatus(PlayerStatus.FIGHT);
         this.mod.getRunnerMap().remove(this.ap.getName());
-        this.mod.overrideMap.remove(this.ap.getName());
+        this.mod.getSpawnPointOverrideMap().remove(this.ap.getName());
     }
 
     @Override
