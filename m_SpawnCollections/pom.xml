@@ -7,10 +7,10 @@
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>m_battlefieldmanager</artifactId>
+    <artifactId>m_spawncollections</artifactId>
     <packaging>jar</packaging>
 
-    <name>PVP Arena Modules - BattlefieldManager</name>
+    <name>PVP Arena Modules - SpawnCollections</name>
 
     <dependencies>
         <dependency>

@@ -41,7 +41,7 @@
         </dependency>
         <dependency>
             <groupId>net.slipcor.pvpa</groupId>
-            <artifactId>m_battlefieldmanager</artifactId>
+            <artifactId>m_spawncollections</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
