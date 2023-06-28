@@ -2,7 +2,6 @@ package net.slipcor.pvparena.modules.respawnrelay;
 
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.classes.PADeathInfo;
 import net.slipcor.pvparena.classes.PASpawn;
 import net.slipcor.pvparena.core.Config;
@@ -100,8 +99,6 @@ public class RespawnRelay extends ArenaModule {
         if(arenaPlayer.getArena().getGoal().getLives(arenaPlayer) <= 0) {
             return false;
         }
-
-        arenaPlayer.setStatus(PlayerStatus.DEAD);
 
         String teamRelay = String.format("%s%s", arenaPlayer.getArenaTeam().getName(), RELAY);
 

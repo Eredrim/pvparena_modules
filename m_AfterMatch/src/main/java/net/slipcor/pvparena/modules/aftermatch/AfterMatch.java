@@ -182,7 +182,7 @@ public class AfterMatch extends ArenaModule {
 
         long fightingPlayers = this.arena.getTeams().stream()
                 .flatMap(team -> team.getTeamMembers().stream())
-                .filter(p -> p.getStatus() == PlayerStatus.FIGHT)
+                .filter(p -> p.getStatus() == PlayerStatus.FIGHT || p.getStatus() == PlayerStatus.DEAD)
                 .count();
 
         if(fightingPlayers <= countTrigger) {
