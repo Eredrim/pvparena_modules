@@ -11,10 +11,12 @@ import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
+import net.slipcor.pvparena.core.StringUtils;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.PermissionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -25,16 +27,15 @@ import org.bukkit.potion.PotionEffectType;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.stream.Collectors.joining;
 import static net.slipcor.pvparena.config.Debugger.debug;
+import static net.slipcor.pvparena.modules.betterclasses.BetterClassDef.*;
 
 public class BetterClasses extends ArenaModule {
-
-    private final Map<Arena, HashMap<ArenaClass, HashSet<PotionEffect>>> superMap = new HashMap<>();
 
     public BetterClasses() {
         super("BetterClasses");
@@ -45,89 +46,65 @@ public class BetterClasses extends ArenaModule {
         return this.getClass().getPackage().getImplementationVersion();
     }
 
+    private final Map<ArenaClass, BetterClassDef> betterClassMap = new HashMap<>();
     private final Map<ArenaTeam, Integer> teamSwitches = new HashMap<>();
     private final Map<ArenaPlayer, Integer> playerSwitches = new HashMap<>();
 
     @Override
-    public boolean cannotSelectClass(final Player player,
-                                     final String className) {
-        debug(this.arena, player, "checking if cannotSelectClass");
-        if (this.notEnoughEXP(player, className)) {
+    public boolean cannotSelectClass(Player player, String className) {
+        ArenaClass arenaClass = this.arena.getArenaClass(className);
+        BetterClassDef betterClassDef = this.betterClassMap.get(arenaClass);
+        ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
+        ArenaTeam playerTeam = arenaPlayer.getArenaTeam();
+
+        debug(arenaPlayer, "[BetterClasses] Checking if cannotSelectClass");
+
+        if (!this.hasEnoughExp(arenaPlayer, arenaClass)) {
             this.arena.msg(player, MSG.ERROR_CLASS_NOTENOUGHEXP, className);
             return true;
         }
 
-        int max;
-        int globalmax;
+        int globalMax = betterClassDef.getMaxGlobalPlayers();
+        int teamMax = betterClassDef.getMaxTeamPlayers();
 
-        try {
-            max = (Integer) this.arena.getConfig().getUnsafe("modules.betterclasses.maxPlayers." + className);
-            globalmax = (Integer) this.arena.getConfig().getUnsafe("modules.betterclasses.maxGlobalPlayers." + className);
-        } catch (final Exception e) {
-            debug(this.arena, "Exception at BetterClasses.class getting " + className +" config:" + e.getMessage() + " at line "+e.getStackTrace()[1].getLineNumber());
-            max = 0;
-            globalmax = 0;
-        }
-        debug(this.arena, player, "max: " +max);
-        debug(this.arena, player, "gmax: "+globalmax);
+        if (globalMax > 0 || teamMax > 0) {
 
-        ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
-        if (!(max < 1 && globalmax < 1)) {
-            final ArenaTeam team = arenaPlayer.getArenaTeam();
+            int globalSum = 0;
+            int teamSum = 0;
 
-            if (team == null) {
-                debug(this.arena, player, "arenaTeam NULL");
-                return true;
-            }
-            int globalsum = 0;
-            int sum = 0;
-            for (final ArenaTeam ateam : this.arena.getTeams()) {
-                for (final ArenaPlayer ap : ateam.getTeamMembers()) {
-                    if (ap.getArenaClass() == null) {
-                        continue;
-                    }
-                    if (ap.getArenaClass().getName().equals(className)) {
-                        globalsum++;
-                        if (team.equals(ateam)) {
-                            sum++;
+            for (ArenaTeam team : this.arena.getTeams()) {
+                for (ArenaPlayer ap : team.getTeamMembers()) {
+                    if (ap.getArenaClass() != null && ap.getArenaClass().getName().equals(className)) {
+                        globalSum++;
+                        if (team.equals(playerTeam)) {
+                            teamSum++;
                         }
                     }
                 }
             }
-            debug(this.arena, player, "sum: " +sum);
 
-            if ((max > 0 && sum >= max) || (globalmax > 0 && globalsum > globalmax)) {
-                if (sum >= max) {
-                    debug(this.arena, player, sum + ">="+max);
-                }   else {
-                    debug(this.arena, player, globalsum + ">"+globalmax);
-                }
+            debug(arenaPlayer, "[BetterClasses] Players check for class '{}': team {}/{} - global {}/{}", className, teamSum, teamMax, globalSum, globalMax);
+
+            if ((teamMax != -1 && teamSum >= teamMax) || (globalMax != -1 && globalSum >= globalMax)) {
                 this.arena.msg(player, MSG.ERROR_CLASS_FULL, className);
                 return true;
             }
         }
 
-        for (ArenaTeam at : this.teamSwitches.keySet()) {
-            if (!at.hasPlayer(arenaPlayer)) {
-                continue;
-            }
-            if (this.teamSwitches.get(at) == 0) {
+        if(playerTeam != null) {
+            Integer remainingTeamSwitches = this.teamSwitches.get(playerTeam);
+            debug(arenaPlayer, "[BetterClasses] TeamSwitches of team {}: {}", playerTeam, remainingTeamSwitches);
+            if (remainingTeamSwitches != null && remainingTeamSwitches == 0) {
                 this.arena.msg(player, MSG.MODULE_BETTERCLASSES_CLASSCHANGE_MAXTEAM);
                 return true;
-            } else {
-                debug(this.arena, player, "teamswitches of "+at.getName()+": " + this.teamSwitches.get(at));
             }
         }
 
-        for (ArenaPlayer ap : this.playerSwitches.keySet()) {
-            if (ap.getName().equals(player.getName())) {
-                if (this.playerSwitches.get(ap) == 0) {
-                    this.arena.msg(player, MSG.MODULE_BETTERCLASSES_CLASSCHANGE_MAXPLAYER);
-                    return true;
-                } else {
-                    debug(this.arena, player, "playerswitches: " + this.playerSwitches.get(ap));
-                }
-            }
+        Integer remainingSwitches = this.playerSwitches.get(arenaPlayer);
+        debug(arenaPlayer, "[BetterClasses] Reamining playersSwitches: {}", remainingSwitches);
+        if (remainingSwitches != null && remainingSwitches == 0) {
+            this.arena.msg(player, MSG.MODULE_BETTERCLASSES_CLASSCHANGE_MAXPLAYER);
+            return true;
         }
 
         return false;
@@ -155,10 +132,11 @@ public class BetterClasses extends ArenaModule {
             return result;
         }
         for (final ArenaClass aClass : arena.getClasses()) {
-            result.define(new String[]{aClass.getName(), "add"});
+            result.define(new String[]{aClass.getName(), "add", "{PotionEffectType}"});
             result.define(new String[]{aClass.getName(), "clear"});
-            result.define(new String[]{aClass.getName(), "set", "exp"});
-            result.define(new String[]{aClass.getName(), "set", "max"});
+            result.define(new String[]{aClass.getName(), "set", "maxTeamPlayers"});
+            result.define(new String[]{aClass.getName(), "set", "maxGlobalPlayers"});
+            result.define(new String[]{aClass.getName(), "set", "neededEXPLevel"});
             result.define(new String[]{aClass.getName(), "respawncommand"});
             result.define(new String[]{aClass.getName(), "remove", "{PotionEffectType}"});
         }
@@ -167,32 +145,28 @@ public class BetterClasses extends ArenaModule {
 
     @Override
     public void commitCommand(final CommandSender sender, final String[] args) {
-        // !bc [classname] | show
-        // !bc [classname] add [def]| add
-        // !bc [classname] remove [type] | remove
-        // !bc [classname] clear | clear
-
-        // !bc [classname] set exp [level]
-        // !bc [classname] set max [count]
-
         if (!PermissionManager.hasAdminPerm(sender) && !PermissionManager.hasBuilderPerm(sender, this.arena)) {
             this.arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
-        if ((!(args.length > 2 && "respawncommand".equals(args[2])) || args.length < 3)  &&
-                !AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2, 3, 4, 5})) {
+        if ((args.length > 2 && !RESPAWN_COMMAND_KEY.equalsIgnoreCase(args[2])) && !AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2, 3, 4, 5})) {
+            this.arena.msg(sender, MSG.ERROR_INVALID_ARGUMENT_COUNT, String.valueOf(args.length - 1), "1 to 4");
+            this.printHelp(this.arena, sender);
             return;
         }
 
-        final ArenaClass c = this.arena.getArenaClass(args[1]);
+        ArenaClass c = this.arena.getArenaClass(args[1]);
 
         if (c == null) {
             this.arena.msg(sender, MSG.ERROR_CLASS_NOT_FOUND, args[1]);
             return;
         }
 
-        if (args.length == 5 && "set".equals(args[2])) {
+        ConfigurationSection configSection = this.arena.getConfig().getConfigurationSection(String.format("modules.betterclasses.%s", c.getName()));
+        BetterClassDef betterClassDef = BetterClassDef.convertFromConfig(configSection);
+
+        if (args.length == 5 && "set".equalsIgnoreCase(args[2])) {
             final int value;
             try {
                 value = Integer.parseInt(args[4]);
@@ -201,400 +175,266 @@ public class BetterClasses extends ArenaModule {
                 return;
             }
 
-            if ("exp".equalsIgnoreCase(args[3])) {
-                final String node = "modules.betterclasses.neededEXPLevel." + c.getName();
-                this.arena.getConfig().setManually(node, value);
-                this.arena.msg(sender, MSG.SET_DONE, node, String.valueOf(value));
-            } else if ("max".equalsIgnoreCase(args[3])) {
-                final String node = "modules.betterclasses.maxPlayers." + c.getName();
-                this.arena.getConfig().setManually(node, value);
-                this.arena.msg(sender, MSG.SET_DONE, node, String.valueOf(value));
-            } else if ("globalmax".equalsIgnoreCase(args[3])) {
-                final String node = "modules.betterclasses.maxGlobalPlayers." + c.getName();
-                this.arena.getConfig().setManually(node, value);
-                this.arena.msg(sender, MSG.SET_DONE, node, String.valueOf(value));
+            if (NEEDED_EXP_LEVEL_KEY.equalsIgnoreCase(args[3])) {
+                betterClassDef.setNeededEXPLevel(value);
+                this.arena.msg(sender, MSG.SET_DONE, NEEDED_EXP_LEVEL_KEY, String.valueOf(value));
+            } else if (MAX_TEAM_PLAYERS_KEY.equalsIgnoreCase(args[3])) {
+                betterClassDef.setMaxTeamPlayers(value);
+                this.arena.msg(sender, MSG.SET_DONE, MAX_TEAM_PLAYERS_KEY, String.valueOf(value));
+            } else if (MAX_GLOBAL_PLAYERS_KEY.equalsIgnoreCase(args[3])) {
+                betterClassDef.setMaxGlobalPlayers(value);
+                this.arena.msg(sender, MSG.SET_DONE, MAX_GLOBAL_PLAYERS_KEY, String.valueOf(value));
             } else {
                 return;
             }
+            configSection.getParent().createSection(c.getName(), betterClassDef.convertToConfig());
             this.arena.getConfig().save();
+            this.initMap();
             return;
-        } else if (args.length > 2 && "respawncommand".equals(args[2])) {
-            final String node = "modules.betterclasses.respawnCommand." + c.getName();
+        } else if (args.length > 2 && RESPAWN_COMMAND_KEY.equalsIgnoreCase(args[2])) {
             if (args.length == 3) {
-                this.arena.getConfig().setManually(node, null);
-                this.arena.msg(sender, MSG.MODULE_BETTERCLASSES_RESPAWNCOMMAND_REMOVED, node, c.getName());
+                betterClassDef.setRespawnCommand(null);
+                this.arena.msg(sender, MSG.MODULE_BETTERCLASSES_RESPAWNCOMMAND_REMOVED, RESPAWN_COMMAND_KEY, c.getName());
             } else {
                 String command = StringParser.joinArray(StringParser.shiftArrayBy(args, 3), " ");
-                this.arena.getConfig().setManually(node, command);
-                this.arena.msg(sender, MSG.SET_DONE, node, command);
+                betterClassDef.setRespawnCommand(command);
+                this.arena.msg(sender, MSG.SET_DONE, RESPAWN_COMMAND_KEY, command);
             }
+            configSection.getParent().createSection(c.getName(), betterClassDef.convertToConfig());
             this.arena.getConfig().save();
+            this.initMap();
             return;
         }
 
 
-        HashSet<PotionEffect> ape = new HashSet<>();
-
-        final String s = (String) this.arena.getConfig().getUnsafe("modules.betterclasses.permEffects." + c.getName());
-        if (s != null) {
-            ape = this.parseStringToPotionEffects(s);
-        }
-
-        if (args.length < 3) {
+        if (args.length == 2) {
             // !bc [classname] | show
             this.arena.msg(sender, MSG.MODULE_BETTERCLASSES_LISTHEAD, c.getName());
-            if (ape.size() >= 1) {
-                for (final PotionEffect pe : ape) {
-                    this.arena.msg(sender, pe.getType().getName() + 'x' + pe.getAmplifier());
-                }
-            } else {
+            if(!betterClassDef.getPermEffects().isEmpty()) {
+                betterClassDef.getPermEffects().forEach(effect ->
+                    this.arena.msg(sender, String.format("%s %d", effect.getType().getName(), effect.getAmplifier()))
+                );
                 this.arena.msg(sender, "---");
             }
-            return;
-        }
+        } else if (args.length == 3) {
+            if ("clear".equalsIgnoreCase(args[2])) {
+                betterClassDef.getPermEffects().clear();
+                this.arena.msg(sender, MSG.MODULE_BETTERCLASSES_CLEAR, c.getName());
+                configSection.getParent().createSection(c.getName(), betterClassDef.convertToConfig());
+                this.arena.getConfig().save();
+                this.initMap();
+            } else {
+                this.arena.msg(sender, MSG.ERROR_COMMAND_UNKNOWN);
+            }
+        } else {
+            PotionEffectType effectType = PotionEffectType.getByName(args[3]);
+            if(effectType == null) {
+                this.arena.msg(sender, MSG.ERROR_POTIONEFFECTTYPE_NOTFOUND, args[3]);
+                return;
+            }
 
-        if (args.length < 4) {
-            // !bc [classname] clear | clear
-            if (!"clear".equals(args[2])) {
+            if("add".equalsIgnoreCase(args[2])) {
+                int amplifier = 1;
+                if(args.length == 5) {
+                    try {
+                        amplifier = Integer.parseInt(args[4]);
+                    } catch (final NumberFormatException e) {
+                        this.arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[4]);
+                        return;
+                    }
+                }
+
+                betterClassDef.getPermEffects().removeIf(effect -> effect.getType().equals(effectType));
+                betterClassDef.getPermEffects().add(new PotionEffect(effectType, -1, amplifier));
+                this.arena.msg(sender, MSG.MODULE_BETTERCLASSES_ADD, c.getName(), effectType.getName());
+
+            } else if ("remove".equalsIgnoreCase(args[2])) {
+                betterClassDef.getPermEffects().removeIf(effect -> effect.getType().equals(effectType));
+                this.arena.msg(sender, MSG.MODULE_BETTERCLASSES_REMOVE, c.getName(), effectType.getName());
+
+            } else {
+                this.arena.msg(sender, MSG.ERROR_COMMAND_INVALID, args[2]);
                 this.printHelp(this.arena, sender);
                 return;
             }
 
-            this.arena.getConfig().setManually("modules.betterclasses.permEffects." + c.getName(), "none");
+            configSection.getParent().createSection(c.getName(), betterClassDef.convertToConfig());
             this.arena.getConfig().save();
-            this.arena.msg(sender, MSG.MODULE_BETTERCLASSES_CLEAR, c.getName());
-            return;
+            this.initMap();
         }
-
-        if ("add".equals(args[2])) {
-            // 0   1           2      3     4
-            // !bc [classname] add    [def] [amp]| add
-            PotionEffectType pet = null;
-
-            for (final PotionEffectType x : PotionEffectType.values()) {
-                if (x == null) {
-                    continue;
-                }
-                if (x.getName().equalsIgnoreCase(args[3])) {
-                    pet = x;
-                    break;
-                }
-            }
-
-            if (pet == null) {
-                this.arena.msg(sender, MSG.ERROR_POTIONEFFECTTYPE_NOTFOUND, args[3]);
-                return;
-            }
-
-            int amp = 1;
-
-            if (args.length == 5) {
-                try {
-                    amp = Integer.parseInt(args[4]);
-                } catch (final Exception e) {
-                    this.arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[4]);
-                    return;
-                }
-            }
-
-            ape.add(new PotionEffect(pet, Integer.MAX_VALUE, amp));
-            this.arena.getConfig().setManually("modules.betterclasses.permEffects." + c.getName(), this.parsePotionEffectsToString(ape));
-            this.arena.getConfig().save();
-            this.arena.msg(sender, MSG.MODULE_BETTERCLASSES_ADD, c.getName(), pet.getName());
-            return;
-        }
-        if (args[2].equals("remove")) {
-            // 0   1           2      3
-            // !bc [classname] remove [type] | remove
-            PotionEffectType pet = null;
-
-            for (PotionEffectType x : PotionEffectType.values()) {
-                if (x == null) {
-                    continue;
-                }
-                if (x.getName().equalsIgnoreCase(args[3])) {
-                    pet = x;
-                    break;
-                }
-            }
-
-            if (pet == null) {
-                this.arena.msg(sender, MSG.ERROR_POTIONEFFECTTYPE_NOTFOUND, args[3]);
-                return;
-            }
-
-            PotionEffect remove = null;
-
-            for (PotionEffect pe : ape) {
-                if (pe.getType().equals(pet)) {
-                    remove = pe;
-                    break;
-                }
-            }
-
-            ape.remove(remove);
-            this.arena.getConfig().setManually("modules.betterclasses.permEffects." + c.getName(), this.parsePotionEffectsToString(ape));
-            this.arena.getConfig().save();
-            this.arena.msg(sender, MSG.MODULE_BETTERCLASSES_REMOVE, c.getName(), remove.getType().getName());
-            return;
-        }
-        this.printHelp(this.arena, sender);
     }
 
     @Override
     public void configParse(final YamlConfiguration cfg) {
-        for (final ArenaClass c : this.arena.getClasses()) {
-            cfg.addDefault("modules.betterclasses.permEffects." + c.getName(), "none");
-            cfg.addDefault("modules.betterclasses.maxPlayers." + c.getName(), 0);
-            cfg.addDefault("modules.betterclasses.maxGlobalPlayers." + c.getName(), 0);
-            cfg.addDefault("modules.betterclasses.neededEXPLevel." + c.getName(), 0);
-            cfg.addDefault("modules.betterclasses.respawnCommand." + c.getName(), "");
-        }
-        for (final String team : this.arena.getTeamNames()) {
-            cfg.addDefault("modules.betterclasses.maxTeamSwitches." + team, -1);
-        }
+        this.arena.getClasses().forEach(c -> {
+            cfg.addDefault(String.format("modules.betterclasses.%s.maxTeamPlayers", c.getName()), -1);
+            cfg.addDefault(String.format("modules.betterclasses.%s.maxGlobalPlayers", c.getName()), -1);
+            cfg.addDefault(String.format("modules.betterclasses.%s.neededEXPLevel", c.getName()), 0);
+        });
+
+        this.arena.getTeamNames().forEach(team -> cfg.addDefault("modules.betterclasses.maxTeamSwitches." + team, -1));
+
         cfg.addDefault("modules.betterclasses.maxPlayerSwitches", -1);
     }
 
     @Override
     public void displayInfo(final CommandSender sender) {
-        if (this.superMap == null || !this.superMap.containsKey(this.arena)) {
-            return;
-        }
-
-        final Map<ArenaClass, HashSet<PotionEffect>> map = this.superMap.get(this.arena);
-
-        for (final Map.Entry<ArenaClass, HashSet<PotionEffect>> arenaClassHashSetEntry : map.entrySet()) {
-            final Set<String> set = new HashSet<>();
-            for (final PotionEffect pef : arenaClassHashSetEntry.getValue()) {
-                set.add(pef.getType().getName() + 'x' + pef.getAmplifier() + 1);
-            }
-            sender.sendMessage(arenaClassHashSetEntry.getKey().getName() + ": " + StringParser.joinSet(
-                    set, "; "));
-        }
+        this.betterClassMap.forEach((arenaClass, betterClassDef) -> {
+            String effects = betterClassDef.getPermEffects().stream()
+                    .map(pEffect -> String.format("%sx%d", pEffect.getType().getName(), pEffect.getAmplifier() + 1))
+                    .collect(joining("; "));
+            sender.sendMessage(String.format("%s: %s", arenaClass.getName(), effects));
+        });
     }
 
     @Override
     public void lateJoin(final Player player) {
-        if (!this.superMap.containsKey(this.arena)) {
-            this.init_map();
-        }
-        final ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
-        debug(player, "respawning player " + ap);
-        final Map<ArenaClass, HashSet<PotionEffect>> map = this.superMap.get(this.arena);
-        if (map == null) {
-            PVPArena.getInstance().getLogger().warning(String.format("No superMap entry for arena %s", this.arena));
-            return;
-        }
+        ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
 
-        final ArenaClass c = ap.getArenaClass();
+        ArenaClass arenaClass = ap.getArenaClass();
+        Set<PotionEffect> effectSet = this.betterClassMap.get(arenaClass).getPermEffects();
 
-        final Iterable<PotionEffect> ape = map.get(c);
-        if (ape == null) {
-            debug(player, "no effects for team " + c);
-            return;
-        }
-        for (final PotionEffect pe : ape) {
-            debug(player, "adding " + pe.getType());
-            player.addPotionEffect(pe);
-        }
+        Integer maxPlayerSwitches = (Integer) this.arena.getConfig().getUnsafe("modules.betterclasses.maxPlayerSwitches");
+        this.playerSwitches.put(ap, maxPlayerSwitches);
+
+        player.addPotionEffects(effectSet);
     }
 
-    private void init_map() {
-        final HashMap<ArenaClass, HashSet<PotionEffect>> map = new HashMap<>();
-
-        this.superMap.put(this.arena, map);
-
-        for (final ArenaClass c : this.arena.getClasses()) {
-            final String s = (String) this.arena.getConfig().getUnsafe("modules.betterclasses.permEffects." + c.getName());
-            if (s == null) {
-                continue;
+    private void initMap() {
+        this.betterClassMap.clear();
+        this.arena.getClasses().forEach(c -> {
+            ConfigurationSection cs = this.arena.getConfig().getConfigurationSection(String.format("modules.betterclasses.%s", c.getName()));
+            if (cs != null) {
+                BetterClassDef betterClassDef = BetterClassDef.convertFromConfig(cs);
+                this.betterClassMap.put(c, betterClassDef);
             }
-            final HashSet<PotionEffect> ape = this.parseStringToPotionEffects(s);
-            if (ape.isEmpty()) {
-                continue;
-            }
-            map.put(c, ape);
-        }
-
-        for (final ArenaPlayer arenaPlayer : this.arena.getFighters()) {
-            final Iterable<PotionEffect> ape = map.get(arenaPlayer.getArenaClass());
-            if (ape == null) {
-                continue;
-            }
-            for (final PotionEffect pe : ape) {
-                arenaPlayer.getPlayer().addPotionEffect(pe);
-            }
-        }
+        });
     }
 
-    private boolean notEnoughEXP(final Player player, final String className) {
-        final int needed;
-        final int available;
+    private void applyEffectsToPlayers() {
+        this.arena.getFighters().forEach(arenaPlayer -> {
+            Set<PotionEffect> potionEffects = this.betterClassMap.get(arenaPlayer.getArenaClass()).getPermEffects();
+            if (potionEffects != null) {
+                arenaPlayer.getPlayer().addPotionEffects(potionEffects);
+            }
+        });
+    }
 
+    private boolean hasEnoughExp(ArenaPlayer arenaPlayer, ArenaClass arenaClass) {
         try {
-            needed = (Integer) this.arena.getConfig().getUnsafe("modules.betterclasses.neededEXPLevel." + className);
-            final PlayerState state = ArenaPlayer.fromPlayer(player).getState();
+            int needed = this.betterClassMap.get(arenaClass).getNeededEXPLevel();
+            final PlayerState state = arenaPlayer.getState();
 
             final Field value = state.getClass().getDeclaredField("explevel");
             value.setAccessible(true);
-            available = value.getInt(state);
+            int available = value.getInt(state);
+            return available >= needed;
         } catch (final Exception e) {
-            return false;
+            return true;
         }
-
-        return available < needed;
-    }
-
-    private String parsePotionEffectsToString(final Iterable<PotionEffect> ape) {
-        final Set<String> result = new HashSet<>();
-        for (final PotionEffect pe : ape) {
-            result.add(pe.getType().getName() + ':' + pe.getAmplifier());
-        }
-        return StringParser.joinSet(result, ",");
     }
 
     @Override
     public void reset(final boolean force) {
+        this.betterClassMap.clear();
         this.playerSwitches.clear();
         this.teamSwitches.clear();
     }
 
     @Override
-    public void parseRespawn(final Player player, final ArenaTeam team, final DamageCause cause, final Entity damager) {
-        if (!this.superMap.containsKey(this.arena)) {
-            this.init_map();
-        }
-        final ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
-        debug(player, "respawning player " + ap);
+    public void parseRespawn(Player player, ArenaTeam team, DamageCause cause, Entity damager) {
+        final ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
 
-        final ArenaClass c = ap.getArenaClass();
-        if (c != null) {
-            final String node = "modules.betterclasses.respawnCommand." + c.getName();
-            String cmd = this.arena.getConfig().getYamlConfiguration().getString(node, "");
-            if (cmd.length() > 0) {
-                cmd = cmd.replace("%player%", player.getName());
-                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), cmd);
-            }
-        }
-
-
-        final Map<ArenaClass, HashSet<PotionEffect>> map = this.superMap.get(this.arena);
-        if (map == null) {
-            PVPArena.getInstance().getLogger().warning("No superMap entry for arena " + this.arena);
+        final ArenaClass arenaClass = arenaPlayer.getArenaClass();
+        if (arenaClass == null) {
             return;
         }
 
-        if ((team != null || cause != null || damager != null)) {
-            player.getActivePotionEffects();
-            if (!player.getActivePotionEffects().isEmpty()) {
-                for (final PotionEffect eff : player.getActivePotionEffects()) {
-                    player.removePotionEffect(eff.getType());
-                }
-            }
-        }
+        BetterClassDef betterClassDef = this.betterClassMap.get(arenaClass);
+        applyRespawnCommand(player, betterClassDef);
+        applyNewPotionEffects(arenaPlayer, betterClassDef.getPermEffects());
+    }
 
-        final Iterable<PotionEffect> ape = map.get(c);
-        if (ape == null) {
-            debug(player, "no effects for class " + c);
-            return;
-        }
-
-        class RunLater implements Runnable {
-            @Override
-            public void run() {
-                for (final PotionEffect pe : ape) {
-                    debug(player, "adding " + pe.getType());
-                    player.addPotionEffect(pe);
-                }
-            }
-        }
+    private static void applyNewPotionEffects(ArenaPlayer ap, Set<PotionEffect> potionEffects) {
+        Player player = ap.getPlayer();
+        player.getActivePotionEffects().forEach(potionEffect -> player.removePotionEffect(potionEffect.getType()));
 
         try {
-            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new RunLater(), 20L);
-        } catch (Exception e) {
-            debug(this.arena, player, "[betterclass] exception when adding potion effects: " + e.getMessage());
+            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), () -> {
+                player.addPotionEffects(potionEffects);
+            }, 20L);
+        } catch (IllegalArgumentException e) {
+            debug(ap, "[BetterClasses] exception when adding potion effects: {}", e.getMessage());
+        }
+    }
+
+    private static void applyRespawnCommand(Player player, BetterClassDef betterClassDef) {
+        String respawnCommand = betterClassDef.getRespawnCommand();
+        if(StringUtils.notBlank(respawnCommand)) {
+            String parsedCommand = respawnCommand.replace("%player%", player.getName());
+            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), parsedCommand);
         }
     }
 
     @Override
     public void parseClassChange(Player player, ArenaClass aClass) {
-        debug(this.arena, "BetterClass handling class change!");
-        ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
-        if (this.playerSwitches.containsKey(arenaPlayer)) {
-            int value = this.playerSwitches.get(arenaPlayer);
-            if (value-- > 0) {
-                this.playerSwitches.put(arenaPlayer, value);
-                debug(this.arena, "player " + arenaPlayer.getName() + ": " + value);
-            }
-        }
-        ArenaTeam at = arenaPlayer.getArenaTeam();
-        if (this.teamSwitches.containsKey(at) && this.teamSwitches.get(at) != null) {
-            int value = this.teamSwitches.get(at);
-            if (value-- > 0) {
-                this.teamSwitches.put(at, value);
-                debug(this.arena, "team " + at.getName() + ": " + value);
-            }
-        }
+        debug(this.arena, "[BetterClasses] handling class change!");
+
         if (this.arena.isFightInProgress()) {
-            this.parseRespawn(arenaPlayer.getPlayer(), at, null, null);
+            ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
+
+            if (this.playerSwitches.containsKey(arenaPlayer)) {
+                int value = this.playerSwitches.get(arenaPlayer);
+                if (value > 0) {
+                    value--;
+                    this.playerSwitches.put(arenaPlayer, value);
+                    debug(arenaPlayer, "[BetterClasses] remaining player switches: {}", value);
+                }
+            }
+
+            ArenaTeam at = arenaPlayer.getArenaTeam();
+            if (this.teamSwitches.containsKey(at)) {
+                int value = this.teamSwitches.get(at);
+                if (value > 0) {
+                    value--;
+                    this.teamSwitches.put(at, value);
+                    debug(arenaPlayer, "[BetterClasses] remaining team switches - team {}: {}", at.getName(), value);
+                }
+            }
+
+            applyNewPotionEffects(arenaPlayer, this.betterClassMap.get(aClass).getPermEffects());
         }
     }
 
     @Override
     public void parseStart() {
-        if (!this.superMap.containsKey(this.arena)) {
-            this.init_map();
-        }
-        for (final ArenaPlayer arenaPlayer : this.arena.getFighters()) {
-            this.parseRespawn(arenaPlayer.getPlayer(), null, null, null);
-            this.playerSwitches.put(arenaPlayer,
-                    (Integer) this.arena.getConfig()
-                            .getUnsafe("modules.betterclasses.maxPlayerSwitches"));
+        this.applyEffectsToPlayers();
+
+        Integer maxPlayerSwitches = (Integer) this.arena.getConfig().getUnsafe("modules.betterclasses.maxPlayerSwitches");
+        for (ArenaPlayer arenaPlayer : this.arena.getFighters()) {
+            applyRespawnCommand(arenaPlayer.getPlayer(), this.betterClassMap.get(arenaPlayer.getArenaClass()));
+            this.playerSwitches.put(arenaPlayer, maxPlayerSwitches);
         }
 
         for (ArenaTeam at : this.arena.getTeams()) {
-            this.teamSwitches.put(at,
-                    (Integer) this.arena.getConfig()
-                            .getUnsafe("modules.betterclasses.maxTeamSwitches."+at.getName()));
+            Integer maxTeamSwitches = (Integer) this.arena.getConfig().getUnsafe("modules.betterclasses.maxTeamSwitches." + at.getName());
+            this.teamSwitches.put(at, maxTeamSwitches);
         }
     }
 
-    private HashSet<PotionEffect> parseStringToPotionEffects(final String s) {
-        final HashSet<PotionEffect> spe = new HashSet<>();
-
-        if (s == null || "none".equals(s) || s.isEmpty()) {
-            return spe;
+    @Override
+    public void parseJoin(Player player, ArenaTeam team) {
+        if (this.betterClassMap.isEmpty()) {
+            this.initMap();
         }
-
-        String current = null;
-
-        try {
-            final String[] ss = s.split(",");
-            for (final String sss : ss) {
-                current = sss;
-
-                final String[] values = sss.split(":");
-
-                final PotionEffectType type = PotionEffectType.getByName(values[0].toUpperCase());
-
-                final int amp = values.length < 2 ? 1 : Integer.parseInt(values[1]);
-
-                final PotionEffect pe = new PotionEffect(type, Integer.MAX_VALUE, amp - 1);
-                spe.add(pe);
-            }
-        } catch (final Exception e) {
-            PVPArena.getInstance().getLogger().warning("error while parsing POTION EFFECT DEFINITION \"" + s + "\" : " + current);
-        }
-
-        return spe;
     }
 
     private void printHelp(final Arena arena, final CommandSender sender) {
-        arena.msg(sender, "/pa [arenaname] !bc [classname] | list potion effects");
-        arena.msg(sender, "/pa [arenaname] !bc [classname] clear | clear potion effects");
-        arena.msg(sender, "/pa [arenaname] !bc [classname] add [type] [amp] | add potion effect");
-        arena.msg(sender, "/pa [arenaname] !bc [classname] remove [type] | remove potion effect");
-        arena.msg(sender, "/pa [arenaname] !bc [classname] respawncommand [command] | command on respawn");
+        arena.msg(sender, "/pa [arenaname] !bc <classname> | list potion effects");
+        arena.msg(sender, "/pa [arenaname] !bc <classname> clear | clear potion effects");
+        arena.msg(sender, "/pa [arenaname] !bc <classname> add <type> [amplifier] | add a potion effect");
+        arena.msg(sender, "/pa [arenaname] !bc <classname> remove <type> | remove a potion effect");
+        arena.msg(sender, "/pa [arenaname] !bc <classname> set <maxTeamPlayers/maxGlobalPlayers/neededEXPLevel> <value> | change setting value of a class");
+        arena.msg(sender, "/pa [arenaname] !bc <classname> respawncommand [command] | change command of a class on respawn (keep empty to remove the former one)");
     }
 }
