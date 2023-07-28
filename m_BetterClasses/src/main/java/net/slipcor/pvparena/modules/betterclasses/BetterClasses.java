@@ -265,14 +265,17 @@ public class BetterClasses extends ArenaModule {
     }
 
     @Override
-    public void configParse(final YamlConfiguration cfg) {
+    public void initConfig() {
+        YamlConfiguration cfg = this.arena.getConfig().getYamlConfiguration();
         this.arena.getClasses().forEach(c -> {
             cfg.addDefault(String.format("modules.betterclasses.%s.maxTeamPlayers", c.getName()), -1);
             cfg.addDefault(String.format("modules.betterclasses.%s.maxGlobalPlayers", c.getName()), -1);
             cfg.addDefault(String.format("modules.betterclasses.%s.neededEXPLevel", c.getName()), 0);
         });
 
-        this.arena.getTeamNames().forEach(team -> cfg.addDefault("modules.betterclasses.maxTeamSwitches." + team, -1));
+        if(!this.arena.isFreeForAll()) {
+            this.arena.getTeamNames().forEach(team -> cfg.addDefault("modules.betterclasses.maxTeamSwitches." + team, -1));
+        }
 
         cfg.addDefault("modules.betterclasses.maxPlayerSwitches", -1);
     }
@@ -393,7 +396,7 @@ public class BetterClasses extends ArenaModule {
             }
 
             ArenaTeam at = arenaPlayer.getArenaTeam();
-            if (this.teamSwitches.containsKey(at)) {
+            if (!this.arena.isFreeForAll() && this.teamSwitches.containsKey(at)) {
                 int value = this.teamSwitches.get(at);
                 if (value > 0) {
                     value--;
@@ -423,7 +426,7 @@ public class BetterClasses extends ArenaModule {
     }
 
     @Override
-    public void parseJoin(Player player, ArenaTeam team) {
+    public void checkJoin(Player player) {
         if (this.betterClassMap.isEmpty()) {
             this.initMap();
         }
