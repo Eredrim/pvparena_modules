@@ -2,11 +2,14 @@ package net.slipcor.pvparena.modules.betterkillstreaks;
 
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
+import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
+import net.slipcor.pvparena.core.Config;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
+import net.slipcor.pvparena.core.StringUtils;
 import net.slipcor.pvparena.events.PADeathEvent;
 import net.slipcor.pvparena.events.PAKillEvent;
 import net.slipcor.pvparena.loadables.ArenaModule;
@@ -17,6 +20,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -24,10 +28,13 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+
+import static net.slipcor.pvparena.core.ItemStackUtils.getItemStacksFromConfig;
+import static net.slipcor.pvparena.core.Utils.getSerializableItemStacks;
 
 public class BetterKillstreaks extends ArenaModule implements Listener {
     public BetterKillstreaks() {
@@ -45,7 +52,7 @@ public class BetterKillstreaks extends ArenaModule implements Listener {
 
     @Override
     public boolean checkCommand(final String s) {
-        return "!bk".equals(s) || s.startsWith("betterkillstreaks");
+        return "!bk".equalsIgnoreCase(s) || "betterkillstreaks".equalsIgnoreCase(s);
     }
 
     @Override
@@ -61,9 +68,11 @@ public class BetterKillstreaks extends ArenaModule implements Listener {
     @Override
     public CommandTree<String> getSubs(final Arena arena) {
         final CommandTree<String> result = new CommandTree<>(null);
-        result.define(new String[]{"{int}", "potion"});
+        result.define(new String[]{"{int}", "addEffect", "{PotionEffectType}", "{int}", "{int}"});
+        result.define(new String[]{"{int}", "removeEffect", "{PotionEffectType}"});
         result.define(new String[]{"{int}", "clear"});
         result.define(new String[]{"{int}", "items"});
+        result.define(new String[]{"{int}", "message"});
         return result;
     }
 
@@ -87,116 +96,152 @@ public class BetterKillstreaks extends ArenaModule implements Listener {
             this.arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[1]);
             return;
         }
-        ConfigurationSection cs = this.arena.getConfig().getYamlConfiguration().getConfigurationSection("modules.betterkillstreaks.definitions");
+        Config config = this.arena.getConfig();
+        YamlConfiguration yamlConfig = config.getYamlConfiguration();
+        ConfigurationSection defSection = config.getOrCreateConfigurationSection("modules.betterkillstreaks.definitions");
+        String levelPath = "l" + level;
+        if(defSection.get(levelPath) == null) {
+            defSection.createSection(levelPath);
+        }
+        ConfigurationSection levelSection = defSection.getConfigurationSection(levelPath);
         if (args.length < 3) {
             // !bk [level] | show level content
-            if (cs.get("d" + level) == null) {
+            if (levelSection.getKeys(false).isEmpty()) {
                 this.arena.msg(sender, "--------");
             } else {
-                cs = cs.getConfigurationSection("d" + level);
-                this.arena.msg(sender, "items: " + cs.getString("items", "NONE"));
-                this.arena.msg(sender, "potion: " + cs.getString("potion", "NONE"));
+                this.arena.msg(sender, String.format("message: %s", levelSection.getString("msg", "NONE")));
+                this.arena.msg(sender, String.format("items: %s", levelSection.getString("items", "NONE")));
+                this.arena.msg(sender, String.format("effects: %s", levelSection.getStringList("effects")));
             }
             return;
         }
 
         if ("clear".equals(args[2])) {
             // !bk [level] clear | clear the definition
-            cs.set("d" + level, null);
+            defSection.set(levelPath, null);
             this.arena.msg(sender, "level " + level + " removed!");
-            this.arena.getConfig().save();
+            config.save();
             return;
         }
 
         if ("items".equals(args[2])) {
             // !bk [level] items | set the items to your inventory
-            cs.set("d" + level + ".items", ((Player) sender).getInventory().getContents());
-            this.arena.getConfig().save();
-            this.arena.msg(sender, "Items of level " + level + " set to: " + ((Player) sender).getInventory().getContents().toString());
+            yamlConfig.set(levelSection.getCurrentPath() + ".items", getSerializableItemStacks(((Player) sender).getInventory().getContents()));
+            config.save();
+            this.arena.msg(sender, String.format("Items of level %d have been set to your current inventory content", level));
             return;
         }
 
-        if (!"potion".equals(args[2])) {
-            this.arena.msg(sender, "/pa [arenaname] !bk [level] | list level settings");
-            this.arena.msg(sender, "/pa [arenaname] !bk [level] clear | clear level settings");
-            this.arena.msg(sender, "/pa [arenaname] !bk [level] potion [type] {amp} {duration} | add potion effect");
-            this.arena.msg(sender, "/pa [arenaname] !bk [level] items | set the level's items");
-
+        if ("message".equalsIgnoreCase(args[2])) {
+            String value = String.join(" ", StringParser.shiftArrayBy(args, 3));
+            levelSection.set("msg", value);
+            config.save();
+            this.arena.msg(sender, String.format("Message of level %d have been set to '%s'", level, value));
             return;
         }
 
-        // !bk [level] potion [def]| add potioneffect definition
+        if ("addEffect".equals(args[2])) {
+            // !bk [level] addEffect [effectType] (amplifier) (duration)
+            PotionEffect newEffect;
 
-        final HashSet<PotionEffect> ape = new HashSet<>();
-
-
-        // 0   1           2      3     4    5
-        // !bc [level] potion    [def] [amp] [dur]| add
-        PotionEffectType pet = null;
-
-        for (final PotionEffectType x : PotionEffectType.values()) {
-            if (x == null) {
-                continue;
-            }
-            if (x.getName().equalsIgnoreCase(args[3])) {
-                pet = x;
-                break;
-            }
-        }
-
-        if (pet == null) {
-            this.arena.msg(sender, MSG.ERROR_POTIONEFFECTTYPE_NOTFOUND, args[3]);
-            return;
-        }
-
-        int amp = 1;
-
-        if (args.length >= 5) {
             try {
-                amp = Integer.parseInt(args[4]);
-            } catch (final Exception e) {
-                this.arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[4]);
+                newEffect = this.generatePotionEffect(args[3], args[4], args[5]);
+            } catch (NullPointerException ignored) {
+                this.arena.msg(sender, MSG.ERROR_POTIONEFFECTTYPE_NOTFOUND, args[3]);
+                return;
+            } catch (NumberFormatException ignored) {
+                this.arena.msg(sender, MSG.ERROR_NOT_NUMERIC, String.format("%s or %s", args[4], args[5]));
                 return;
             }
+
+
+            List<String> effectList = levelSection.getStringList("effects");
+            String newEffectStr = this.parsePotionEffectToStringCfg(newEffect);
+            effectList.add(newEffectStr);
+
+            levelSection.set("effects", effectList);
+
+            config.save();
+            this.arena.msg(sender, String.format("Level %d has now potions effects: %s", level, effectList));
+            return;
         }
 
-        int duration = 2400;
-
-        if (args.length >= 6) {
-            try {
-                duration = Integer.parseInt(args[5]);
-            } catch (final Exception e) {
-                this.arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[5]);
-                return;
+        if ("removeEffect".equals(args[2])) {
+            // !bk [level] removeEffect [effectType]
+            PotionEffectType effectType = PotionEffectType.getByName(args[3].toUpperCase());
+            if(effectType == null) {
+                this.arena.msg(sender, MSG.ERROR_POTIONEFFECTTYPE_NOTFOUND, args[3]);
+            } else {
+                List<String> effectList = levelSection.getStringList("effects");
+                boolean removed = effectList.removeIf(effectStr -> effectStr.startsWith(effectType.getName()));
+                if(removed) {
+                    this.arena.msg(sender, String.format("Effect %s has been removed", effectType.getName()));
+                    levelSection.set("effects", effectList);
+                    config.save();
+                } else {
+                    this.arena.msg(sender, String.format("Effect %s doesn't exist in level configuration", effectType.getName()));
+                }
             }
+            return;
         }
 
-        ape.add(new PotionEffect(pet, duration, amp));
+        this.arena.msg(sender, "/pa [arenaname] !bk [level] | list level settings");
+        this.arena.msg(sender, "/pa [arenaname] !bk [level] clear | clear level settings");
+        this.arena.msg(sender, "/pa [arenaname] !bk [level] addEffect [effectType] (amplifier) (duration) | add level potion effect");
+        this.arena.msg(sender, "/pa [arenaname] !bk [level] removeEffect [effectType] | remove level potion effect");
+        this.arena.msg(sender, "/pa [arenaname] !bk [level] items | set the level's items");
+        this.arena.msg(sender, "/pa [arenaname] !bk [level] message | set the level's message, use 'none' to remove it");
+    }
 
-        final String val = this.parsePotionEffectsToString(ape);
+    /**
+     * Generate a new potion effect from 3 strings, assuming duration is in seconds
+     * @param type Effect type
+     * @param amp Effect amp
+     * @param duration Effect duration in seconds
+     * @return PotionEffect object
+     * @throws NumberFormatException if number values can't be parsed
+     * @throws NullPointerException if effect type is null (can't be parsed)
+     */
+    private PotionEffect generatePotionEffect(String type, String amp, String duration) throws NumberFormatException, NullPointerException {
+        int effectAmp = Integer.parseInt(amp);
+        int effectDuration = Integer.parseInt(duration);
+        PotionEffectType effectType = PotionEffectType.getByName(type.toUpperCase());
+        if(effectType == null) {
+            throw new NullPointerException();
+        }
 
-        cs.set("d" + level + ".potion", val);
-
-        this.arena.getConfig().save();
-        this.arena.msg(sender, "Level " + level + " now has potion effect: " + val);
+        return new PotionEffect(effectType, effectDuration * 20, effectAmp - 1);
     }
 
     @Override
-    public void configParse(final YamlConfiguration config) {
-        if (!this.setup) {
-            Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
-            this.setup = true;
+    public void initConfig() {
+        YamlConfiguration config = this.arena.getConfig().getYamlConfiguration();
+        if(config.getConfigurationSection("modules.betterkillstreaks.definitions") == null) {
+            config.set("modules.betterkillstreaks.definitions.l1.msg", "First Kill!");
+            config.set("modules.betterkillstreaks.definitions.l2.msg", "Double Kill!");
+            config.set("modules.betterkillstreaks.definitions.l3.msg", "Triple Kill!");
+            config.set("modules.betterkillstreaks.definitions.l4.msg", "Quadra Kill!");
+            config.set("modules.betterkillstreaks.definitions.l5.msg", "Super Kill!");
+            config.set("modules.betterkillstreaks.definitions.l6.msg", "Ultra Kill!");
+            config.set("modules.betterkillstreaks.definitions.l7.msg", "Godlike!");
+            config.set("modules.betterkillstreaks.definitions.l8.msg", "Monster!");
         }
+        this.arena.getConfig().save();
     }
 
     @Override
     public void parseStart() {
+        if (!this.setup) {
+            Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
+            this.setup = true;
+        }
         this.streaks.clear();
     }
 
     @Override
     public void reset(final boolean force) {
         this.streaks.clear();
+        HandlerList.unregisterAll(this);
     }
 
     @EventHandler
@@ -207,71 +252,65 @@ public class BetterKillstreaks extends ArenaModule implements Listener {
     @EventHandler
     public void onPlayerKill(final PAKillEvent event) {
         final int value;
-        if (this.streaks.containsKey(event.getPlayer().getName())) {
-            value = this.streaks.get(event.getPlayer().getName()) + 1;
+        String playerName = event.getPlayer().getName();
+        if (this.streaks.containsKey(playerName)) {
+            value = this.streaks.get(playerName) + 1;
 
         } else {
             value = 1;
         }
-        this.streaks.put(event.getPlayer().getName(), value);
+        this.streaks.put(playerName, value);
         this.reward(event.getPlayer(), value);
     }
 
-    private String parsePotionEffectsToString(final Iterable<PotionEffect> ape) {
-        final Set<String> result = new HashSet<>();
-        for (final PotionEffect pe : ape) {
-            result.add(pe.getType().getName() + ':' + pe.getAmplifier());
-        }
-        return StringParser.joinSet(result, ",");
+    /**
+     * Convert potion effect to string for config file
+     * Duration in config is supposed to be in seconds, so duration of effect will be divided by 20
+     * @param potionEffect The effect to serialize
+     * @return Serialized string at format [type]:[amp]:[duration]
+     */
+    private String parsePotionEffectToStringCfg(PotionEffect potionEffect) {
+        return String.join(":", potionEffect.getType().getName(), String.valueOf(potionEffect.getAmplifier() + 1), String.valueOf(potionEffect.getDuration() / 20));
     }
 
-    private Iterable<PotionEffect> parseStringToPotionEffects(final String s) {
-        final HashSet<PotionEffect> spe = new HashSet<>();
-
-        if (s == null || "none".equals(s) || s.isEmpty()) {
-            return spe;
-        }
-
-        String current = null;
-
+    private PotionEffect parseStringToPotionEffect(String s) {
         try {
-            final String[] ss = s.split(",");
-            for (final String sss : ss) {
-                current = sss;
-
-                final String[] values = sss.split(":");
-
-                final PotionEffectType type = PotionEffectType.getByName(values[0].toUpperCase());
-
-                final int amp = values.length < 2 ? 1 : Integer.parseInt(values[1]);
-
-                final int duration = values.length < 3 ? 2400 : Integer.parseInt(values[2]);
-
-                final PotionEffect pe = new PotionEffect(type, duration, amp - 1);
-                spe.add(pe);
-            }
+            String[] effectEntry = s.split(":");
+            return this.generatePotionEffect(effectEntry[0], effectEntry[1], effectEntry[2]);
         } catch (final Exception e) {
-            PVPArena.getInstance().getLogger().warning("error while parsing POTION EFFECT DEFINITION \"" + s + "\" : " + current);
+            PVPArena.getInstance().getLogger().warning(String.format("[BetterKillstreaks] Error while parsing effect definition: \"%s\"", s));
+            return null;
         }
-
-        return spe;
     }
 
 
-    private void reward(final Player player, final int value) {
-        final ConfigurationSection cs = this.arena.getConfig().getYamlConfiguration().getConfigurationSection("modules.betterkillstreaks.definitions");
-        for (final String key : cs.getKeys(false)) {
-            if (key.equals("d" + value)) {
-                final ItemStack[] items = cs.getList("items").toArray(new ItemStack[0]);
-                for (final ItemStack item : items) {
-                    player.getInventory().addItem(item);
+    private void reward(final Player player, final int level) {
+        ConfigurationSection levelSection = this.arena.getConfig().getYamlConfiguration().getConfigurationSection(String.format("modules.betterkillstreaks.definitions.l%d", level));
+        if (levelSection != null) {
+            Set<String> sectionKeys = levelSection.getKeys(false);
+            if (!sectionKeys.isEmpty()) {
+
+                if(sectionKeys.contains("items")) {
+                    ItemStack[] items = getItemStacksFromConfig(levelSection.getMapList("items"));
+                    player.getInventory().addItem(items);
                 }
 
-                final String pot = cs.getString("d" + value, "���");
+                if(sectionKeys.contains("effects")) {
+                    levelSection.getStringList("effects").stream()
+                            .map(this::parseStringToPotionEffect)
+                            .filter(Objects::nonNull)
+                            .forEach(player::addPotionEffect);
+                }
 
-                if (!"���".equals(pot)) {
-                    for (final PotionEffect pe : this.parseStringToPotionEffects(pot)) {
-                        player.addPotionEffect(pe);
+                if(sectionKeys.contains("msg")) {
+                    String msg = levelSection.getString("msg");
+
+                    if (StringUtils.notBlank(msg) && !"none".equalsIgnoreCase(msg)) {
+                        String playerNameDisplay = player.getName();
+                        if (!this.arena.isFreeForAll()) {
+                            playerNameDisplay = ArenaPlayer.fromPlayer(player).getArenaTeam().colorizePlayer(player);
+                        }
+                        this.arena.broadcast(String.format("%s - %s", playerNameDisplay, msg));
                     }
                 }
             }

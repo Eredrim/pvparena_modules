@@ -3,22 +3,20 @@ package net.slipcor.pvparena.modules.betterfight;
 import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
-import net.slipcor.pvparena.arena.ArenaTeam;
-import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
+import net.slipcor.pvparena.core.CollectionUtils;
+import net.slipcor.pvparena.core.Config;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
-import net.slipcor.pvparena.events.goal.PAGoalEvent;
-import net.slipcor.pvparena.events.goal.PAGoalScoreEvent;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.PermissionManager;
+import net.slipcor.pvparena.regions.RegionProtection;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Sound;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Egg;
@@ -33,10 +31,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
+
+import static java.util.Arrays.asList;
+import static net.slipcor.pvparena.commands.AbstractArenaCommand.argCountValid;
+import static net.slipcor.pvparena.core.CollectionUtils.containsIgnoreCase;
 
 public class BetterFight extends ArenaModule {
 
-    private Map<String, Integer> killMap;
+    private Map<String, Integer> playerKillMap;
+
+    private static final List<String> ONE_SHOT_ITEMS = asList("SNOWBALL", "EGG", "ARROW", "FIREBALL");
 
     public BetterFight() {
         super("BetterFight");
@@ -49,7 +54,7 @@ public class BetterFight extends ArenaModule {
 
     @Override
     public boolean checkCommand(final String s) {
-        return "!bf".equals(s) || "betterfight".equals(s);
+        return "!bf".equalsIgnoreCase(s) || "betterfight".equalsIgnoreCase(s);
     }
 
     @Override
@@ -65,116 +70,122 @@ public class BetterFight extends ArenaModule {
     @Override
     public CommandTree<String> getSubs(final Arena arena) {
         final CommandTree<String> result = new CommandTree<>(null);
-        result.define(new String[]{"messages"});
-        result.define(new String[]{"items"});
-        result.define(new String[]{"reset"});
         result.define(new String[]{"explode"});
-        result.define(new String[]{"explodeonlyononehit"});
+        result.define(new String[]{"explodeOnlyWithOneShot"});
+        Stream.of("add", "remove", "sound").forEach(action -> {
+            ONE_SHOT_ITEMS.forEach(item -> {
+                if("sound".equals(action)) {
+                    for (Sound sound : Sound.values()) {
+                        result.define(new String[]{"items", action, item, sound.name()});
+                    }
+                } else {
+                    result.define(new String[]{"items", action, item});
+                }
+            });
+        });
         return result;
     }
 
     @Override
     public void commitCommand(final CommandSender sender, final String[] args) {
-        // !bf messages #
-        // !bf items [items]
-        // !bf reset
+        // !bf items add/remove/sound [item] (sound)
         // !bf explode
-        // !bf explodeonlyononehit
+        // !bf explodeonlywithoneshot
 
         if (!PermissionManager.hasAdminPerm(sender) && !PermissionManager.hasBuilderPerm(sender, this.arena)) {
             this.arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
 
-        if ("!bf".equals(args[0]) || "betterfight".equals(args[0])) {
-            if (args.length == 2) {
-                if ("reset".equals(args[1])) {
-                    final boolean b = this.arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH);
+        Config config = this.arena.getConfig();
+        if (args.length == 2) {
+            Map<String, CFG> cmdMapping = new HashMap<>();
+            cmdMapping.put("explode", CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH);
+            cmdMapping.put("explodeonlywithoneshot", CFG.MODULES_BETTERFIGHT_EXPLODEONLYWITHONESHOTITEM);
 
-                    this.arena.getConfig().set(CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH, !b);
-                    this.arena.getConfig().save();
-                    this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH.getNode(), String.valueOf(!b));
-                    return;
-                }
-                if (args[1].equals("explode")) {
-                    boolean b = this.arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH);
+            if (cmdMapping.containsKey(args[1].toLowerCase())) {
+                CFG cfgKey = cmdMapping.get(args[1].toLowerCase());
+                boolean b = config.getBoolean(cfgKey);
 
-                    this.arena.getConfig().set(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH, !b);
-                    this.arena.getConfig().save();
-                    this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH.getNode(), String.valueOf(!b));
-                    return;
-                }
-                if (args[1].equals("explodeonlyononehit")) {
-                    boolean b = this.arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATHONLYONONEHIT);
+                config.set(cfgKey, !b);
 
-                    this.arena.getConfig().set(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATHONLYONONEHIT, !b);
-                    this.arena.getConfig().save();
-                    this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_BETTERFIGHT_EXPLODEONDEATHONLYONONEHIT.getNode(), String.valueOf(!b));
-                    return;
-                }
-                this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "reset | explode | explodeonlyononehit");
-                return;
-            }
-            if ("items".equals(args[1])) {
-
-                if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{3})) {
-                    return;
-                }
-
-                this.arena.getConfig().set(CFG.MODULES_BETTERFIGHT_ONEHITITEMS, args[2]);
-                this.arena.getConfig().save();
-                this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_BETTERFIGHT_ONEHITITEMS.getNode(), args[2]);
-                return;
-
-            }
-            if (args[1].equals("messages")) {
-                int i;
-                try {
-                    i = Integer.parseInt(args[2]);
-                } catch (Exception e) {
-                    this.arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[2]);
-                    return;
-                }
-                String value = StringParser.joinArray(StringParser.shiftArrayBy(args, 2), " ");
-                this.arena.getConfig().setManually("modules.betterfight.messages.m" + i,
-                        value);
-                this.arena.getConfig().save();
-                this.arena.msg(sender, MSG.SET_DONE, "modules.betterfight.messages.m" + i, value);
+                config.save();
+                this.arena.msg(sender, MSG.SET_DONE, cfgKey.getNode(), String.valueOf(!b));
                 return;
             }
 
-            this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "reset | items | messages | explode | explodeonlyononehit");
+            this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "reset | explode | explodeonlywithoneshot");
+            return;
         }
+        if ("items".equalsIgnoreCase(args[1])) {
+
+            if (!"sound".equalsIgnoreCase(args[2]) && !argCountValid(sender, this.arena, args, new Integer[]{4})) {
+                this.arena.msg(sender, MSG.ERROR_INVALID_ARGUMENT_COUNT, String.valueOf(args.length), String.valueOf(4));
+                return;
+            }
+
+            if(!containsIgnoreCase(ONE_SHOT_ITEMS, args[3])) {
+                this.arena.msg(sender, MSG.ERROR_INVALID_VALUE, args[3]);
+                return;
+            }
+
+            List<String> onHitItems = config.getStringList(CFG.MODULES_BETTERFIGHT_ONESHOTITEMS);
+            if("add".equalsIgnoreCase(args[2])) {
+                if(containsIgnoreCase(onHitItems, args[3])) {
+                    this.arena.msg(sender, MSG.ERROR_EXISTING_VALUE, args[3].toUpperCase(), CFG.MODULES_BETTERFIGHT_ONESHOTITEMS.getNode());
+                    return;
+                }
+                onHitItems.add(args[3].toUpperCase());
+                config.set(CFG.MODULES_BETTERFIGHT_ONESHOTITEMS, onHitItems);
+                this.arena.msg(sender, MSG.ADD_DONE, CFG.MODULES_BETTERFIGHT_ONESHOTITEMS.getNode(), args[3].toUpperCase());
+
+            } else if("remove".equalsIgnoreCase(args[2])) {
+                if(!containsIgnoreCase(onHitItems, args[3])) {
+                    this.arena.msg(sender, MSG.ERROR_NON_EXISTING_VALUE, args[3].toUpperCase(), CFG.MODULES_BETTERFIGHT_ONESHOTITEMS.getNode());
+                    return;
+                }
+                onHitItems.removeIf(str -> str.equalsIgnoreCase(args[3]));
+                config.set(CFG.MODULES_BETTERFIGHT_ONESHOTITEMS, onHitItems);
+                this.arena.msg(sender, MSG.ADD_DONE, CFG.MODULES_BETTERFIGHT_ONESHOTITEMS.getNode(), args[3].toUpperCase());
+
+            } else if("sound".equalsIgnoreCase(args[2])) {
+                if (!argCountValid(sender, this.arena, args, new Integer[]{5})) {
+                    this.arena.msg(sender, MSG.ERROR_INVALID_ARGUMENT_COUNT, String.valueOf(args.length), String.valueOf(4));
+                    return;
+                }
+
+                try {
+                    String settingPath = String.format("modules.betterfight.sounds.%s", args[3].toLowerCase());
+                    if("none".equalsIgnoreCase(args[4])) {
+                        config.setManually(settingPath, "none");
+                    } else {
+                        Sound sound = Sound.valueOf(args[4].toUpperCase());
+                        config.setManually(settingPath, sound.name());
+                    }
+                    this.arena.msg(sender, MSG.SET_DONE, settingPath, args[4].toUpperCase());
+                } catch (IllegalArgumentException ignored) {
+                    this.arena.msg(sender, MSG.ERROR_INVALID_VALUE, args[3]);
+                }
+            }
+
+            config.save();
+            return;
+
+        }
+
+        this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "reset | items | explode | explodeonlywithoneshot");
+    }
+
+    @Override
+    public void initConfig() {
+        this.configParse(this.arena.getConfig().getYamlConfiguration());
     }
 
     @Override
     public void configParse(final YamlConfiguration config) {
-
-        if (config.get("betterfight") != null) {
-            final ConfigurationSection cs = config.getConfigurationSection("betterfight");
-            final ConfigurationSection newCS = config.getConfigurationSection("modules.betterfight");
-
-            for (final String node : cs.getKeys(true)) {
-                newCS.set(node, cs.get(node));
-            }
-
-            config.set("betterfight", null);
-        }
-
-        if (this.arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_MESSAGES)) {
-            config.addDefault("modules.betterfight.messages.m1", "First Kill!");
-            config.addDefault("modules.betterfight.messages.m2", "Double Kill!");
-            config.addDefault("modules.betterfight.messages.m3", "Triple Kill!");
-            config.addDefault("modules.betterfight.messages.m4", "Quadra Kill!");
-            config.addDefault("modules.betterfight.messages.m5", "Super Kill!");
-            config.addDefault("modules.betterfight.messages.m6", "Ultra Kill!");
-            config.addDefault("modules.betterfight.messages.m7", "Godlike!");
-            config.addDefault("modules.betterfight.messages.m8", "Monster!");
-        }
-
         config.addDefault("modules.betterfight.sounds.arrow", "none");
         config.addDefault("modules.betterfight.sounds.egg", "none");
-        config.addDefault("modules.betterfight.sounds.snow", "none");
+        config.addDefault("modules.betterfight.sounds.snowball", "none");
         config.addDefault("modules.betterfight.sounds.fireball", "none");
 
         config.options().copyDefaults(true);
@@ -183,72 +194,53 @@ public class BetterFight extends ArenaModule {
     @Override
     public void displayInfo(final CommandSender sender) {
 
-        sender.sendMessage("one-hit items: " + this.arena.getConfig().getString(
-                CFG.MODULES_BETTERFIGHT_ONEHITITEMS));
-        sender.sendMessage(StringParser.colorVar("explode",
-                this.arena.getConfig().getBoolean(
-                        CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH)) + " | " +
-                StringParser.colorVar("explodeonlyononehit",
-                        this.arena.getConfig().getBoolean(
-                        CFG.MODULES_BETTERFIGHT_EXPLODEONDEATHONLYONONEHIT)) + " | " +
-                StringParser.colorVar("messages",
-                        this.arena.getConfig().getBoolean(
-                                CFG.MODULES_BETTERFIGHT_MESSAGES)) + " | " +
-                StringParser.colorVar("reset on death",
-                        this.arena.getConfig().getBoolean(
-                                CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH)));
-
+        Config config = this.arena.getConfig();
+        sender.sendMessage("one-hit items: " + config.getString(CFG.MODULES_BETTERFIGHT_ONESHOTITEMS));
+        sender.sendMessage(StringParser.colorVar("explode", config.getBoolean(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH)) + " | " +
+                StringParser.colorVar("explodeonlywithoneshot", config.getBoolean(CFG.MODULES_BETTERFIGHT_EXPLODEONLYWITHONESHOTITEM))
+        );
     }
 
-    private Map<String, Integer> getKills() {
-        if (this.killMap == null) {
-            this.killMap = new HashMap<>();
-        }
-        return this.killMap;
-    }
 
     @Override
-    public void onEntityDamageByEntity(final Player attacker,
-                                       final Player defender, final EntityDamageByEntityEvent event) {
-        final String s = this.arena.getConfig().getDefinedString(CFG.MODULES_BETTERFIGHT_ONEHITITEMS);
-        if (s == null) {
-            return;
-        }
+    public void onEntityDamageByEntity(Player attacker, Player defender, EntityDamageByEntityEvent event) {
 
-        if (event.getDamager() instanceof Projectile) {
-            if (event.getDamager() instanceof Snowball) {
-                this.handle(event, "snow");
-                if (s.toLowerCase().contains("snow")) {
-                    event.setDamage(1000);
-                }
+        if (event.getDamager() instanceof Projectile && event.getDamage() != 1000) {
+
+            List<String> oneShotProjectiles = this.arena.getConfig().getStringList(CFG.MODULES_BETTERFIGHT_ONESHOTITEMS);
+            if (CollectionUtils.isEmpty(oneShotProjectiles)) {
+                return;
             }
-            if (event.getDamager() instanceof Arrow) {
-                this.handle(event, "arrow");
-                if (s.toLowerCase().contains("arrow")) {
-                    event.setDamage(1000);
-                }
+
+            EntityDamageEvent oneShotEvent = new EntityDamageByEntityEvent(event.getDamager(), event.getEntity(), event.getCause(), 1000);
+
+            if (event.getDamager() instanceof Snowball && oneShotProjectiles.contains("SNOWBALL")) {
+                this.playSound(event, "snowball");
+                event.setDamage(0);
+                Bukkit.getPluginManager().callEvent(oneShotEvent);
             }
-            if (event.getDamager() instanceof Fireball) {
-                this.handle(event, "fireball");
-                if (s.toLowerCase().contains("fireball")) {
-                    event.setDamage(1000);
-                }
+            if (event.getDamager() instanceof Arrow && oneShotProjectiles.contains("ARROW")) {
+                this.playSound(event, "arrow");
+                event.setDamage(0);
+                Bukkit.getPluginManager().callEvent(oneShotEvent);
             }
-            if (event.getDamager() instanceof Egg) {
-                this.handle(event, "egg");
-                if (s.toLowerCase().contains("egg")) {
-                    event.setDamage(1000);
-                }
+            if (event.getDamager() instanceof Fireball && oneShotProjectiles.contains("FIREBALL")) {
+                this.playSound(event, "fireball");
+                event.setDamage(0);
+                Bukkit.getPluginManager().callEvent(oneShotEvent);
+            }
+            if (event.getDamager() instanceof Egg && oneShotProjectiles.contains("EGG")) {
+                this.playSound(event, "egg");
+                event.setDamage(0);
+                Bukkit.getPluginManager().callEvent(oneShotEvent);
             }
         }
     }
 
-    private void handle(final EntityDamageByEntityEvent event, final String string) {
+    private void playSound(final EntityDamageByEntityEvent event, final String string) {
         if (((Projectile) event.getDamager()).getShooter() instanceof Player) {
             final Player shooter = (Player) ((Projectile) event.getDamager()).getShooter();
-
             final String node = "modules.betterfight.sounds." + string;
-
             final String value = (String) this.arena.getConfig().getUnsafe(node);
 
             if ("none".equals(value)) {
@@ -256,19 +248,13 @@ public class BetterFight extends ArenaModule {
             }
 
             try {
-
                 final Sound sound = Sound.valueOf(value.toUpperCase());
-
                 final float pitch = 1.0f;
                 final float volume = 1.0f;
                 shooter.playSound(shooter.getLocation(), sound, volume, pitch);
-                if (event.getEntity() instanceof Player) {
-                    final Player damagee = (Player) event.getEntity();
 
-                    damagee.playSound(shooter.getLocation(), sound, volume, pitch);
-                }
-            } catch (final Exception e) {
-                PVPArena.getInstance().getLogger().warning("Node " + node + " is not a valid sound in arena " + this.arena.getName());
+            } catch (IllegalArgumentException e) {
+                PVPArena.getInstance().getLogger().warning(String.format("Node %s is not a valid sound in arena %s", node, this.arena.getName()));
             }
         }
     }
@@ -278,71 +264,19 @@ public class BetterFight extends ArenaModule {
                                  final EntityDamageEvent cause) {
         final Player p = ArenaPlayer.getLastDamagingPlayer(cause);
 
-        if (this.arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_RESETKILLSTREAKONDEATH)) {
-            this.getKills().put(player.getName(), 0);
-        }
-
         if (this.arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATH)) {
-            if (cause.getDamage() == 1000 || !this.arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_EXPLODEONDEATHONLYONONEHIT)) {
-                class RunLater implements Runnable {
-                    final World world;
-                    final double x;
-                    final double y;
-                    final double z;
-                    public RunLater(final World world, final double x, final double y, final double z) {
-                        this.world = world;
-                        this.x = x;
-                        this.y = y;
-                        this.z = z;
-                    }
-
-                    @Override
-                    public void run() {
-                        this.world.createExplosion(this.x, this.y, this.z, 2.0f, false, false);
-                    }
-
-                }
-                Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), new RunLater(player.getLocation().getWorld(), player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ()), 2L);
-            }
-        }
-
-        if (p == null || this.getKills().get(p.getName()) == null) {
-            return;
-        }
-        int killcount = this.getKills().get(p.getName());
-
-        this.getKills().put(p.getName(), ++killcount);
-
-        if (!this.arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_MESSAGES)) {
-            return;
-        }
-
-        final String msg = (String) this.arena.getConfig().getUnsafe("modules.betterfight.messages.m" + killcount);
-
-        ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(p);
-        final PAGoalEvent scoreEvent = new PAGoalScoreEvent(this.arena, null, arenaPlayer, arenaPlayer.getArenaTeam(), (long) killcount);
-        Bukkit.getPluginManager().callEvent(scoreEvent);
-
-        // content[X].contains(score) => "score:player:team:value"
-
-        if (msg == null || msg != null && msg.isEmpty()) {
-            return;
-        }
-
-        this.arena.broadcast(msg);
-    }
-
-    @Override
-    public void parseStart() {
-        for (final ArenaTeam team : this.arena.getTeams()) {
-            for (final ArenaPlayer ap : team.getTeamMembers()) {
-                this.getKills().put(ap.getName(), 0);
+            if (cause.getDamage() == 1000 || !this.arena.getConfig().getBoolean(CFG.MODULES_BETTERFIGHT_EXPLODEONLYWITHONESHOTITEM)) {
+                this.planExplosion(player.getLocation());
             }
         }
     }
 
-    @Override
-    public void reset(final boolean force) {
-        this.getKills().clear();
+    private void planExplosion(Location location) {
+        Location savedLocation = location.clone();
+        final boolean shouldPreventBreak = this.arena.hasRegionsProtectingLocation(savedLocation, RegionProtection.TNT) ||
+                this.arena.hasRegionsProtectingLocation(savedLocation, RegionProtection.TNTBREAK);
+        Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), () -> {
+            savedLocation.getWorld().createExplosion(savedLocation.getX(), savedLocation.getY(), savedLocation.getZ(), 2f, false, !shouldPreventBreak);
+        }, 2);
     }
 }
