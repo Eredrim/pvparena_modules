@@ -150,7 +150,7 @@ public class BetterClasses extends ArenaModule {
             return;
         }
 
-        if ((args.length > 2 && !RESPAWN_COMMAND_KEY.equalsIgnoreCase(args[2])) && !AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2, 3, 4, 5})) {
+        if ((args.length > 2 && !RESPAWN_COMMAND_KEY.equalsIgnoreCase(args[2])) || !AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2, 3, 4, 5})) {
             this.arena.msg(sender, MSG.ERROR_INVALID_ARGUMENT_COUNT, String.valueOf(args.length - 1), "1 to 4");
             this.printHelp(this.arena, sender);
             return;
@@ -212,7 +212,7 @@ public class BetterClasses extends ArenaModule {
             this.arena.msg(sender, MSG.MODULE_BETTERCLASSES_LISTHEAD, c.getName());
             if(!betterClassDef.getPermEffects().isEmpty()) {
                 betterClassDef.getPermEffects().forEach(effect ->
-                    this.arena.msg(sender, String.format("%s %d", effect.getType().getName(), effect.getAmplifier()))
+                    this.arena.msg(sender, String.format("%s %d", effect.getType().getName(), effect.getAmplifier() + 1))
                 );
                 this.arena.msg(sender, "---");
             }
