@@ -14,47 +14,67 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toSet;
 import static net.slipcor.pvparena.config.Debugger.debug;
 
 class MoveChecker implements Listener {
     private final List<Material> checkMaterialList;
     private final Arena arena;
-    private final Map<Block, Runnable> map = new HashMap<>();
+    private final ConcurrentNavigableMap<Long, Set<Block>> map = new ConcurrentSkipListMap<>();
     private final int delay;
     private final int startSeconds;
-    boolean active;
-    double offset;
+    private final double offset;
+    private boolean active;
+    private BukkitTask cleanTask;
 
-    public MoveChecker(final Arena arena, final ItemStack[] items, final int delay) {
-        this.checkMaterialList = Arrays.stream(items).map(ItemStack::getType).collect(Collectors.toList());
-
+    public MoveChecker(final Arena arena) {
         debug("BlockDissolve MoveChecker constructor");
         this.arena = arena;
-        Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
-        this.delay = delay;
+        this.delay = this.arena.getConfig().getInt(CFG.MODULES_BLOCKDISSOLVE_TICKS);
+        this.checkMaterialList = Arrays.stream(this.arena.getConfig().getItems(CFG.MODULES_BLOCKDISSOLVE_MATERIALS))
+                .map(ItemStack::getType)
+                .collect(Collectors.toList());
         this.startSeconds = arena.getConfig().getInt(CFG.MODULES_BLOCKDISSOLVE_STARTSECONDS);
         this.offset = arena.getConfig().getDouble(CFG.MODULES_BLOCKDISSOLVE_CALCOFFSET);
+    }
+
+    public void startChecker() {
+        this.active = true;
+
+        // remove block under all player feet on startup if they don't move
+        this.arena.getFighters().stream()
+                .filter(ap -> ap.getStatus() == PlayerStatus.FIGHT)
+                .forEach(ap -> this.checkBlock(ap.getPlayer().getLocation().clone().subtract(0, 1, 0)));
+
+        // runs a task to remove blocks and clean map each tick
+        this.cleanTask = Bukkit.getScheduler().runTaskTimer(PVPArena.getInstance(), () -> {
+            long now = System.currentTimeMillis();
+            while(!this.map.isEmpty() && (this.map.firstKey() + (this.delay * 50L)) <= now) {
+                this.map.pollFirstEntry().getValue().forEach(block -> {
+                    ArenaModuleManager.onBlockBreak(this.arena, block);
+                    block.setType(Material.AIR);
+                });
+            }
+        }, 1, 1);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onMove(final PlayerMoveEvent event) {
 
-        if (this.active && this.arena.isFightInProgress()) {
-            final ArenaPlayer player = ArenaPlayer.fromPlayer(event.getPlayer());
-            if (this.arena != player.getArena()) {
-                return;
-            }
+        if (this.active) {
+            ArenaPlayer player = ArenaPlayer.fromPlayer(event.getPlayer());
 
-            if (this.arena.getPlayedSeconds() > this.startSeconds && player.getStatus() == PlayerStatus.FIGHT) {
-
-
+            if (this.arena == player.getArena() && player.getStatus() == PlayerStatus.FIGHT) {
                 this.checkBlock(event.getPlayer().getLocation().clone().subtract(0, 1, 0));
             }
         }
@@ -66,93 +86,48 @@ class MoveChecker implements Listener {
         final double z = Math.abs(location.getZ() * 10 % 10 / 10);
 
         if (x < this.offset) {
-            this.checkBlock(location.clone().add(location.getX()<0?1:-1, 0, 0).getBlock());
+            this.tagBlockToRemove(location.clone().add(location.getX()<0?1:-1, 0, 0).getBlock());
         } else if (x > (1- this.offset)) {
-            this.checkBlock(location.clone().add(location.getX()<0?-1:1, 0, 0).getBlock());
+            this.tagBlockToRemove(location.clone().add(location.getX()<0?-1:1, 0, 0).getBlock());
         }
 
         if (z < this.offset) {
-            this.checkBlock(location.clone().add(0, 0, location.getZ()<0?1:-1).getBlock());
-        } else if (z > 0.666) {
-            this.checkBlock(location.clone().add(0, 0, location.getZ()<0?-1:1).getBlock());
+            this.tagBlockToRemove(location.clone().add(0, 0, location.getZ()<0?1:-1).getBlock());
+        } else if (z > (1- this.offset)) {
+            this.tagBlockToRemove(location.clone().add(0, 0, location.getZ()<0?-1:1).getBlock());
         }
 
         if (x < this.offset && z < this.offset) {
-            this.checkBlock(location.clone().add(location.getX()<0?1:-1, 0, location.getZ()<0?1:-1).getBlock());
+            this.tagBlockToRemove(location.clone().add(location.getX()<0?1:-1, 0, location.getZ()<0?1:-1).getBlock());
         } else if (x < this.offset && z > (1- this.offset)) {
-            this.checkBlock(location.clone().add(location.getX()<0?1:-1, 0, location.getZ()<0?-1:1).getBlock());
+            this.tagBlockToRemove(location.clone().add(location.getX()<0?1:-1, 0, location.getZ()<0?-1:1).getBlock());
         } else if (x > (1- this.offset) && z < this.offset) {
-            this.checkBlock(location.clone().add(location.getX()<0?-1:1, 0, location.getZ()<0?1:-1).getBlock());
+            this.tagBlockToRemove(location.clone().add(location.getX()<0?-1:1, 0, location.getZ()<0?1:-1).getBlock());
         } else if (x > (1- this.offset) && z > (1- this.offset)) {
-            this.checkBlock(location.clone().add(location.getX()<0?-1:1, 0, location.getZ()<0?-1:1).getBlock());
+            this.tagBlockToRemove(location.clone().add(location.getX()<0?-1:1, 0, location.getZ()<0?-1:1).getBlock());
         }
 
-        this.checkBlock(location.getBlock());
+        this.tagBlockToRemove(location.getBlock());
     }
 
-    private void checkBlock(final Block block) {
+    private void tagBlockToRemove(final Block block) {
         if(this.checkMaterialList.contains(block.getType())) {
-            this.access(block, false);
-        }
-    }
-
-    private synchronized void access(final Block block, final boolean remove) {
-        if (block == null && remove) {
-            this.map.clear();
-            this.active = false;
-            return;
-        }
-
-        if (this.map.containsKey(block)) {
-            return;
-        }
-        if (remove) {
-            this.map.remove(block);
-        } else {
-            this.map.put(block, new RunLater(block));
-        }
-    }
-
-    public void startTask() {
-        class RunLater2 implements Runnable {
-            @Override
-            public void run() {
-                if (MoveChecker.this.active) {
-                    for (ArenaPlayer arenaPlayer : MoveChecker.this.arena.getFighters()) {
-                        if (arenaPlayer.getStatus() == PlayerStatus.FIGHT) {
-                            MoveChecker.this.checkBlock(arenaPlayer.getPlayer().getLocation().clone().subtract(0, 1, 0));
-                        }
-                    }
-                }
+            long currentTime = System.currentTimeMillis();
+            if(!this.map.isEmpty() && currentTime < this.map.lastKey() + 50) {
+                this.map.lastEntry().getValue().add(block);
+            } else {
+                this.map.put(currentTime, Stream.of(block).collect(toSet()));
             }
-
         }
-
-        Bukkit.getScheduler().runTaskTimer(PVPArena.getInstance(), new RunLater2(), 20L, 20L);
-    }
-
-    class RunLater implements Runnable {
-        final Block block;
-
-        RunLater(final Block b) {
-            this.block = b;
-            ArenaModuleManager.onBlockBreak(MoveChecker.this.arena, b);
-            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), this, MoveChecker.this.delay);
-        }
-
-        @Override
-        public void run() {
-            MoveChecker.this.access(this.block, true);
-            this.block.setType(Material.AIR);
-        }
-
     }
 
     public void clear() {
-        this.access(null, true);
+        this.cleanTask.cancel();
+        this.map.clear();
+        this.active = false;
     }
 
-    public void start() {
+    public void startCountdown() {
         new CountdownRunner(this.arena, this, this.startSeconds);
     }
 }
