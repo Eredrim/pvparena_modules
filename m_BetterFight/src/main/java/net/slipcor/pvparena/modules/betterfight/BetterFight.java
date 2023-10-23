@@ -39,8 +39,6 @@ import static net.slipcor.pvparena.core.CollectionUtils.containsIgnoreCase;
 
 public class BetterFight extends ArenaModule {
 
-    private Map<String, Integer> playerKillMap;
-
     private static final List<String> ONE_SHOT_ITEMS = asList("SNOWBALL", "EGG", "ARROW", "FIREBALL");
 
     public BetterFight() {

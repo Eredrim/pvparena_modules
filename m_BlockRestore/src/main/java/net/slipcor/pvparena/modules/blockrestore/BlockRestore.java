@@ -122,6 +122,7 @@ public class BlockRestore extends ArenaModule implements Listener {
         result.define(new String[]{"restoreblocks"});
         result.define(new String[]{"restorecontainers"});
         result.define(new String[]{"restoreinteractions"});
+        result.define(new String[]{"addinv"});
         result.define(new String[]{"clearinv"});
         result.define(new String[]{"offset"});
         return result;
@@ -145,6 +146,7 @@ public class BlockRestore extends ArenaModule implements Listener {
         // !br restoreblocks
         // !br restorecontainers
         // !br restoreinteractions
+        // !br addinv
         // !br clearinv
         // !br offset X
 
@@ -157,9 +159,31 @@ public class BlockRestore extends ArenaModule implements Listener {
             return;
         }
 
-        if (args[1].startsWith("clearinv")) {
+        if ("addinv".equalsIgnoreCase(args[1])) {
+            if (!(sender instanceof Player)) {
+                Arena.pmsg(sender, MSG.ERROR_ONLY_PLAYERS);
+                return;
+            }
 
-            this.arena.getConfig().setManually("inventories", null);
+            Player player = (Player) sender;
+            Block b = player.getTargetBlock(null, 10);
+
+            if (b.getState() instanceof Container) {
+                PABlockLocation loc = new PABlockLocation(b.getLocation());
+                List<String> containerList = this.arena.getConfig().getStringList(CFG.MODULES_BLOCKRESTORE_CONTAINERLIST);
+                containerList.add(loc.toString());
+                this.arena.getConfig().set(CFG.MODULES_BLOCKRESTORE_CONTAINERLIST, containerList);
+                this.arena.getConfig().save();
+                this.arena.msg(sender, MSG.MODULE_BLOCKRESTORE_ADDEDTOLIST, loc.toString());
+            } else {
+                this.arena.msg(sender, MSG.ERROR_NO_CONTAINER);
+            }
+            return;
+        }
+
+        if ("clearinv".equalsIgnoreCase(args[1])) {
+
+            this.arena.getConfig().set(CFG.MODULES_BLOCKRESTORE_CONTAINERLIST, new ArrayList<>());
             this.arena.getConfig().save();
             Arena.pmsg(sender, MSG.MODULE_BLOCKRESTORE_CLEARINVDONE);
             return;
@@ -463,7 +487,7 @@ public class BlockRestore extends ArenaModule implements Listener {
         boolean blockMode = config.getBoolean(CFG.MODULES_BLOCKRESTORE_RESTOREBLOCKS);
         boolean containerMode = config.getBoolean(CFG.MODULES_BLOCKRESTORE_RESTORECONTAINERS);
         boolean hardMode = config.getBoolean(CFG.MODULES_BLOCKRESTORE_HARD);
-        boolean needsContainerRegistration = config.getStringList("inventories", new ArrayList<>()).isEmpty();
+        boolean needsContainerRegistration = config.getStringList(CFG.MODULES_BLOCKRESTORE_CONTAINERLIST).isEmpty();
 
         if((containerMode && needsContainerRegistration) || (blockMode && hardMode)) {
             this.allBlockLocations.clear();
@@ -491,26 +515,26 @@ public class BlockRestore extends ArenaModule implements Listener {
 
     private void saveContainers() {
         Config config = this.arena.getConfig();
-        if (config.getStringList("inventories", new ArrayList<>()).isEmpty()) {
+        if (config.getStringList(CFG.MODULES_BLOCKRESTORE_CONTAINERLIST).isEmpty()) {
             debug("NO inventories");
             this.containers.clear();
 
             List<String> inventoryLocations = new ArrayList<>();
             this.allBlockLocations.forEach(paBlockLocation -> {
-                boolean isSaved = this.addToSavedContainers(paBlockLocation.toLocation());
+                boolean isSaved = this.addToSavedContainers(paBlockLocation);
                 if(isSaved) {
-                    inventoryLocations.add(parseLocationToString(paBlockLocation));
+                    inventoryLocations.add(paBlockLocation.toString());
                 }
             });
 
-            config.setManually("inventories", inventoryLocations);
+            config.set(CFG.MODULES_BLOCKRESTORE_CONTAINERLIST, inventoryLocations);
             config.save();
 
         } else {
 
             debug("reading inventories");
-            config.getStringList("inventories", null).stream()
-                    .map(BlockRestore::parseStringToLocation)
+            config.getStringList(CFG.MODULES_BLOCKRESTORE_CONTAINERLIST).stream()
+                    .map(PABlockLocation::new)
                     .forEach(this::addToSavedContainers);
         }
     }
@@ -531,8 +555,9 @@ public class BlockRestore extends ArenaModule implements Listener {
         return this.arena.getConfig().getBoolean(CFG.MODULES_BLOCKRESTORE_RESTOREINTERACTIONS);
     }
 
-    private boolean addToSavedContainers(Location location) {
-        Block block = location.getWorld().getBlockAt(location);
+    private boolean addToSavedContainers(PABlockLocation blockLocation) {
+        Location location = blockLocation.toLocation();
+        Block block = location.getBlock();
         if(block.getState() instanceof Container) {
             Container container = (Container) block.getState();
 
@@ -574,22 +599,5 @@ public class BlockRestore extends ArenaModule implements Listener {
                 }
             }
         }
-    }
-
-    private static Location parseStringToLocation(final String loc) {
-        // world,x,y,z
-        final String[] args = loc.split(",");
-
-        final World world = Bukkit.getWorld(args[0]);
-        final int x = Integer.parseInt(args[1]);
-        final int y = Integer.parseInt(args[2]);
-        final int z = Integer.parseInt(args[3]);
-
-        return new Location(world, x, y, z);
-    }
-
-    private static String parseLocationToString(PABlockLocation loc) {
-        return loc.getWorldName() + ',' + loc.getX() + ','
-                + loc.getY() + ',' + loc.getZ();
     }
 }
