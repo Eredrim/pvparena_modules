@@ -101,18 +101,6 @@
         </dependency>
         <dependency>
             <groupId>net.slipcor.pvpa</groupId>
-            <artifactId>m_factions</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.slipcor.pvpa</groupId>
-            <artifactId>m_fixinventoryloss</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_flyspectate</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
@@ -132,12 +120,6 @@
         <dependency>
             <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_latelounge</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.slipcor.pvpa</groupId>
-            <artifactId>m_matchresultstats</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>

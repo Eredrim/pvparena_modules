@@ -71,13 +71,10 @@
         <module>m_BlockRestore</module>
         <module>m_ChestFiller</module>
         <module>m_EventActions</module>
-        <module>m_Factions</module>
-        <module>m_FixInventoryLoss</module>
         <module>m_FlySpectate</module>
         <module>m_Handycap</module>
         <module>m_Items</module>
         <module>m_LateLounge</module>
-        <module>m_MatchResultStats</module>
         <module>m_PlayerFinder</module>
         <module>m_Points</module>
         <module>m_PowerUps</module>
