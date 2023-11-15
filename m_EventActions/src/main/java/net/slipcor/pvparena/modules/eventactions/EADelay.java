@@ -11,27 +11,27 @@ class EADelay implements Runnable {
     private final Block block;
 
     public EADelay(final PABlockLocation loc2) {
-        block = loc2.toLocation().getBlock();
+        this.block = loc2.toLocation().getBlock();
     }
 
     @Override
     public void run() {
-        final Material type = block.getType();
-        final BlockData data = block.getBlockData();
+        final Material type = this.block.getType();
+        final BlockData data = this.block.getBlockData();
 
-        block.setType(Material.REDSTONE_BLOCK);
+        this.block.setType(Material.REDSTONE_BLOCK);
 
         class OffRunner implements Runnable {
 
             @Override
             public void run() {
-                block.setType(type);
-                block.setBlockData(data);
+                EADelay.this.block.setType(type);
+                EADelay.this.block.setBlockData(data);
             }
 
         }
 
-        Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new OffRunner(), 20L);
+        Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), new OffRunner(), 12L);
     }
 
 }

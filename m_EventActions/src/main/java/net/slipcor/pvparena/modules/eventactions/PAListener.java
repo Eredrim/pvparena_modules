@@ -1,11 +1,6 @@
 package net.slipcor.pvparena.modules.eventactions;
 
-import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
-import net.slipcor.pvparena.classes.PABlockLocation;
-import net.slipcor.pvparena.commands.PAA_Edit;
-import net.slipcor.pvparena.core.Config;
-import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.events.PADeathEvent;
 import net.slipcor.pvparena.events.PAEndEvent;
 import net.slipcor.pvparena.events.PAExitEvent;
@@ -16,16 +11,9 @@ import net.slipcor.pvparena.events.PALoseEvent;
 import net.slipcor.pvparena.events.PAPlayerClassChangeEvent;
 import net.slipcor.pvparena.events.PAStartEvent;
 import net.slipcor.pvparena.events.PAWinEvent;
-import net.slipcor.pvparena.managers.SpawnManager;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.EquipmentSlot;
-
-import static net.slipcor.pvparena.managers.SpawnManager.ROOT_SPAWNS_NODE;
 
 class PAListener implements Listener {
     private final EventActions ea;
@@ -38,20 +26,20 @@ class PAListener implements Listener {
     public void onDeath(final PADeathEvent event) {
         final Arena a = event.getArena();
         final Player p = event.getPlayer();
-        ea.catchEvent("death", p, a);
+        this.ea.catchEvent(EventName.DEATH, p, a);
     }
 
     @EventHandler
     public void onEnd(final PAEndEvent event) {
         final Arena a = event.getArena();
-        ea.catchEvent("end", null, a);
+        this.ea.catchEvent(EventName.END, null, a);
     }
 
     @EventHandler
     public void onExit(final PAExitEvent event) {
         final Arena a = event.getArena();
         final Player p = event.getPlayer();
-        ea.catchEvent("exit", p, a);
+        this.ea.catchEvent(EventName.EXIT, p, a);
     }
 
     @EventHandler
@@ -60,9 +48,9 @@ class PAListener implements Listener {
         final Player p = event.getPlayer();
 
         if (event.isSpectator()) {
-            ea.catchEvent("spectate", p, a);
+            this.ea.catchEvent(EventName.SPECTATE, p, a);
         } else {
-            ea.catchEvent("join", p, a);
+            this.ea.catchEvent(EventName.JOIN, p, a);
         }
     }
 
@@ -70,86 +58,41 @@ class PAListener implements Listener {
     public void onKill(final PAKillEvent event) {
         final Arena a = event.getArena();
         final Player p = event.getPlayer();
-        ea.catchEvent("kill", p, a);
+        this.ea.catchEvent(EventName.KILL, p, a);
     }
 
     @EventHandler
     public void onLeave(final PALeaveEvent event) {
         final Arena a = event.getArena();
         final Player p = event.getPlayer();
-        ea.catchEvent("leave", p, a);
+        this.ea.catchEvent(EventName.LEAVE, p, a);
     }
 
     @EventHandler
     public void onLose(final PALoseEvent event) {
         final Arena a = event.getArena();
         final Player p = event.getPlayer();
-        ea.catchEvent("lose", p, a);
+        this.ea.catchEvent(EventName.LOSE, p, a);
     }
 
     @EventHandler
     public void onStart(final PAStartEvent event) {
         final Arena a = event.getArena();
-        ea.catchEvent("start", null, a);
+        this.ea.catchEvent(EventName.START, null, a);
     }
 
     @EventHandler
     public void onWin(final PAWinEvent event) {
         final Arena a = event.getArena();
         final Player p = event.getPlayer();
-        ea.catchEvent("win", p, a);
+        this.ea.catchEvent(EventName.WIN, p, a);
     }
 
     @EventHandler
     public void onClassChange(final PAPlayerClassChangeEvent event) {
         final Arena a = event.getArena();
         final Player p = event.getPlayer();
-        ea.catchEvent("classchange", p, a, "%class%", event.getArenaClass().getName());
+        this.ea.catchEvent(EventName.CLASSCHANGE, p, a, "%class%", event.getArenaClass().getName());
     }
 
-
-    /**
-     * --------------------------------------------
-     */
-
-
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void playerInteract(final PlayerInteractEvent event) {
-
-        if (!event.hasBlock() || event.getHand() == null || event.getHand().equals(EquipmentSlot.OFF_HAND)) {
-            return;
-        }
-
-        final Arena a = PAA_Edit.activeEdits.get(event.getPlayer().getName() + "_power");
-
-        if (a != null) {
-
-            final Location loc = event.getClickedBlock().getLocation();
-
-            final String s = "power";
-            int i = 0;
-            for (String node : a.getConfig().getKeys(ROOT_SPAWNS_NODE)) {
-                if (node.startsWith(s) && !node.contains("powerup")) {
-
-                    final PABlockLocation locc = Config.parseBlockLocation(
-                            (String) a.getConfig().getUnsafe(String.format("%s.%s", ROOT_SPAWNS_NODE, node))
-                    );
-                    if (loc.equals(locc.toLocation())) {
-                        PVPArena.getInstance().getLogger().warning("Block already exists!");
-                        event.setCancelled(true);
-                        return;
-                    }
-
-                    node = node.replace(s, "");
-                    if (Integer.parseInt(node) >= i) {
-                        i = Integer.parseInt(node) + 1;
-                    }
-                }
-            }
-
-            SpawnManager.setBlock(a, new PABlockLocation(loc), s + i, null);
-            Arena.pmsg(event.getPlayer(), MSG.SPAWN_SET, s + i);
-            event.setCancelled(true);
-        }
-    }
 }
