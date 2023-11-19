@@ -7,10 +7,10 @@
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>m_items</artifactId>
+    <artifactId>m_itemspawners</artifactId>
     <packaging>jar</packaging>
 
-    <name>PVP Arena Modules - Items</name>
+    <name>PVP Arena Modules - ItemSpawners</name>
 
     <dependencies>
         <dependency>

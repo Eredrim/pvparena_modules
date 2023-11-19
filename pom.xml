@@ -73,7 +73,7 @@
         <module>m_EventActions</module>
         <module>m_FlySpectate</module>
         <module>m_Handycap</module>
-        <module>m_Items</module>
+        <module>m_ItemSpawners</module>
         <module>m_LateLounge</module>
         <module>m_PlayerFinder</module>
         <module>m_Points</module>

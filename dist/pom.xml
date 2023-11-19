@@ -113,7 +113,7 @@
         </dependency>
         <dependency>
             <groupId>net.slipcor.pvpa</groupId>
-            <artifactId>m_items</artifactId>
+            <artifactId>m_itemspawners</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
