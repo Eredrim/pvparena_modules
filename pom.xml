@@ -83,7 +83,6 @@
         <module>m_RedStoneTriggers</module>
         <module>m_RespawnRelay</module>
         <module>m_SinglePlayerSupport</module>
-        <module>m_SpecialJoin</module>
         <module>m_Spectate</module>
         <module>m_Squads</module>
 <!--        <module>m_Skins</module> -->
