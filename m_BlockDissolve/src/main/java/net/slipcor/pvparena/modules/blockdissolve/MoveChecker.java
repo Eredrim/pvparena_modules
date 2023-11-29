@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 import static net.slipcor.pvparena.config.Debugger.debug;
 
@@ -122,7 +123,7 @@ class MoveChecker implements Listener {
     }
 
     public void clear() {
-        this.cleanTask.cancel();
+        ofNullable(this.cleanTask).ifPresent(BukkitTask::cancel);
         this.map.clear();
         this.active = false;
     }
