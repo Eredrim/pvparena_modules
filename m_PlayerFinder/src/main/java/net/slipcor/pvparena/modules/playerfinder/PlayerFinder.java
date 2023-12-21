@@ -1,125 +1,87 @@
 package net.slipcor.pvparena.modules.playerfinder;
 
-import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.PlayerStatus;
 import net.slipcor.pvparena.core.Config.CFG;
-import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.loadables.ArenaModule;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.EquipmentSlot;
 
-import java.util.*;
+import java.util.Optional;
 
+import static java.util.Arrays.asList;
+import static java.util.Comparator.comparingDouble;
 import static net.slipcor.pvparena.config.Debugger.debug;
+import static net.slipcor.pvparena.config.Debugger.trace;
+import static org.bukkit.event.block.Action.*;
 
-public class PlayerFinder extends ArenaModule implements Listener {
+public class PlayerFinder extends ArenaModule {
     public PlayerFinder() {
         super("PlayerFinder");
     }
 
-    private boolean setup;
-
     @Override
     public String version() {
-        return getClass().getPackage().getImplementationVersion();
+        return this.getClass().getPackage().getImplementationVersion();
     }
 
     @Override
-    public void parseStart() {
-        if (!setup) {
-            Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
-            setup = true;
-        }
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onPlayerFind(final PlayerInteractEvent event) {
+    public boolean onPlayerInteract(PlayerInteractEvent event) {
         final Player player = event.getPlayer();
 
         final ArenaPlayer aPlayer = ArenaPlayer.fromPlayer(player);
 
-        if (event.getHand() != null && event.getHand().equals(EquipmentSlot.OFF_HAND)) {
-            debug(player, "exiting: offhand");
-            return;
+        if (!aPlayer.getArena().equals(this.arena)) {
+            debug(player, "[PlayerFinder] Wrong arena!");
+            return false;
         }
 
-        if (aPlayer.getArena() == null) {
-            debug(player, "No arena!");
-            return;
+        if (player.getInventory().getItemInMainHand().getType() != Material.COMPASS) {
+            debug(player, "[PlayerFinder] No compass!");
+            return false;
         }
 
-        if (!aPlayer.getArena().equals(arena)) {
-            debug(player, "Wrong arena!");
-            return;
+        if (!asList(LEFT_CLICK_AIR, LEFT_CLICK_BLOCK, RIGHT_CLICK_AIR, RIGHT_CLICK_BLOCK).contains(event.getAction())) {
+            debug(player, "[PlayerFinder] No compass!");
+            return false;
         }
 
-        if (player.getInventory().getItemInHand() == null || player.getInventory().getItemInHand().getType() != Material.COMPASS) {
-            debug(player, "No compass!");
-            return;
-        }
+        trace(player, "[PlayerFinder] ok!");
+        final int maxRadius = this.arena.getConfig().getInt(CFG.MODULES_PLAYERFINDER_MAXRADIUS);
 
-        final int maxRadius = arena.getConfig().getInt(CFG.MODULES_PLAYERFINDER_MAXRADIUS, 100);
+        Optional<Player> nearestPlayer = player.getNearbyEntities(maxRadius, maxRadius, maxRadius)
+                .stream()
+                .filter(e -> e instanceof Player && e != player)
+                .map(e -> (Player) e)
+                .filter(innerPlayer -> {
+                    ArenaPlayer ap = ArenaPlayer.fromPlayer(innerPlayer);
+                    return ap.getStatus() == PlayerStatus.FIGHT &&
+                            (this.arena.isFreeForAll() || !ap.getArenaTeam().equals(aPlayer.getArenaTeam()));
+                })
+                .peek(innerPlayer -> trace(player, "[PlayerFinder] player found: {}", innerPlayer.getName()))
+                .min(comparingDouble(innerPlayer -> player.getLocation().distance(innerPlayer.getLocation())));
 
-        final List<Entity> list = player.getNearbyEntities(maxRadius, maxRadius, maxRadius);
-        final Map<Double, Player> sortMap = new HashMap<>();
+        if (nearestPlayer.isPresent()) {
+            if (event.getAction() == LEFT_CLICK_AIR || event.getAction() == LEFT_CLICK_BLOCK) {
+                debug("[PlayerFinder] left click with compass");
+                player.setCompassTarget(nearestPlayer.get().getLocation().clone());
+                this.arena.msg(player, MSG.MODULE_PLAYERFINDER_POINT, nearestPlayer.get().getName());
 
-        debug(player, "ok!");
-
-        final boolean teams = !arena.isFreeForAll();
-
-        for (final Entity e : list) {
-            if (e instanceof Player) {
-                if (e == player) {
-                    continue;
-                }
-
-                final Player innerPlayer = (Player) e;
-                final ArenaPlayer ap = ArenaPlayer.fromPlayer(innerPlayer);
-
-                if (ap.getStatus() != PlayerStatus.FIGHT) {
-                    continue;
-                }
-
-                if (teams && ap.getArenaTeam().equals(aPlayer.getArenaTeam())) {
-                    continue;
-                }
-
-                debug(player, innerPlayer.getName());
-                sortMap.put(player.getLocation().distance(e.getLocation()), innerPlayer);
+            } else {
+                debug("[PlayerFinder] right click with compass");
+                double distance = player.getLocation().distance(nearestPlayer.get().getLocation());
+                this.arena.msg(player, MSG.MODULE_PLAYERFINDER_NEAR, String.valueOf((int) distance));
 
             }
+            event.setCancelled(true);
+            return true;
+
+        } else {
+            debug(player, "[PlayerFinder] none there!");
+            event.setCancelled(true);
+            return false;
         }
-
-        if (sortMap.isEmpty()) {
-            debug(player, "noone there!");
-        }
-
-        final SortedMap<Double, Player> sortedMap = new TreeMap<>(sortMap);
-
-        if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            debug("left");
-            for (final Player otherPlayer : sortedMap.values()) {
-                player.setCompassTarget(otherPlayer.getLocation().clone());
-                arena.msg(player, MSG.MODULE_PLAYERFINDER_POINT, otherPlayer.getName());
-                break;
-            }
-        } else if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            debug("right");
-            for (final double d : sortedMap.keySet()) {
-                arena.msg(player, MSG.MODULE_PLAYERFINDER_NEAR, String.valueOf((int) d));
-                break;
-            }
-        }
-
     }
 }
