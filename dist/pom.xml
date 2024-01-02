@@ -159,12 +159,6 @@
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>net.slipcor.pvpa</groupId>
-            <artifactId>m_singleplayersupport</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
 <!--        <dependency>
             <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_skins</artifactId>

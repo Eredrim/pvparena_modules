@@ -81,7 +81,6 @@
         <module>m_Projectiles</module>
         <module>m_RealSpectate</module>
         <module>m_RespawnRelay</module>
-        <module>m_SinglePlayerSupport</module>
         <module>m_Spectate</module>
         <module>m_Squads</module>
 <!--        <module>m_Skins</module> -->
