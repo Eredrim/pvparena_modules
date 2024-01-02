@@ -155,12 +155,6 @@
         </dependency>
         <dependency>
             <groupId>net.slipcor.pvpa</groupId>
-            <artifactId>m_redstonetriggers</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_respawnrelay</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
