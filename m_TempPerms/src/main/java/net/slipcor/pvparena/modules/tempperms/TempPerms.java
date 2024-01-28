@@ -10,15 +10,11 @@ import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.core.StringParser;
-import net.slipcor.pvparena.events.PAPlayerClassChangeEvent;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.PermissionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.plugin.IllegalPluginAccessException;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -28,10 +24,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-public class TempPerms extends ArenaModule implements Listener {
+public class TempPerms extends ArenaModule {
     private static final String DEFAULT_NODE = "default";
-    private boolean listening;
+    private static final String SETTINGS_PATH = "modules.tempperms.";
 
     public TempPerms() {
         super("TempPerms");
@@ -44,7 +41,7 @@ public class TempPerms extends ArenaModule implements Listener {
 
     @Override
     public boolean checkCommand(final String s) {
-        return "!tps".equals(s) || "tempperms".equals(s);
+        return "!tps".equalsIgnoreCase(s) || "tempperms".equalsIgnoreCase(s);
     }
 
     @Override
@@ -70,18 +67,18 @@ public class TempPerms extends ArenaModule implements Listener {
                 result.define(new String[]{"rem", getPolarizedPermission(entry)})
         );
 
-        for (final ArenaClass aClass : arena.getClasses()) {
+        arena.getClasses().forEach(aClass -> {
             result.define(new String[]{aClass.getName(), "add"});
             this.getTempPerms(arena, aClass.getName()).entrySet().forEach(entry ->
                     result.define(new String[]{aClass.getName(), "rem", getPolarizedPermission(entry)})
             );
-        }
-        for (final String team : arena.getTeamNames()) {
+        });
+        arena.getTeamNames().forEach(team -> {
             result.define(new String[]{team, "add"});
             this.getTempPerms(arena, team).entrySet().forEach(entry ->
                     result.define(new String[]{team, "rem", getPolarizedPermission(entry)})
             );
-        }
+        });
         return result;
     }
 
@@ -112,9 +109,7 @@ public class TempPerms extends ArenaModule implements Listener {
 
         if (args.length == 1) {
             this.arena.msg(sender, MSG.MODULE_TEMPPERMS_HEAD, DEFAULT_NODE);
-            for (final Map.Entry<String, Boolean> stringBooleanEntry : map.entrySet()) {
-                this.arena.msg(sender, stringBooleanEntry.getKey() + " - " + StringParser.colorVar(stringBooleanEntry.getValue()));
-            }
+            map.forEach((key, value) -> this.arena.msg(sender, key + " - " + StringParser.colorVar(value)));
             return;
         }
 
@@ -138,9 +133,7 @@ public class TempPerms extends ArenaModule implements Listener {
         map = this.getTempPerms(this.arena, args[1]);
         if (args.length == 2) {
             this.arena.msg(sender, MSG.MODULE_TEMPPERMS_HEAD, args[1]);
-            for (final Map.Entry<String, Boolean> stringBooleanEntry : map.entrySet()) {
-                this.arena.msg(sender, stringBooleanEntry.getKey() + " - " + StringParser.colorVar(stringBooleanEntry.getValue()));
-            }
+            map.forEach((key, value) -> this.arena.msg(sender, key + " - " + StringParser.colorVar(value)));
             return;
         }
 
@@ -159,36 +152,32 @@ public class TempPerms extends ArenaModule implements Listener {
         this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[2], "add | remove");
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
-    public void onClassChange(final PAPlayerClassChangeEvent event) {
-        if (event.getArena() != null && event.getArena().equals(this.arena)) {
-            final ArenaPlayer aPlayer = ArenaPlayer.fromPlayer(event.getPlayer());
-            if (this.arena != null && this.arena.getEveryone().contains(aPlayer)) {
-                this.removePermissions(event.getPlayer());
+    @Override
+    public void parseClassChange(Player player, ArenaClass aClass) {
+        final ArenaPlayer aPlayer = ArenaPlayer.fromPlayer(player);
+        if (this.arena != null && this.arena.getEveryone().contains(aPlayer)) {
+            this.removePermissions(player);
 
-                class RunLater extends BukkitRunnable {
+            class RunLater extends BukkitRunnable {
 
-                    @Override
-                    public void run() {
-                        TempPerms.this.setPermissions(TempPerms.this.arena, aPlayer, TempPerms.this.getTempPerms(TempPerms.this.arena, DEFAULT_NODE), TempPerms.this.getTempPerms(TempPerms.this.arena, aPlayer.getArenaTeam().getName()));
-                    }
+                @Override
+                public void run() {
+                    Map<String, Boolean> globalPerms = TempPerms.this.getTempPerms(TempPerms.this.arena, DEFAULT_NODE);
+                    Map<String, Boolean> teamPerms = TempPerms.this.getTempPerms(TempPerms.this.arena, aPlayer.getArenaTeam().getName());
+                    TempPerms.this.setPermissions(TempPerms.this.arena, aPlayer, globalPerms, teamPerms);
                 }
+            }
 
-                try {
-                    new RunLater().runTaskLater(PVPArena.getInstance(), 1);
-                } catch (IllegalPluginAccessException ex) {
-                    new RunLater().run();
-                }
+            try {
+                new RunLater().runTaskLater(PVPArena.getInstance(), 1);
+            } catch (IllegalPluginAccessException ex) {
+                new RunLater().run();
             }
         }
     }
 
     @Override
     public void parseJoin(final Player player, final ArenaTeam team) {
-        if (!this.listening) {
-            Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
-            this.listening = true;
-        }
         final ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
         this.setPermissions(this.arena, ap, this.getTempPerms(this.arena, DEFAULT_NODE), this.getTempPerms(this.arena, ap.getArenaTeam().getName()));
     }
@@ -201,11 +190,10 @@ public class TempPerms extends ArenaModule implements Listener {
     private Map<String, Boolean> getTempPerms(final Arena arena, final String node) {
         final Map<String, Boolean> result = new HashMap<>();
 
-        if (arena.getConfig().getYamlConfiguration().contains("perms." + node)) {
-            final List<String> list = arena.getConfig().getStringList("perms." + node, new ArrayList<>());
-            for (final String key : list) {
-                result.put(getStrippedPermission(key), !(key.startsWith("^") || key.startsWith("-")));
-            }
+        if (arena.getConfig().getYamlConfiguration().contains(SETTINGS_PATH + node)) {
+            arena.getConfig().getStringList(SETTINGS_PATH + node, new ArrayList<>()).forEach(key ->
+                    result.put(getStrippedPermission(key), !(key.startsWith("^") || key.startsWith("-")))
+            );
         }
         return result;
     }
@@ -215,7 +203,7 @@ public class TempPerms extends ArenaModule implements Listener {
         for (final Map.Entry<String, Boolean> stringBooleanEntry : map.entrySet()) {
             result.add(getPolarizedPermission(stringBooleanEntry));
         }
-        arena.getConfig().setManually("perms." + node, result);
+        arena.getConfig().setManually(SETTINGS_PATH + node, result);
         arena.getConfig().save();
     }
 
@@ -228,36 +216,19 @@ public class TempPerms extends ArenaModule implements Listener {
     }
 
     private void setPermissions(final Arena arena, final ArenaPlayer arenaPlayer, final Map<String, Boolean> mGlobal, final Map<String, Boolean> mTeam) {
+        Map<String, Boolean> total = new HashMap<>();
+        total.putAll(mGlobal);
+        total.putAll(mTeam);
 
-        final Map<String, Boolean> mClass;
-
-        if (arenaPlayer.getArenaClass() == null) {
-            mClass = new HashMap<>();
-        } else {
-            mClass = this.getTempPerms(arena, arenaPlayer.getArenaClass().getName());
+        if (arenaPlayer.getArenaClass() != null) {
+            total.putAll(this.getTempPerms(arena, arenaPlayer.getArenaClass().getName()));
         }
 
-        final Map<String, Boolean> total = new HashMap<>();
-        for (final Map.Entry<String, Boolean> stringBooleanEntry3 : mGlobal.entrySet()) {
-            total.put(stringBooleanEntry3.getKey(), stringBooleanEntry3.getValue());
+        if (!total.isEmpty()) {
+            PermissionAttachment pa = arenaPlayer.getPlayer().addAttachment(PVPArena.getInstance());
+            total.forEach(pa::setPermission);
+            arenaPlayer.getTempPermissions().add(pa);
         }
-        for (final Map.Entry<String, Boolean> stringBooleanEntry2 : mTeam.entrySet()) {
-            total.put(stringBooleanEntry2.getKey(), stringBooleanEntry2.getValue());
-        }
-        for (final Map.Entry<String, Boolean> stringBooleanEntry1 : mClass.entrySet()) {
-            total.put(stringBooleanEntry1.getKey(), stringBooleanEntry1.getValue());
-        }
-
-        if (total.isEmpty()) {
-            return;
-        }
-
-        final PermissionAttachment pa = arenaPlayer.getPlayer().addAttachment(PVPArena.getInstance());
-
-        for (final Map.Entry<String, Boolean> stringBooleanEntry : total.entrySet()) {
-            pa.setPermission(stringBooleanEntry.getKey(), stringBooleanEntry.getValue());
-        }
-        arenaPlayer.getTempPermissions().add(pa);
     }
 
     /**
@@ -267,15 +238,13 @@ public class TempPerms extends ArenaModule implements Listener {
      */
     void removePermissions(final Player p) {
         final ArenaPlayer player = ArenaPlayer.fromPlayer(p);
-        if (player == null || player.getTempPermissions() == null) {
-            return;
+
+        if (player != null && player.getTempPermissions() != null) {
+            player.getTempPermissions().stream()
+                    .filter(Objects::nonNull)
+                    .forEach(PermissionAttachment::remove);
+            player.getTempPermissions().clear();
         }
-        for (final PermissionAttachment pa : player.getTempPermissions()) {
-            if (pa != null) {
-                pa.remove();
-            }
-        }
-        player.getTempPermissions().clear();
     }
 
     @Override
