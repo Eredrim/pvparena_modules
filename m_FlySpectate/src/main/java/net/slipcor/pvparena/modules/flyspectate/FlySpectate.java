@@ -20,6 +20,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
+import static java.util.Optional.ofNullable;
 import static net.slipcor.pvparena.config.Debugger.debug;
 
 public class FlySpectate extends ArenaModule {
@@ -33,7 +34,7 @@ public class FlySpectate extends ArenaModule {
 
     @Override
     public String version() {
-        return getClass().getPackage().getImplementationVersion();
+        return this.getClass().getPackage().getImplementationVersion();
     }
 
     @Override
@@ -48,7 +49,7 @@ public class FlySpectate extends ArenaModule {
 
     @Override
     public boolean handleSpectate(Player player) throws GameplayException {
-        if (this.arena.getFighters().size() < 1) {
+        if (this.arena.getFighters().isEmpty()) {
             throw new GameplayException(MSG.ERROR_NOPLAYERFOUND);
         }
         return true;
@@ -60,7 +61,7 @@ public class FlySpectate extends ArenaModule {
 
             @Override
             public void run() {
-                commitSpectate(player);
+                FlySpectate.this.commitSpectate(player);
             }
 
         }
@@ -71,8 +72,8 @@ public class FlySpectate extends ArenaModule {
     public void commitSpectate(final Player player) {
         debug(player, "committing FLY spectate");
         final ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
-        if (arena.equals(arenaPlayer.getArena())) {
-            arena.msg(player, MSG.ERROR_ARENA_ALREADY_PART_OF, arena.getName());
+        if (this.arena.equals(arenaPlayer.getArena())) {
+            this.arena.msg(player, MSG.ERROR_ARENA_ALREADY_PART_OF, this.arena.getName());
             return;
         }
 
@@ -80,7 +81,7 @@ public class FlySpectate extends ArenaModule {
 
         arenaPlayer.debugPrint();
 
-        arenaPlayer.setArena(arena);
+        arenaPlayer.setArena(this.arena);
         arenaPlayer.setTeleporting(true);
         arenaPlayer.setStatus(PlayerStatus.WATCH);
         debug(player, "switching:");
@@ -94,7 +95,7 @@ public class FlySpectate extends ArenaModule {
             arenaPlayer.dump();
 
         } else {
-            new PAG_Leave().commit(arena, player, new String[0]);
+            new PAG_Leave().commit(this.arena, player, new String[0]);
             return;
         }
 
@@ -113,9 +114,7 @@ public class FlySpectate extends ArenaModule {
 
     @Override
     public void reset(final boolean force) {
-        if (listener != null) {
-            listener.stop();
-        }
+        ofNullable(this.listener).ifPresent(FlySpectateListener::stop);
     }
 
     @Override
@@ -124,7 +123,7 @@ public class FlySpectate extends ArenaModule {
             p.showPlayer(PVPArena.getInstance(), player);
         }
 
-        listener.removeSpectator(player);
+        ofNullable(this.listener).ifPresent(listener -> listener.removeSpectator(player));
 
         player.setAllowFlight(false);
         player.setFlying(false);
@@ -152,10 +151,10 @@ public class FlySpectate extends ArenaModule {
     }
 
     private FlySpectateListener getListener() {
-        if (listener == null) {
-            listener = new FlySpectateListener(this);
-            Bukkit.getPluginManager().registerEvents(listener, PVPArena.getInstance());
+        if (this.listener == null) {
+            this.listener = new FlySpectateListener(this);
+            Bukkit.getPluginManager().registerEvents(this.listener, PVPArena.getInstance());
         }
-        return listener;
+        return this.listener;
     }
 }
