@@ -150,7 +150,7 @@ public class BetterClasses extends ArenaModule {
             return;
         }
 
-        if ((args.length > 2 && !RESPAWN_COMMAND_KEY.equalsIgnoreCase(args[2])) || !AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2, 3, 4, 5})) {
+        if (!RESPAWN_COMMAND_KEY.equalsIgnoreCase(args[2]) && !AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2, 3, 4, 5})) {
             this.arena.msg(sender, MSG.ERROR_INVALID_ARGUMENT_COUNT, String.valueOf(args.length - 1), "1 to 4");
             this.printHelp(this.arena, sender);
             return;
