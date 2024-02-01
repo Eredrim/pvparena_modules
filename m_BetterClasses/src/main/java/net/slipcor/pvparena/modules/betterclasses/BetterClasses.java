@@ -246,7 +246,7 @@ public class BetterClasses extends ArenaModule {
                 }
 
                 betterClassDef.getPermEffects().removeIf(effect -> effect.getType().equals(effectType));
-                betterClassDef.getPermEffects().add(new PotionEffect(effectType, -1, amplifier));
+                betterClassDef.getPermEffects().add(new PotionEffect(effectType, -1, amplifier - 1));
                 this.arena.msg(sender, MSG.MODULE_BETTERCLASSES_ADD, c.getName(), effectType.getName());
 
             } else if ("remove".equalsIgnoreCase(args[2])) {
