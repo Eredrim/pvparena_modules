@@ -33,6 +33,7 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.joining;
 import static net.slipcor.pvparena.config.Debugger.debug;
+import static net.slipcor.pvparena.core.VersionUtils.INFINITE_EFFECT_DURATION;
 import static net.slipcor.pvparena.modules.betterclasses.BetterClassDef.*;
 
 public class BetterClasses extends ArenaModule {
@@ -246,7 +247,7 @@ public class BetterClasses extends ArenaModule {
                 }
 
                 betterClassDef.getPermEffects().removeIf(effect -> effect.getType().equals(effectType));
-                betterClassDef.getPermEffects().add(new PotionEffect(effectType, -1, amplifier - 1));
+                betterClassDef.getPermEffects().add(new PotionEffect(effectType, INFINITE_EFFECT_DURATION, amplifier - 1));
                 this.arena.msg(sender, MSG.MODULE_BETTERCLASSES_ADD, c.getName(), effectType.getName());
 
             } else if ("remove".equalsIgnoreCase(args[2])) {
