@@ -219,10 +219,10 @@ public class Points extends ArenaModule implements Listener {
 
                     ArenaModuleManager.announce(
                             arena,
-                            Language.parse(MSG.NOTICE_PLAYERAWARDED,
+                            Language.parse(MSG.NOTICE_REWARDEDPLAYER,
                                     value + " points"), "PRIZE");
                     arena.msg(Bukkit.getPlayer(playerName), Language
-                            .parse(MSG.MODULE_VAULT_YOUWON, value + " points"));
+                            .parse(MSG.MODULE_VAULT_YOUEARNED, value + " points"));
 
                 } catch (final Exception e) {
                     // nothing

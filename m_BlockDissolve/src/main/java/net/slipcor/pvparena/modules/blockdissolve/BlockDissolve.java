@@ -1,6 +1,7 @@
 package net.slipcor.pvparena.modules.blockdissolve;
 
 import net.slipcor.pvparena.PVPArena;
+import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.ArenaTeam;
 import net.slipcor.pvparena.core.Config.CFG;
 import net.slipcor.pvparena.loadables.ArenaModule;
@@ -43,7 +44,7 @@ public class BlockDissolve extends ArenaModule {
     }
 
     @Override
-    public boolean commitEnd(final ArenaTeam aTeam) {
+    public boolean commitEnd(ArenaTeam aTeam, ArenaPlayer arenaPlayer) {
         if (this.checker != null) {
             this.checker.clear();
             HandlerList.unregisterAll(this.checker);

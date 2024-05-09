@@ -51,7 +51,9 @@ public class RelayRunnable extends ArenaRunnable {
         SpawnManager.respawn(this.ap, spawn);
 
         this.ap.revive(this.deathInfo);
-        this.ap.setStatus(PlayerStatus.FIGHT);
+        if(this.ap.getStatus() == PlayerStatus.DEAD) { // Necessary to keep players of teams that lost in lost status
+            this.ap.setStatus(PlayerStatus.FIGHT);
+        }
         this.mod.getRunnerMap().remove(this.ap.getName());
         this.mod.getSpawnPointOverrideMap().remove(this.ap.getName());
     }
