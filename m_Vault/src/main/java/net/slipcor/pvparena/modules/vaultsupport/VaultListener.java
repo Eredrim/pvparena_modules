@@ -30,7 +30,7 @@ public class VaultListener implements Listener {
 
     @EventHandler
     public void onPAScoreEvent(PAGoalScoreEvent event) {
-        if(this.modInstance.getArena().equals(event.getArena())) {
+        if(this.modInstance.getArena().equals(event.getArena()) && event.getArenaPlayer() != null) {
             this.modInstance.rewardPlayerForAction(event.getArenaPlayer().getPlayer(), Config.CFG.MODULES_VAULT_REWARD_SCORE);
         }
     }
