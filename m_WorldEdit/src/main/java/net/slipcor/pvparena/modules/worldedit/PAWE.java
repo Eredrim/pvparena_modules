@@ -1,12 +1,19 @@
 package net.slipcor.pvparena.modules.worldedit;
 
-import com.sk89q.worldedit.*;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.IncompleteRegionException;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
-import com.sk89q.worldedit.extent.clipboard.io.*;
+import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
@@ -18,6 +25,7 @@ import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.classes.PABlockLocation;
+import net.slipcor.pvparena.commands.AbstractArenaCommand;
 import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.commands.PAA_Region;
 import net.slipcor.pvparena.core.Config.CFG;
@@ -34,9 +42,15 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PAWE extends ArenaModule {
     private static WorldEditPlugin worldEdit;
@@ -50,18 +64,17 @@ public class PAWE extends ArenaModule {
 
     @Override
     public String version() {
-        return getClass().getPackage().getImplementationVersion();
+        return this.getClass().getPackage().getImplementationVersion();
     }
 
     @Override
     public boolean checkCommand(final String s) {
-        return "regload".equals(s) || "regsave".equals(s) || "regcreate".equals(s)
-                || "!we".equals(s) || "worldedit".equals(s) || "regexlist".equals(s);
+        return "!we".equals(s) || "worldedit".equals(s);
     }
 
     @Override
     public List<String> getMain() {
-        return Arrays.asList("regload", "regsave", "regcreate", "worldedit", "regexlist");
+        return List.of("worldedit");
     }
 
     @Override
@@ -72,129 +85,140 @@ public class PAWE extends ArenaModule {
     @Override
     public CommandTree<String> getSubs(final Arena arena) {
         final CommandTree<String> result = new CommandTree<>(null);
-        if (arena == null) {
-            return result;
+
+        Set<String> regionNames = arena.getRegions().stream()
+                .map(ArenaRegion::getRegionName)
+                .collect(Collectors.toSet());
+        regionNames.add("all");
+
+        for (String regionName : regionNames) {
+            result.define(new String[]{"list", "add", regionName});
+            result.define(new String[]{"list", "remove", regionName});
+            result.define(new String[]{"save", regionName});
+            result.define(new String[]{"load", regionName});
         }
 
-        for (final ArenaRegion region : arena.getRegions()) {
-            result.define(new String[]{region.getRegionName()});
-        }
-        result.define(new String[]{"all"});
+        result.define(new String[]{"list", "show"});
+        result.define(new String[]{"autosave"});
+        result.define(new String[]{"autoload"});
         return result;
     }
 
     @Override
     public void commitCommand(final CommandSender sender, final String[] args) {
         if (!sender.hasPermission("pvparena.admin")) {
-            arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
+            this.arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
             return;
         }
-
-        // /pa reg[save|load] [regionname] {filename}
 
         if (args.length < 2) {
-            helpCommands(arena, sender);
+            this.arena.msg(sender, MSG.ERROR_COMMAND_UNKNOWN);
             return;
         }
 
-        final ArenaRegion ars = arena.getRegion(args[1]);
+        if("!we".equalsIgnoreCase(args[0]) || "worldedit".equalsIgnoreCase(args[0])) {
+            // /pa !we autosave
+            if (args[1].equalsIgnoreCase("autosave")) {
+                boolean b = this.arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOSAVE);
+                this.arena.getConfig().set(CFG.MODULES_WORLDEDIT_AUTOSAVE, !b);
+                this.arena.getConfig().save();
+                this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_WORLDEDIT_AUTOSAVE.getNode(), String.valueOf(!b));
+                return;
+            }
 
-        if (args.length < 3) {
+            // /pa !we autoload
+            if (args[1].equalsIgnoreCase("autoload")) {
+                boolean b = this.arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOLOAD);
+                this.arena.getConfig().set(CFG.MODULES_WORLDEDIT_AUTOLOAD, !b);
+                this.arena.getConfig().save();
+                this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_WORLDEDIT_AUTOLOAD.getNode(), String.valueOf(!b));
+                return;
+            }
 
-            if (args[0].endsWith("load")) {
-                if (ars == null && !args[1].equalsIgnoreCase("all")) {
-                    arena.msg(sender, MSG.ERROR_REGION_NOTFOUND, args[1]);
+            // /pa !we create
+            if("create".equalsIgnoreCase(args[1]) && args.length == 3) {
+                this.create((Player) sender, this.arena, args[2]);
+                this.arena.msg(sender, MSG.MODULE_WORLDEDIT_CREATED, args[2]);
+                return;
+            }
+
+            // /pa !we list show|add|remove <regionName>
+            if("list".equalsIgnoreCase(args[1])) {
+                if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{3, 4})) {
                     return;
-                } else if (ars == null) {
-                    Set<ArenaRegion> regions = arena.getRegionsByType(RegionType.BATTLE);
-                    for (ArenaRegion region : regions) {
-                        load(region);
-                        arena.msg(sender, MSG.MODULE_WORLDEDIT_LOADED, region.getRegionName());
+                }
+
+                final List<String> regions = this.arena.getConfig().getStringList(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), new ArrayList<>());
+
+                if ("show".equalsIgnoreCase(args[2])) {
+                    if(regions.isEmpty()) {
+                        this.arena.msg(sender, MSG.MODULE_WORLDEDIT_LIST_EMPTY);
+                    } else {
+                        this.arena.msg(sender, MSG.MODULE_WORLDEDIT_LIST_SHOW, String.join(", ", regions));
                     }
                     return;
                 }
-                load(ars);
-                arena.msg(sender, MSG.MODULE_WORLDEDIT_LOADED, args[1]);
-                return;
-            }
-            if (args[0].endsWith("save")) {
-                if (ars == null && !args[1].equalsIgnoreCase("all")) {
-                    arena.msg(sender, MSG.ERROR_REGION_NOTFOUND, args[1]);
+
+                final ArenaRegion ars = this.arena.getRegion(args[3]);
+                if("add".equalsIgnoreCase(args[2])) {
+                    if (!regions.contains(ars.getRegionName())) {
+                        regions.add(ars.getRegionName());
+                        this.arena.getConfig().setManually(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), regions);
+                        this.arena.getConfig().save();
+                    }
+                    this.arena.msg(sender, MSG.MODULE_WORLDEDIT_LIST_ADDED, ars.getRegionName());
                     return;
-                } else if (ars == null) {
-                    Set<ArenaRegion> regions = arena.getRegionsByType(RegionType.BATTLE);
+                } else if("remove".equalsIgnoreCase(args[2])){
+                    if (regions.contains(ars.getRegionName())) {
+                        regions.remove(ars.getRegionName());
+                        this.arena.getConfig().setManually(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), regions);
+                        this.arena.getConfig().save();
+                    }
+                    this.arena.msg(sender, MSG.MODULE_WORLDEDIT_LIST_REMOVED, ars.getRegionName());
+                    return;
+                }
+            }
+
+            final ArenaRegion ars = this.arena.getRegion(args[2]);
+
+            // /pa !we save <all|regionName>
+            if("save".equalsIgnoreCase(args[1])) {
+                if ("all".equalsIgnoreCase(args[2]) && ars != null) {
+                    Set<ArenaRegion> regions = this.arena.getRegionsByType(RegionType.BATTLE);
                     for (ArenaRegion region : regions) {
-                        save(region);
-                        arena.msg(sender, MSG.MODULE_WORLDEDIT_SAVED, region.getRegionName());
+                        this.save(region);
+                        this.arena.msg(sender, MSG.MODULE_WORLDEDIT_SAVED, region.getRegionName());
                     }
                     return;
-                }
-                save(ars);
-                arena.msg(sender, MSG.MODULE_WORLDEDIT_SAVED, args[1]);
-                return;
-            }
-            if (args[0].endsWith("create")) {
-                create((Player) sender, arena, args[1]);
-                arena.msg(sender, MSG.MODULE_WORLDEDIT_CREATED, args[1]);
-                return;
-            }
-            if (args[0].endsWith("regexlist")) {
-                if (ars == null) {
-                    arena.msg(sender, MSG.ERROR_REGION_NOTFOUND, args[1]);
+                } else if(ars == null) {
+                    this.arena.msg(sender, MSG.ERROR_REGION_NOTFOUND, args[2]);
                     return;
                 }
-                final List<String> regions = arena.getConfig().getStringList(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), new ArrayList<String>());
-                if (args.length < 2) {
-                    arena.msg(sender, MSG.MODULE_WORLDEDIT_LIST_SHOW, StringParser.joinList(regions, ", "));
-                    return;
-                }
+                this.save(ars);
+                this.arena.msg(sender, MSG.MODULE_WORLDEDIT_SAVED, args[2]);
+                return;
+            }
 
-                if (!regions.contains(ars.getRegionName()) || args.length > 2 && StringParser.positive.contains(args[2])) {
-                    regions.add(ars.getRegionName());
-                    arena.getConfig().setManually(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), regions);
-                    arena.getConfig().save();
-                    arena.msg(sender, MSG.MODULE_WORLDEDIT_LIST_ADDED, ars.getRegionName());
+            // /pa !we load <all|regionName>
+            if("load".equalsIgnoreCase(args[1])) {
+                if ("all".equalsIgnoreCase(args[2]) && ars != null) {
+                    Set<ArenaRegion> regions = this.arena.getRegionsByType(RegionType.BATTLE);
+                    for (ArenaRegion region : regions) {
+                        this.load(region);
+                        this.arena.msg(sender, MSG.MODULE_WORLDEDIT_LOADED, region.getRegionName());
+                    }
+                    return;
+                } else if(ars == null) {
+                    this.arena.msg(sender, MSG.ERROR_REGION_NOTFOUND, args[2]);
                     return;
                 }
-                regions.remove(ars.getRegionName());
-                arena.getConfig().setManually(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), regions);
-                arena.getConfig().save();
-                arena.msg(sender, MSG.MODULE_WORLDEDIT_LIST_REMOVED, ars.getRegionName());
+                this.load(ars);
+                this.arena.msg(sender, MSG.MODULE_WORLDEDIT_LOADED, args[2]);
                 return;
-            }
-            if (args[0].equals("!we")) {
-
-                if (args[1].endsWith("save")) {
-                    boolean b = arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOSAVE);
-                    arena.getConfig().set(CFG.MODULES_WORLDEDIT_AUTOSAVE, !b);
-                    arena.getConfig().save();
-                    arena.msg(sender, MSG.SET_DONE, CFG.MODULES_WORLDEDIT_AUTOSAVE.getNode(), String.valueOf(!b));
-                    return;
-                }
-                if (args[1].endsWith("load")) {
-                    boolean b = arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOLOAD);
-                    arena.getConfig().set(CFG.MODULES_WORLDEDIT_AUTOLOAD, !b);
-                    arena.getConfig().save();
-                    arena.msg(sender, MSG.SET_DONE, CFG.MODULES_WORLDEDIT_AUTOLOAD.getNode(), String.valueOf(!b));
-                    return;
-                }
-
-                create((Player) sender, arena, args[1]);
-                arena.msg(sender, MSG.MODULE_WORLDEDIT_CREATED, args[1]);
-                return;
-            }
-            helpCommands(arena, sender);
-        } else {
-            if (args[0].endsWith("load")) {
-                load(ars, args[2]);
-                arena.msg(sender, MSG.MODULE_WORLDEDIT_LOADED, args[1]);
-            } else if (args[0].endsWith("save")) {
-                save(ars, args[2]);
-                arena.msg(sender, MSG.MODULE_WORLDEDIT_SAVED, args[1]);
-            } else {
-                create((Player) sender, arena, args[1], args[2]);
             }
         }
+
+        this.arena.msg(sender, MSG.ERROR_COMMAND_UNKNOWN);
     }
 
     private Location calculateBukkitLocation(Player p, BlockVector3 location) {
@@ -215,8 +239,8 @@ public class PAWE extends ArenaModule {
         }
 
         final ArenaPlayer ap = ArenaPlayer.fromPlayer(p);
-        ap.setSelection(calculateBukkitLocation(p, selection.getMinimumPoint()), false);
-        ap.setSelection(calculateBukkitLocation(p, selection.getMaximumPoint()), true);
+        ap.setSelection(this.calculateBukkitLocation(p, selection.getMinimumPoint()), false);
+        ap.setSelection(this.calculateBukkitLocation(p, selection.getMaximumPoint()), true);
 
         final PAA_Region cmd = new PAA_Region();
         final String[] args = {regionName, regionShape};
@@ -226,43 +250,35 @@ public class PAWE extends ArenaModule {
 
     @Override
     public void configParse(YamlConfiguration config) {
-        loadPath = config.getString(CFG.MODULES_WORLDEDIT_SCHEMATICPATH.getNode(), PVPArena.getInstance().getDataFolder().getAbsolutePath());
-        if (loadPath.equals("")) {
-            loadPath = PVPArena.getInstance().getDataFolder().getAbsolutePath();
+        this.initConfig();
+    }
+
+    @Override
+    public void initConfig() {
+        String defaultPath = PVPArena.getInstance().getDataFolder().getPath() + "/schematics";
+        this.loadPath = this.arena.getConfig().getString(CFG.MODULES_WORLDEDIT_SCHEMATICPATH, defaultPath);
+        if (this.loadPath.trim().isEmpty()) {
+            this.loadPath = defaultPath;
         }
     }
 
     private void create(final Player p, final Arena arena, final String regionName) {
-        create(p, arena, regionName, "CUBOID");
+        this.create(p, arena, regionName, "CUBOID");
     }
 
     @Override
     public void displayInfo(final CommandSender sender) {
-        sender.sendMessage(StringParser.colorVar("autoload", arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOLOAD)) +
-                " | " + StringParser.colorVar("autosave", arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOSAVE)));
-    }
-
-    private void helpCommands(final Arena arena, final CommandSender sender) {
-        arena.msg(sender, MSG.ERROR_ERROR, "/pa regsave [regionname] {filename}");
-        arena.msg(sender, MSG.ERROR_ERROR, "/pa regload [regionname] {filename}");
-        arena.msg(sender, MSG.ERROR_ERROR, "/pa regcreate [regionname]");
-        arena.msg(sender, MSG.ERROR_ERROR, "/pa !we autoload");
-        arena.msg(sender, MSG.ERROR_ERROR, "/pa !we autosave");
-        arena.msg(sender, MSG.ERROR_ERROR, "/pa !we create [regionname]");
+        sender.sendMessage(StringParser.colorVar("autoload", this.arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOLOAD)) +
+                " | " + StringParser.colorVar("autosave", this.arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOSAVE)));
     }
 
     private void load(final ArenaRegion ars) {
-        load(ars, ars.getArena().getName() + '_' + ars.getRegionName());
+        this.load(ars, ars.getArena().getName() + '_' + ars.getRegionName());
     }
 
     private void load(final ArenaRegion ars, final String regionName) {
 
         try {
-            final PABlockLocation min = ars.getShape().getMinimumLocation();
-            final PABlockLocation max = ars.getShape().getMaximumLocation();
-            final int size = (max.getX() + 2 - min.getX()) *
-                    (max.getY() + 2 - min.getY()) *
-                    (max.getZ() + 2 - min.getZ());
             final PABlockLocation loc = ars.getShape().getMinimumLocation();
 
             WorldEdit worldEdit = WorldEdit.getInstance();
@@ -279,26 +295,30 @@ public class PAWE extends ArenaModule {
 
             try (ClipboardReader reader = format.getReader(Files.newInputStream(loadFile.toPath()))) {
                 Clipboard clipboard = reader.read();
+                reader.close();
                 ClipboardHolder holder = new ClipboardHolder(clipboard);
                 BukkitWorld bukkitWorld = new BukkitWorld(ars.getWorld());
 
-                final EditSession editSession = worldEdit.newEditSessionBuilder()
-                        .world(bukkitWorld)
-                        .maxBlocks(size)
-                        .build();
+                final EditSession editSession = worldEdit.newEditSession(bukkitWorld);
                 editSession.setReorderMode(EditSession.ReorderMode.MULTI_STAGE);
-                editSession.setFastMode(true);
                 BlockVector3 to = BlockVector3.at(loc.getX(), loc.getY(), loc.getZ());
-                Operation operation=holder.createPaste(editSession)
+                Operation operation = holder.createPaste(editSession)
                         .to(to)
                         .ignoreAirBlocks(!this.arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_REPLACEAIR))
                         .build();
-                Operations.completeLegacy(operation);
-                editSession.close();
+
+                Bukkit.getScheduler().runTask(PVPArena.getInstance(), () -> {
+                    try {
+                        Operations.complete(operation);
+                        Bukkit.getScheduler().runTask(PVPArena.getInstance(), editSession::close);
+                    } catch (WorldEditException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
             }
         } catch (IllegalArgumentException e) {
             PVPArena.getInstance().getLogger().severe(e.getMessage());
-        } catch (final IOException | MaxChangedBlocksException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
     }
@@ -318,46 +338,46 @@ public class PAWE extends ArenaModule {
 
     @Override
     public void parseStart() {
-        if (arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOSAVE)) {
-            List<String> regions = arena.getConfig().getStringList(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), new ArrayList<String>());
-            if (regions.size() > 0) {
+        if (this.arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOSAVE)) {
+            List<String> regions = this.arena.getConfig().getStringList(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), new ArrayList<>());
+            if (!regions.isEmpty()) {
                 for (String regionName : regions) {
-                    ArenaRegion region = arena.getRegion(regionName);
+                    ArenaRegion region = this.arena.getRegion(regionName);
                     if (region != null) {
-                        save(region);
+                        this.save(region);
                     }
                 }
                 return;
             }
-            for (final ArenaRegion ars : arena.getRegionsByType(RegionType.BATTLE)) {
-                save(ars);
+            for (final ArenaRegion ars : this.arena.getRegionsByType(RegionType.BATTLE)) {
+                this.save(ars);
             }
         }
-        needsLoading = true;
+        this.needsLoading = true;
     }
 
     @Override
     public void reset(final boolean force) {
-        if (needsLoading && arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOLOAD)) {
-            List<String> regions = arena.getConfig().getStringList(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), new ArrayList<String>());
-            if (regions.size() > 0) {
+        if (this.needsLoading && this.arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOLOAD)) {
+            List<String> regions = this.arena.getConfig().getStringList(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), new ArrayList<>());
+            if (!regions.isEmpty()) {
                 for (String regionName : regions) {
-                    ArenaRegion region = arena.getRegion(regionName);
+                    ArenaRegion region = this.arena.getRegion(regionName);
                     if (region != null) {
-                        load(region);
+                        this.load(region);
                     }
                 }
                 return;
             }
-            for (final ArenaRegion ars : arena.getRegionsByType(RegionType.BATTLE)) {
-                load(ars);
+            for (final ArenaRegion ars : this.arena.getRegionsByType(RegionType.BATTLE)) {
+                this.load(ars);
             }
         }
-        needsLoading = false;
+        this.needsLoading = false;
     }
 
     private void save(final ArenaRegion ars) {
-        save(ars, ars.getArena().getName() + '_' + ars.getRegionName());
+        this.save(ars, ars.getArena().getName() + '_' + ars.getRegionName());
     }
 
     private BlockVector3 getVector(org.bukkit.util.Vector vector) {
@@ -368,19 +388,13 @@ public class PAWE extends ArenaModule {
         com.sk89q.worldedit.world.World world = BukkitAdapter.adapt(arena.getWorld());
 
         Region region = new CuboidRegion(world,
-                getVector(arena.getShape().getMinimumLocation().toLocation().toVector()),
-                getVector(arena.getShape().getMaximumLocation().toLocation().toVector()));
-
-        final PABlockLocation lmin = arena.getShape().getMinimumLocation();
-        final PABlockLocation lmax = arena.getShape().getMaximumLocation();
-        final int size = (lmax.getX() - lmin.getX()) *
-                (lmax.getY() - lmin.getY()) *
-                (lmax.getZ() - lmin.getZ());
+                this.getVector(arena.getShape().getMinimumLocation().toLocation().toVector()),
+                this.getVector(arena.getShape().getMaximumLocation().toLocation().toVector()));
 
         final BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
 
 
-        final EditSession session = WorldEdit.getInstance().getEditSessionFactory().getEditSession(world, size);
+        final EditSession session = WorldEdit.getInstance().newEditSession(world);
 
         ForwardExtentCopy extentCopy = new ForwardExtentCopy(session, region, clipboard, region.getMinimumPoint());
         extentCopy.setCopyingEntities(true);
@@ -388,9 +402,10 @@ public class PAWE extends ArenaModule {
         try {
             Operations.complete(extentCopy);
             ClipboardFormat format = BuiltInClipboardFormat.SPONGE_SCHEMATIC;
-            ClipboardWriter writer = format.getWriter(new FileOutputStream(new File(loadPath, regionName + ".schem")));
+            ClipboardWriter writer = format.getWriter(new FileOutputStream(new File(this.loadPath, regionName + ".schem")));
             writer.write(clipboard);
             writer.close();
+            session.close();
         } catch (WorldEditException | IOException e) {
             e.printStackTrace();
         }
