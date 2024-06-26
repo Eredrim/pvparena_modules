@@ -225,12 +225,6 @@
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>net.slipcor.pvpa</groupId>
-            <artifactId>m_worldguard</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
     </dependencies>
 
     <build>

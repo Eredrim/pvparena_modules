@@ -94,7 +94,6 @@
         <module>m_Duel</module>
         <module>m_Walls</module>
         <module>m_WorldEdit</module>
-        <module>m_WorldGuard</module>
         <module>dist</module>
     </modules>
 
