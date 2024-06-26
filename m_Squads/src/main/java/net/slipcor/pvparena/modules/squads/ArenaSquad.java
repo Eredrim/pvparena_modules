@@ -12,56 +12,52 @@ class ArenaSquad {
     private final Set<ArenaPlayer> players = new HashSet<>();
 
     public ArenaSquad(final String sName, final int iMax) {
-        name = sName;
-        max = iMax;
+        this.name = sName;
+        this.max = iMax;
     }
 
     public int getCount() {
-        return players.size();
+        return this.players.size();
     }
 
     public int getMax() {
-        return max;
+        return this.max;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void add(final ArenaPlayer player) {
-        players.add(player);
+        this.players.add(player);
     }
 
     public boolean contains(final ArenaPlayer player) {
-        return players.contains(player);
+        return this.players.contains(player);
     }
 
     public void remove(final ArenaPlayer player) {
-        players.remove(player);
+        this.players.remove(player);
     }
 
     public void reset() {
-        players.clear();
+        this.players.clear();
     }
 
     public Set<ArenaPlayer> getPlayers() {
-        final Set<ArenaPlayer> result = new HashSet<>();
-        for (final ArenaPlayer ap : players) {
-            result.add(ap);
-        }
-        return result;
+        return new HashSet<>(this.players);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || this.getClass() != o.getClass()) return false;
         ArenaSquad that = (ArenaSquad) o;
-        return Objects.equals(name, that.name);
+        return Objects.equals(this.name, that.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name);
+        return Objects.hash(this.name);
     }
 }

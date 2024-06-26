@@ -10,9 +10,11 @@ import net.slipcor.pvparena.commands.CommandTree;
 import net.slipcor.pvparena.core.Config;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
+import net.slipcor.pvparena.core.RandomUtils;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.PermissionManager;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
@@ -30,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,8 +40,8 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.asList;
 
 public class Squads extends ArenaModule {
-    private final Map<Arena, Set<ArenaSquad>> squadsMap = new HashMap<>();
-    private final Map<Sign, ArenaSquad> signs = new HashMap<>();
+    private final Set<ArenaSquad> squadList = new HashSet<>();
+    private final Map<ArenaSquad, Sign> signMap = new HashMap<>();
     private final static String SQUADS_LIMITS = "modules.squads.limits";
 
     public Squads() {
@@ -52,22 +55,12 @@ public class Squads extends ArenaModule {
 
     @Override
     public void configParse(final YamlConfiguration cfg) {
-        final ConfigurationSection squadsCfg = cfg.getConfigurationSection(SQUADS_LIMITS);
-
-        Set<ArenaSquad> arenaSquads = new HashSet<>();
-
-        if(squadsCfg != null) {
-            for (final String name : squadsCfg.getKeys(false)) {
-                final ArenaSquad squad = new ArenaSquad(name, squadsCfg.getInt(name));
-                arenaSquads.add(squad);
-            }
-        }
-        this.squadsMap.putIfAbsent(this.arena, arenaSquads);
+        this.initSquadList(cfg);
     }
 
     @Override
     public boolean checkCommand(final String s) {
-        return "!sq".equals(s) || "squad".equals(s);
+        return "!sq".equalsIgnoreCase(s) || "squads".equalsIgnoreCase(s);
     }
 
     @Override
@@ -84,7 +77,7 @@ public class Squads extends ArenaModule {
     public CommandTree<String> getSubs(final Arena arena) {
         final CommandTree<String> result = new CommandTree<>(null);
         result.define(new String[]{"add"});
-        for (final ArenaSquad squad : this.getArenaSquads()) {
+        for (final ArenaSquad squad : this.squadList) {
             result.define(new String[]{"remove", squad.getName()});
             result.define(new String[]{"set", squad.getName()});
         }
@@ -122,14 +115,13 @@ public class Squads extends ArenaModule {
 
         if (args.length == 1) {
             // !sq | show the arena squads
-            if (this.getArenaSquads().size() < 1) {
+            if (this.squadList.isEmpty()) {
                 this.arena.msg(sender, MSG.MODULE_SQUADS_NOSQUAD);
             } else {
                 this.arena.msg(sender, MSG.MODULE_SQUADS_LISTHEAD, this.arena.getName());
-                for (final ArenaSquad squad : this.getArenaSquads()) {
-                    final String suffix = squad.getName().equalsIgnoreCase(this.arena.getConfig().getString(Config.CFG.MODULES_SQUADS_AUTOSQUAD)) ? " (auto)" : "";
+                for (final ArenaSquad squad : this.squadList) {
                     final String max = squad.getMax() > 0 ? String.valueOf(squad.getMax()) : "none";
-                    this.arena.msg(sender, MSG.MODULE_SQUADS_LISTITEM, squad.getName(), max, suffix);
+                    this.arena.msg(sender, MSG.MODULE_SQUADS_LISTITEM, squad.getName(), max);
                 }
             }
         }
@@ -139,21 +131,21 @@ public class Squads extends ArenaModule {
                 if ("add".equalsIgnoreCase(args[1])) {
                     // !sq add [name] [limit] | add squad with player limit
                     ArenaSquad newSquad = new ArenaSquad(args[2], Integer.parseInt(args[3]));
-                    this.getArenaSquads().add(newSquad);
+                    this.squadList.add(newSquad);
                     this.arena.msg(sender, MSG.MODULE_SQUADS_ADDED, args[2]);
                 } else if ("remove".equalsIgnoreCase(args[1]) || "set".equalsIgnoreCase(args[1])) {
                     // !sq remove [name] | remove squad [name]
                     // /pa !sq set [name] [limit] | set player limit for squad
 
-                    ArenaSquad searchedSquad = this.getArenaSquads().stream()
+                    ArenaSquad searchedSquad = this.squadList.stream()
                             .filter(sq -> sq.getName().equalsIgnoreCase(args[2]))
                             .findFirst()
                             .orElseThrow(IllegalArgumentException::new);
 
-                    this.getArenaSquads().remove(searchedSquad);
+                    this.squadList.remove(searchedSquad);
                     if("set".equalsIgnoreCase(args[1])) {
                         ArenaSquad newSquad = new ArenaSquad(args[2], Integer.parseInt(args[3]));
-                        this.getArenaSquads().add(newSquad);
+                        this.squadList.add(newSquad);
                         this.arena.msg(sender, MSG.MODULE_SQUADS_SET, args[2]);
                     } else {
                         this.arena.msg(sender, MSG.MODULE_SQUADS_REMOVED, args[2]);
@@ -163,7 +155,7 @@ public class Squads extends ArenaModule {
                 }
 
                 // Saving to configuration
-                Map<String, Integer> squadsMap = this.getArenaSquads().stream().collect(Collectors.toMap(ArenaSquad::getName, ArenaSquad::getMax));
+                Map<String, Integer> squadsMap = this.squadList.stream().collect(Collectors.toMap(ArenaSquad::getName, ArenaSquad::getMax));
                 this.arena.getConfig().setManually(SQUADS_LIMITS, squadsMap);
                 this.arena.getConfig().save();
             } catch(IllegalArgumentException e) {
@@ -177,15 +169,29 @@ public class Squads extends ArenaModule {
 
     @Override
     public void reset(final boolean force) {
-        for (final ArenaSquad squad : this.getArenaSquads()) {
+        for (final ArenaSquad squad : this.squadList) {
             squad.reset();
         }
-        for (final Sign sign : this.signs.keySet()) {
-            sign.setLine(1, "----------");
-            sign.setLine(2, "");
-            sign.setLine(3, "");
+        this.squadList.clear();
+        this.initSquadList(this.arena.getConfig().getYamlConfiguration());
+        this.signMap.values().forEach(this::cleanSign);
+        this.signMap.clear();
+    }
+
+    @Override
+    public void resetPlayer(Player player, boolean soft, boolean force) {
+        if (!force) {
+            ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
+            this.squadList.stream().filter(sq -> sq.contains(ap))
+                    .findAny()
+                    .ifPresent(squad -> {
+                        squad.remove(ap);
+                        Sign squadSign = this.signMap.get(squad);
+                        if(squadSign != null) {
+                            this.setPlayersOnSign(squadSign, squad);
+                        }
+                    });
         }
-        this.signs.clear();
     }
 
     @Override
@@ -196,8 +202,7 @@ public class Squads extends ArenaModule {
             return false;
         }
 
-        if (this.arena.isFightInProgress() && !this.arena.getConfig().getBoolean(
-                Config.CFG.MODULES_SQUADS_INGAMESWITCH)) {
+        if (this.arena.isFightInProgress() && !this.arena.getConfig().getBoolean(Config.CFG.MODULES_SQUADS_INGAMESWITCH)) {
             return false;
         }
 
@@ -214,95 +219,9 @@ public class Squads extends ArenaModule {
             return false;
         }
 
-        final Sign sign = (Sign) event.getClickedBlock().getState();
+        Sign sign = (Sign) event.getClickedBlock().getState();
 
-        for (final ArenaSquad squad : this.getArenaSquads()) {
-            if (squad.getName().equals(sign.getLine(0))) {
-                if (squad.getMax() != 0 && squad.getCount() >= squad.getMax()) {
-                    this.arena.msg(arenaPlayer.getPlayer(), MSG.MODULE_SQUADS_FULL);
-                    return false;
-                }
-                for (final ArenaSquad s : this.getArenaSquads()) {
-                    if (s.equals(squad)) {
-                        continue;
-                    }
-                    if (s.contains(arenaPlayer)) {
-                        s.remove(arenaPlayer);
-                        this.removePlayerFromSigns(arenaPlayer);
-                        break;
-                    }
-                }
-                squad.add(arenaPlayer);
-                this.addPlayerToSigns(sign, arenaPlayer);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private Set<ArenaSquad> getArenaSquads() {
-        return this.squadsMap.getOrDefault(this.arena, Collections.emptySet());
-    }
-
-    private void addPlayerToSigns(final Sign sign, final ArenaPlayer ap) {
-        for (int i = 2; i < 4; i++) {
-            if (sign.getLine(i).isEmpty()) {
-                sign.setLine(i, ap.getName());
-                sign.update();
-                return;
-            }
-        }
-
-        final Block block = sign.getBlock().getRelative(BlockFace.DOWN);
-
-        if (block.getState() instanceof Sign) {
-            final Sign sign2 = (Sign) block.getState();
-            for (int i = 2; i < 4; i++) {
-                if (sign2.getLine(i).isEmpty()) {
-                    sign2.setLine(i, ap.getName());
-                    sign2.update();
-                    return;
-                }
-            }
-        }
-    }
-
-    private void removePlayerFromSigns(final ArenaPlayer ap) {
-        for (final Sign sign : this.signs.keySet()) {
-            for (int i = 0; i < 4; i++) {
-                if (ap.getName().equals(sign.getLine(i))) {
-                    sign.setLine(i, "");
-                }
-            }
-            sign.update();
-
-            final Block block = sign.getBlock().getRelative(BlockFace.DOWN);
-
-            if (block.getState() instanceof Sign) {
-                final Sign sign2 = (Sign) block.getState();
-                for (int i = 2; i < 4; i++) {
-                    if (ap.getName().equals(sign2.getLine(i))) {
-                        sign2.setLine(i, "");
-                    }
-                }
-                sign2.update();
-            }
-        }
-    }
-
-    @Override
-    public void parseJoin(final Player player, final ArenaTeam team) {
-        String autoSquadName = this.arena.getConfig().getString(Config.CFG.MODULES_SQUADS_AUTOSQUAD);
-        try {
-            ArenaSquad autoSquad = this.getArenaSquads().stream()
-                    .filter(sq -> sq.getName().equalsIgnoreCase(autoSquadName))
-                    .findFirst()
-                    .orElseThrow(IllegalArgumentException::new);
-            autoSquad.add(ArenaPlayer.fromPlayer(player));
-        } catch (Exception ignored) {
-
-        }
+        return this.useSignToTogglePlayerInSquad(sign, arenaPlayer);
     }
 
     @Override
@@ -310,18 +229,128 @@ public class Squads extends ArenaModule {
                              final DamageCause cause, final Entity damager) {
 
         final ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
-        for (final ArenaSquad squad : this.getArenaSquads()) {
-            if (squad.contains(ap) && squad.getCount() > 1) {
-                int pos = new Random().nextInt(squad.getCount() - 1);
-                for (final ArenaPlayer tap : squad.getPlayers()) {
-                    if (--pos <= 0) {
-                        try {
-                            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), () -> player.teleport(tap.getPlayer()), 10);
-                        } catch (final Exception ignored) {
+        List<ArenaPlayer> squadMates = this.squadList.stream()
+                .filter(sq -> sq.contains(ap) && sq.getCount() > 1)
+                .flatMap(sq -> sq.getPlayers().stream().filter(squadPlayer -> squadPlayer != ap))
+                .collect(Collectors.toList());
 
-                        }
-                    }
+        if(!squadMates.isEmpty()) {
+            ArenaPlayer randomSquadMate = RandomUtils.getRandom(squadMates, new Random());
+            try {
+                Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), () -> {
+                    ap.setTelePass(true);
+                    player.teleport(randomSquadMate.getPlayer());
+                    ap.setTelePass(false);
+                }, 10);
+            } catch (final Exception ignored) {
+
+            }
+        }
+    }
+
+    private void initSquadList(YamlConfiguration cfg) {
+        final ConfigurationSection squadsCfg = cfg.getConfigurationSection(SQUADS_LIMITS);
+
+        Set<ArenaSquad> arenaSquads = new HashSet<>();
+
+        if(squadsCfg != null) {
+            arenaSquads = squadsCfg.getKeys(false).stream()
+                    .map(name -> new ArenaSquad(name, squadsCfg.getInt(name)))
+                    .collect(Collectors.toSet());
+        }
+        this.squadList.addAll(arenaSquads);
+    }
+
+    private boolean useSignToTogglePlayerInSquad(Sign sign, ArenaPlayer arenaPlayer) {
+        Optional<ArenaSquad> foundSquad = this.squadList.stream()
+                .filter(sq -> sq.getName().equalsIgnoreCase(ChatColor.stripColor(sign.getLine(0))))
+                .findAny();
+
+        if(foundSquad.isPresent()) {
+            ArenaSquad squad = foundSquad.get();
+            if (squad.getMax() != 0 && squad.getCount() >= squad.getMax()) {
+                this.arena.msg(arenaPlayer.getPlayer(), MSG.MODULE_SQUADS_FULL);
+                return false;
+            }
+            if(squad.contains(arenaPlayer)) {
+                squad.remove(arenaPlayer);
+                this.arena.msg(arenaPlayer.getPlayer(), MSG.MODULE_SQUADS_LEAVE, squad.getName());
+            } else {
+                this.squadList.stream()
+                        .filter(sq -> sq.contains(arenaPlayer))
+                        .findAny()
+                        .ifPresent(previousSquad -> {
+                            previousSquad.remove(arenaPlayer);
+                            Sign prevSquadSign = this.signMap.get(previousSquad);
+                            if(prevSquadSign != null) {
+                                this.setPlayersOnSign(prevSquadSign, previousSquad);
+                            }
+                        });
+                squad.add(arenaPlayer);
+                this.arena.msg(arenaPlayer.getPlayer(), MSG.MODULE_SQUADS_JOIN, squad.getName());
+            }
+            this.setPlayersOnSign(sign, squad);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void setPlayersOnSign(Sign sign, ArenaSquad squad) {
+        this.signMap.putIfAbsent(squad, sign);
+
+        List<String> playersName = squad.getPlayers().stream()
+                .map(ArenaPlayer::getName)
+                .collect(Collectors.toList());
+
+        Sign currentSign = sign;
+        int lineIndex = 2;
+        int playerNameIndex = 0;
+
+        while (currentSign != null) {
+            if(playerNameIndex < playersName.size()) {
+                currentSign.setLine(lineIndex, playersName.get(playerNameIndex));
+                playerNameIndex++;
+            } else {
+                currentSign.setLine(lineIndex, "");
+            }
+
+            if (lineIndex == 3) {
+                currentSign.setEditable(false);
+                currentSign.update();
+                Block block = currentSign.getBlock().getRelative(BlockFace.DOWN);
+                if (block.getState() instanceof Sign) {
+                    currentSign = (Sign) block.getState();
+                    lineIndex = 0;
+                } else {
+                    currentSign = null;
                 }
+            } else {
+                lineIndex++;
+            }
+        }
+    }
+
+    private void cleanSign(Sign sign) {
+        sign.setEditable(true);
+        Sign currentSign = sign;
+        int currentIndex = 2;
+
+        while (currentSign != null) {
+            currentSign.setLine(currentIndex, "");
+
+            if (currentIndex == 3) {
+                currentSign.setEditable(true);
+                currentSign.update();
+                Block block = currentSign.getBlock().getRelative(BlockFace.DOWN);
+                if (block.getState() instanceof Sign) {
+                    currentSign = (Sign) block.getState();
+                    currentIndex = 0;
+                } else {
+                    currentSign = null;
+                }
+            } else {
+                currentIndex++;
             }
         }
     }
