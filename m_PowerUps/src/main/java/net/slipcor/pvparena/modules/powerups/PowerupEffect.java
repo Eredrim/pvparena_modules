@@ -1,135 +1,100 @@
 package net.slipcor.pvparena.modules.powerups;
 
+import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.ArenaTeam;
-import net.slipcor.pvparena.core.Config.CFG;
+import net.slipcor.pvparena.compatibility.AttributeAdapter;
+import net.slipcor.pvparena.compatibility.EffectTypeAdapter;
+import net.slipcor.pvparena.compatibility.EntityFreezeUtil;
+import net.slipcor.pvparena.compatibility.ParticleAdapter;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
-import net.slipcor.pvparena.listeners.EntityListener;
-import net.slipcor.pvparena.loadables.ArenaModuleManager;
 import net.slipcor.pvparena.managers.ArenaManager;
 import net.slipcor.pvparena.managers.WorkflowManager;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.attribute.Attribute;
+import org.bukkit.Location;
+import org.bukkit.Sound;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
+import java.util.function.Consumer;
 
 import static net.slipcor.pvparena.config.Debugger.debug;
+import static net.slipcor.pvparena.modules.powerups.PowerUps.isPowerup;
+import static org.bukkit.event.entity.EntityDamageEvent.DamageCause.THORNS;
 
-class PowerupEffect {
-    boolean active;
-    int uses = -1;
-    int duration = -1;
-    PowerupType type;
-    private String mobtype;
-    private double factor = 1.0;
-    private double chance = 1.0;
-    private int diff;
-    private final List<String> items = new ArrayList<>();
-    private PotionEffect potEff;
+public class PowerupEffect {
+    private final int duration;
+    private final PowerupEffectType type;
+    private EntityType mobType;
+    private final double factor;
+    private final double chance;
+    private final int diff;
+    private final List<String> items;
+    private PotionEffect potionEffect;
+
 
     /**
-     * create a powerup effect class
+     * create a powerup effect object
      *
-     * @param eClass       the effect class to create
-     * @param puEffectVals the map of effect values to set/add
+     * @param type       the effect class to create (based on PowerupType)
+     * @param cfgSection the config section of effect values to set/add
      */
-    public PowerupEffect(final String eClass, final Map<String, Object> puEffectVals,
-                         final PotionEffect effect) {
-        debug("adding effect {}", eClass);
-        type = parseClass(eClass);
-        potEff = effect;
-
-        debug("effect class is {}", type);
-        for (final Map.Entry<String, Object> stringObjectEntry : puEffectVals.entrySet()) {
-            if ("uses".equals(stringObjectEntry.getKey())) {
-                uses = (Integer) stringObjectEntry.getValue();
-                debug("uses: {}", uses);
-            } else if ("duration".equals(stringObjectEntry.getKey())) {
-                duration = (Integer) stringObjectEntry.getValue();
-                debug("duration: {}", duration);
-            } else if ("factor".equals(stringObjectEntry.getKey())) {
-                factor = (Double) stringObjectEntry.getValue();
-                debug("factor: {}", factor);
-            } else if ("chance".equals(stringObjectEntry.getKey())) {
-                chance = (Double) stringObjectEntry.getValue();
-                debug("chance: {}", chance);
-            } else if ("diff".equals(stringObjectEntry.getKey())) {
-                diff = (Integer) stringObjectEntry.getValue();
-                debug("diff: {}", diff);
-            } else if ("items".equals(stringObjectEntry.getKey())) {
-                items.add((String) stringObjectEntry.getValue());
-                debug("items: {}", items);
-            } else if ("type".equals(stringObjectEntry.getKey())) {
-                // mob type
-                mobtype = (String) stringObjectEntry.getValue();
-                debug("type: {}", type.name());
-            } else {
-                debug("undefined effect class value: {}", stringObjectEntry.getKey());
+    public PowerupEffect(String type, ConfigurationSection cfgSection) {
+        debug("adding effect {}", type);
+        this.type = PowerupEffectType.parse(type);
+        this.duration = cfgSection.getInt("duration", -1);
+        this.factor = cfgSection.getDouble("factor", 1.0);
+        this.chance = cfgSection.getDouble("chance", 1.0);
+        this.diff = cfgSection.getInt("diff", 0);
+        this.items = cfgSection.getStringList("items");
+        String cfgMobType = cfgSection.getString("mobType");
+        if(cfgMobType != null) {
+            try {
+                this.mobType = EntityType.valueOf(cfgMobType.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                PVPArena.getInstance().getLogger().warning("unknown mob type: " + cfgMobType);
             }
+        }
+
+        String potionEffect = cfgSection.getString("potionEffect");
+        if(potionEffect != null) {
+            this.potionEffect = this.generatePotionEffect(potionEffect, this.factor, this.duration);
         }
     }
 
-    /**
-     * get the PowerupEffect class from name
-     *
-     * @param s the class name
-     * @return a powerup effect
-     */
-    public static PowerupType parseClass(final String s) {
-        for (final PowerupType c : PowerupType.values()) {
-            if (c.name().equalsIgnoreCase(s)) {
-                return c;
-            }
-            if (s.toUpperCase().startsWith("POTION.")) {
-                return PowerupType.POTEFF;
-            }
-        }
-        return null;
+    public PowerupEffectType getType() {
+        return this.type;
+    }
+
+    public int getDuration() {
+        return this.duration;
     }
 
     /**
-     * initiate PowerupEffect
+     * run PowerupEffect on pickup
      *
-     * @param player the player to commit the effect on
+     * @param arenaPlayer the arenaPlayer to commit the effect on
      */
-    public void init(final Player player) {
-        if (uses == 0) {
-            return;
+    public boolean activateOnPickup(ArenaPlayer arenaPlayer) {
+        if (this.type.getActivationType() == PowerupActivationType.PICKUP) {
+            this.applyToOwner(arenaPlayer);
+            return true;
         }
-        if (uses > 0) {
-            active = true;
-            uses--;
-        } else {
-            active = true;
-        }
-
-        debug(player, "initiating - " + type.name());
-
-        if (duration == 0) {
-            active = false;
-        }
-
-        if (type.isActivatedOnPickup()) {
-            commit(player);
-        }
-
-        if (potEff != null) {
-            player.addPotionEffect(potEff);
-        }
+        return false;
     }
 
     /**
@@ -138,237 +103,282 @@ class PowerupEffect {
      * @param player the player to clear
      */
     public void removeEffect(final Player player) {
-        if (potEff != null) {
-            player.addPotionEffect(new PotionEffect(potEff.getType(), 0, 0));
+        if (this.potionEffect != null) {
+            player.removePotionEffect(this.potionEffect.getType());
         }
     }
 
     /**
      * commit PowerupEffect in combat
      *
-     * @param attacker   the attacking player to access
-     * @param defender   the defending player to access
+     * @param apAttacker   the attacking player to access
+     * @param apDefender   the defending player to access
      * @param event      the triggering event
-     * @param isAttacker is the player attacking
+     * @return true if a sprint effect is available, false otherwise
      */
-    public void commit(final Player attacker, final Player defender,
-                       final EntityDamageByEntityEvent event, final boolean isAttacker) {
-        debug(attacker, "committing entitydamagebyentityevent: " + type.name());
-        if (!isAttacker && type == PowerupType.DMG_RECEIVE) {
-            final Random r = new Random();
-            final Float v = r.nextFloat();
-            debug(defender, "random r = " + v);
-            if (v <= chance) {
-                event.setDamage((int) Math.round(event.getDamage() * factor));
+    public boolean applyOnHit(ArenaPlayer apAttacker, ArenaPlayer apDefender, EntityDamageByEntityEvent event) {
+        debug(apAttacker, "committing entitydamagebyentityevent: " + this.type.name());
+
+        if(this.type.getActivationType() == PowerupActivationType.HIT_GIVEN) {
+            Random r = new Random();
+            double hitChance = r.nextDouble();
+
+            if(hitChance <= this.chance) {
+                debug(apAttacker, "random r = {}", hitChance);
+                Player attacker = apAttacker.getPlayer();
+                Player defender = apDefender.getPlayer();
+
+                if (this.type == PowerupEffectType.DMG_CAUSE) {
+                    event.setDamage((int) Math.round(event.getDamage() * this.factor));
+                } else if (this.type == PowerupEffectType.IGNITE) {
+                    defender.setFireTicks(20);
+                } else if (this.type == PowerupEffectType.FREEZE) {
+                    int ticks = this.duration * 20;
+                    EntityFreezeUtil.freezePlayer(defender);
+                    Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), () -> EntityFreezeUtil.unfreezePlayer(defender), ticks);
+                    apDefender.getArena().msg(defender, MSG.MODULE_POWERUPS_FROZEN, this.duration);
+                } else if (this.type == PowerupEffectType.HEAL) {
+                    if(!isPowerup(attacker.getInventory().getItemInMainHand())) {
+                        // HEAL effect is applied only if hit is given with powerup item itself
+                        return false;
+                    }
+                    event.setCancelled(true); // Disabling hit
+                    playHealEffect(defender);
+                    // Effect is applied to another player and should not be tracked with 'this.potionEffect'
+                    PotionEffect regenEffect = this.generatePotionEffect(EffectTypeAdapter.REGENERATION, this.factor, this.duration);
+                    defender.removePotionEffect(EffectTypeAdapter.REGENERATION);
+                    defender.addPotionEffect(regenEffect);
+                }
             } // else: chance fail :D
-        } else if (isAttacker && type == PowerupType.DMG_CAUSE) {
-            final Random r = new Random();
-            final Float v = r.nextFloat();
-            debug(attacker, "random r = " + v);
-            if (v <= chance) {
-                event.setDamage((int) Math.round(event.getDamage() * factor));
-            } // else: chance fail :D
-        } else if (!isAttacker && type == PowerupType.DMG_REFLECT) {
-            if (attacker == null) {
-                return;
-            }
-            final Random r = new Random();
-            final Float v = r.nextFloat();
-            debug(attacker, "random r = " + v);
-            debug(defender, "random r = " + v);
-            if (v <= chance) {
-                final EntityDamageByEntityEvent reflectEvent = new EntityDamageByEntityEvent(
-                        defender, attacker, event.getCause(),
-                        Math.round(event.getDamage() * factor));
-                new EntityListener().onEntityDamageByEntity(reflectEvent);
-            } // else: chance fail :D
-        } else if (!isAttacker && type == PowerupType.IGNITE) {
-            final Random r = new Random();
-            final Float v = r.nextFloat();
-            debug(defender, "random r = " + v);
-            if (v <= chance) {
-                defender.setFireTicks(20);
-            } // else: chance fail :D
-        } else {
-            debug("unexpected fight powerup effect: {}", type.name());
+            return true;
         }
+        return false;
     }
 
-    /**
-     * commit PowerupEffect on player
-     *
-     * @param player the player to commit the effect on
-     * @return true if the commit succeeded, false otherwise
-     */
-    boolean commit(final Player player) {
+    public boolean applyOnGettingHit(ArenaPlayer apAttacker, ArenaPlayer apDefender, EntityDamageByEntityEvent event) {
+        debug(apAttacker, "committing entitydamagebyentityevent: " + this.type.name());
 
-        debug(player, "committing " + type.name());
-        final Random r = new Random();
-        if (r.nextFloat() <= chance) {
-            if (this.type == PowerupType.HEALTH) {
-                if (this.diff > 0) {
-                    double newHealth = player.getHealth() + this.diff;
-                    double maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
-                    player.setHealth(Math.min(newHealth, maxHealth));
-                } else {
-                    player.setHealth((int) Math.round(player.getHealth() * this.factor));
+        if(this.type.getActivationType() == PowerupActivationType.HIT_RECEIVED) {
+            Random r = new Random();
+            double hitChance = r.nextDouble();
+
+            if (hitChance <= this.chance) {
+                debug(apDefender, "random r = {}", hitChance);
+                long newDamageVal = Math.round(event.getDamage() * this.factor);
+
+                if (this.type == PowerupEffectType.DMG_RECEIVE) {
+                    event.setDamage((int) newDamageVal);
+                    event.setCancelled(true);
+                } else if (this.type == PowerupEffectType.DMG_REFLECT && apAttacker != null && event.getCause() != THORNS) {
+                    Player attacker = apAttacker.getPlayer();
+                    EntityDamageByEntityEvent reflectEvent = new EntityDamageByEntityEvent(apDefender.getPlayer(), attacker, THORNS, newDamageVal);
+
+                    attacker.damage(newDamageVal);
+                    attacker.setLastDamageCause(reflectEvent);
                 }
-                return true;
-            } else if (type == PowerupType.LIVES) {
-                final ArenaPlayer arenaPlayer = ArenaPlayer.fromPlayer(player);
-                final int lives = WorkflowManager.handleGetLives(arenaPlayer.getArena(), arenaPlayer);
-                if (lives + diff > 0) {
-                    arenaPlayer.getPlayer().damage(1000.0d);
-                } else {
-                    final ArenaTeam team = arenaPlayer.getArenaTeam();
-                    final Arena arena = arenaPlayer.getArena();
-                    ArenaModuleManager.announce(
-                            arena,
-                            Language.parse(MSG.FIGHT_KILLED_BY, player.getName(),
-                                    arena.parseDeathCause(player,
-                                            DamageCause.MAGIC, player)), "LOSER");
-
-                    if (arena.getConfig().getBoolean(CFG.USES_DEATHMESSAGES)) {
-                        arena.broadcast(Language.parse(MSG.FIGHT_KILLED_BY,
-                                team.colorizePlayer(arenaPlayer) + ChatColor.YELLOW,
-                                arena.parseDeathCause(player,
-                                        DamageCause.MAGIC, player)));
-                    }
-                    // needed so player does not get found when dead
-                    arena.removePlayer(arenaPlayer, arena.getConfig().getString(CFG.TP_LOSE), true, false);
-                    arenaPlayer.getArenaTeam().remove(arenaPlayer);
-
-                    ArenaManager.checkAndCommit(arena, false);
-                }
-
-                return true;
-            } else if (type == PowerupType.PORTAL) {
-                potEff = new PotionEffect(PotionEffectType.CONFUSION, duration * 20, 2);
-                return true;
-            } else if (type == PowerupType.REPAIR) {
-                for (String i : items) {
-                    i = i.toUpperCase();
-                    ItemStack is = null;
-                    if (i.contains("HELM")) {
-                        is = player.getInventory().getHelmet();
-                    } else if (i.contains("CHEST") || i.contains("PLATE")) {
-                        is = player.getInventory().getChestplate();
-                    } else if (i.contains("LEGGINS")) {
-                        is = player.getInventory().getLeggings();
-                    } else if (i.contains("BOOTS")) {
-                        is = player.getInventory().getBoots();
-                    } else if (i.contains("SWORD")) {
-                        is = player.getInventory().getItemInHand();
-                    }
-                    if (is == null) {
-                        continue;
-                    }
-
-                    if (diff > 0) {
-                        if (is.getDurability() + diff > Byte.MAX_VALUE) {
-                            is.setDurability(Byte.MAX_VALUE);
-                        } else {
-                            is.setDurability((short) (is.getDurability() + diff));
-                        }
-                    }
-                }
-                return true;
-            } else if (type == PowerupType.SPAWN_MOB) {
-                return true;
-            } else if (type == PowerupType.SPRINT) {
-                player.setSprinting(true);
-                potEff = new PotionEffect(PotionEffectType.SPEED, duration * 20, 2);
-                return true;
-            }
+            } // else: chance fail :D
+            return true;
         }
-        debug("unexpected {}", type.name());
         return false;
     }
 
     /**
-     * commit PowerupEffect on health gain
-     *
-     * @param event the triggering event
+     * Apply powerup effects on sprint
+     * @param arenaPlayer owner of the powerup
+     * @return true if a sprint effect is available, false otherwise
      */
-    public void commit(final EntityRegainHealthEvent event) {
-        debug(event.getEntity(), "committing entityregainhealthevent " + type.name());
-        if (type == PowerupType.HEAL) {
-            final Random r = new Random();
-            if (r.nextFloat() <= chance) {
-                event.setAmount((int) Math.round(event.getAmount() * factor));
-                ((Player) event.getEntity()).setSaturation(20);
-                ((Player) event.getEntity()).setFoodLevel(20);
-            } // else: chance fail :D
-        } else {
-            debug("unexpected fight heal effect: {}", type.name());
-        }
-    }
+    public boolean applyOnSprint(ArenaPlayer arenaPlayer) {
+        if (this.type == PowerupEffectType.SPRINT) {
+            Random r = new Random();
+            double sprintChance = r.nextDouble();
 
-    /**
-     * commit PowerupEffect on velocity event
-     *
-     * @param event the triggering event
-     */
-    public void commit(final PlayerVelocityEvent event) {
-        debug(event.getPlayer(), "committing velocityevent " + type.name());
-        if (type == PowerupType.HEAL) {
-            final Random r = new Random();
-            if (r.nextFloat() <= chance) {
-                event.setVelocity(event.getVelocity().multiply(factor));
-            } // else: chance fail :D
-        } else {
-            debug("unexpected jump effect: {}", type.name());
-        }
-    }
-
-    /**
-     * Get the PotionEffect of a PotionEffect class string
-     *
-     * @param eClass the class string to parse
-     * @return the PotionEffect or null
-     */
-    public static PotionEffect parsePotionEffect(String eClass) {
-        eClass = eClass.replace("POTION.", "");
-
-        // POTION.BLA:1 <--- duration
-        // POTION.BLA:1:1 <--- amplifyer
-
-        int duration = 1;
-        int amplifyer = 1;
-
-        if (eClass.contains(":")) {
-            final String[] s = eClass.split(":");
-
-            eClass = s[0];
-            try {
-                duration = Integer.parseInt(s[1]);
-            } catch (final Exception e) {
-                Arena.pmsg(Bukkit.getConsoleSender(), MSG.MODULE_POWERUPS_INVALIDPUEFF, eClass);
+            if(sprintChance <= this.chance) {
+                Player player = arenaPlayer.getPlayer();
+                player.removePotionEffect(EffectTypeAdapter.SPEED);
+                this.potionEffect = this.generatePotionEffect(EffectTypeAdapter.SPEED, this.factor, this.duration);
+                player.addPotionEffect(this.potionEffect);
             }
+            return true;
+        }
+        return false;
+    }
 
-            if (s.length > 2) {
+    /**
+     * Disable powerup effects if player stops sprinting
+     * @param arenaPlayer owner of the powerup
+     * @return true if there was an active sprint effect, false otherwise
+     */
+    public boolean removeAfterSprint(ArenaPlayer arenaPlayer) {
+        if (this.type == PowerupEffectType.SPRINT) {
+            Player player = arenaPlayer.getPlayer();
+            this.removeEffect(player);
+            return true;
+        }
+        return false;
+    }
 
-                try {
-                    amplifyer = Integer.parseInt(s[2]);
-                } catch (final Exception e) {
-                    Arena.pmsg(Bukkit.getConsoleSender(), MSG.MODULE_POWERUPS_INVALIDPUEFF, eClass);
+    /**
+     * Apply powerup effects on (right) click
+     * @param arenaPlayer owner of the powerup
+     * @return true if a sprint effect is available, false otherwise
+     */
+    public boolean applyOnClick(ArenaPlayer arenaPlayer) {
+        Random r = new Random();
+        if (this.type == PowerupEffectType.SPAWN_MOB) {
+            if (r.nextDouble() <= this.chance) {
+                this.applySpawnMobEffect(arenaPlayer);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * apply PowerupEffect on arenaPlayer that owns the item
+     *
+     * @param arenaPlayer the arenaPlayer to commit the effect on
+     */
+    private void applyToOwner(ArenaPlayer arenaPlayer) {
+        debug(arenaPlayer, "applying {} effect to themself", this.type);
+        Random r = new Random();
+        if (r.nextDouble() <= this.chance) {
+            if (this.type == PowerupEffectType.HEALTH) {
+                this.applyHealthEffect(arenaPlayer.getPlayer());
+            } else if (this.type == PowerupEffectType.LIVES) {
+                this.applyLivesEffect(arenaPlayer);
+            } else if (this.type == PowerupEffectType.REPAIR) {
+                this.applyRepairEffect(arenaPlayer);
+            }  else if (this.type == PowerupEffectType.POTION_EFFECT && this.potionEffect != null) {
+                arenaPlayer.getPlayer().addPotionEffect(this.potionEffect);
+            }
+        }
+    }
+
+    private void applySpawnMobEffect(ArenaPlayer arenaPlayer) {
+        Player player = arenaPlayer.getPlayer();
+        Location target = player.getTargetBlock(null, 8).getLocation().add(0, 1, 0);
+        Entity entity = player.getWorld().spawnEntity(target, this.mobType);
+        if(this.duration > 0) {
+            Bukkit.getScheduler().runTaskLater(PVPArena.getInstance(), () -> {
+                if(entity.isValid()) {
+                    entity.remove();
                 }
+            }, this.duration * 20L);
+        }
+    }
+
+    private void applyRepairEffect(ArenaPlayer arenaPlayer) {
+        Player player = arenaPlayer.getPlayer();
+
+        Consumer<ItemStack> applyNewDamageValue = (item) -> {
+            if(item.hasItemMeta() && item.getItemMeta() instanceof Damageable) {
+                Damageable meta = (Damageable) item.getItemMeta();
+                short maxDurability = item.getType().getMaxDurability();
+                long newDamageValue = Math.round(meta.getDamage() - maxDurability * this.factor);
+                meta.setDamage((int) Math.max(0, newDamageValue));
+                item.setItemMeta((ItemMeta) meta);
             }
+        };
+
+        for (String itemToRepair : this.items) {
+            String ucItemToRepair = itemToRepair.toUpperCase();
+            Optional<ItemStack> optionalItem;
+            switch (ucItemToRepair) {
+                case "HELMET":
+                    optionalItem = Optional.ofNullable(player.getInventory().getHelmet());
+                    break;
+                case "CHESTPLATE":
+                    optionalItem = Optional.ofNullable(player.getInventory().getChestplate());
+                    break;
+                case "LEGGINGS":
+                    optionalItem = Optional.ofNullable(player.getInventory().getLeggings());
+                    break;
+                case "BOOTS":
+                    optionalItem = Optional.ofNullable(player.getInventory().getBoots());
+                    break;
+                default:
+                    optionalItem = Arrays.stream(player.getInventory().getContents())
+                            .filter(itemStack -> itemStack.getType().name().contains(ucItemToRepair))
+                            .findAny();
+                    break;
+            }
+
+            optionalItem.ifPresent(applyNewDamageValue);
+        }
+    }
+
+    private void applyLivesEffect(ArenaPlayer arenaPlayer) {
+        Arena arena = arenaPlayer.getArena();
+        int lives = WorkflowManager.handleGetLives(arena, arenaPlayer);
+        ArenaTeam arenaTeam = arenaPlayer.getArenaTeam();
+        if (this.diff < 0 && lives > 0) {
+            int newLivesNumber = Math.max(0, (lives + this.diff));
+            if(arena.isFreeForAll()) {
+                arena.getGoal().getPlayerLifeMap().put(arenaPlayer, newLivesNumber);
+                arena.broadcast(Language.parse(MSG.MODULE_POWERUPS_REM_LIVES_PLAYER, arenaPlayer.getName(), this.diff));
+            } else {
+                arena.getGoal().getTeamLifeMap().put(arenaTeam, newLivesNumber);
+                arena.broadcast(Language.parse(MSG.MODULE_POWERUPS_REM_LIVES_TEAM, arenaTeam.getColoredName(), this.diff));
+            }
+            arena.getScoreboard().refresh();
+            ArenaManager.checkAndCommit(arena, false);
+        } else if (this.diff > 0 && lives > 0) {
+            int newLivesNumber = lives + this.diff;
+            if(arena.isFreeForAll()) {
+                arena.getGoal().getPlayerLifeMap().put(arenaPlayer, newLivesNumber);
+                arena.broadcast(Language.parse(MSG.MODULE_POWERUPS_ADD_LIVES_PLAYER, arenaPlayer.getName(), Math.abs(this.diff)));
+            } else {
+                arena.getGoal().getTeamLifeMap().put(arenaTeam, newLivesNumber);
+                arena.broadcast(Language.parse(MSG.MODULE_POWERUPS_ADD_LIVES_TEAM, arenaTeam.getColoredName(), Math.abs(this.diff)));
+            }
+            arena.getScoreboard().refresh();
+            ArenaManager.checkAndCommit(arena, false);
+        }
+    }
+
+    private void applyHealthEffect(Player player) {
+        double maxHealth = player.getAttribute(AttributeAdapter.MAX_HEALTH.getValue()).getBaseValue();
+
+        if (this.diff != 0) {
+            double newHealth = Math.max(0, player.getHealth() + this.diff); // Health can't be lower than 0
+            player.setHealth(Math.min(newHealth, maxHealth));
+        } else if (this.factor != 0) {
+            long multipliedHeath = Math.round(player.getHealth() * this.factor);
+            double newHealth = Math.max(0, multipliedHeath);
+            player.setHealth(Math.min(newHealth, maxHealth));
+        }
+    }
+
+    /**
+     * Generate a new potion effect from 3 strings, assuming duration is in seconds
+     * @param type Effect type
+     * @param amp Effect amp
+     * @param duration Effect duration in seconds
+     * @return PotionEffect object
+     * @throws NumberFormatException if number values can't be parsed
+     * @throws NullPointerException if effect type is null (can't be parsed)
+     */
+    private PotionEffect generatePotionEffect(String type, double amp, int duration) throws NumberFormatException, NullPointerException {
+        PotionEffectType effectType = PotionEffectType.getByName(type.toUpperCase());
+        if(effectType == null) {
+            throw new NullPointerException();
         }
 
-        for (final PotionEffectType pet : PotionEffectType.values()) {
-            if (pet == null) {
-                continue;
-            }
-            debug("parsing PET {}", pet);
-            if (pet.getName() == null) {
-                continue;
-            }
-            debug("parsing PET {}", pet);
-            if (pet.getName().equals(eClass)) {
-                return new PotionEffect(pet, duration, amplifyer);
-            }
-        }
-        return null;
+        return this.generatePotionEffect(effectType, amp, duration);
+    }
+
+    private PotionEffect generatePotionEffect(PotionEffectType effectType, double amp, int duration) throws NumberFormatException, NullPointerException {
+        int effectAmp = (int) Math.round(amp);
+        return new PotionEffect(effectType, duration * 20, effectAmp - 1);
+    }
+
+    private static void playHealEffect(Player defender) {
+        defender.getWorld().playSound(defender.getLocation(), Sound.ITEM_BOTTLE_EMPTY, 1, 1);
+        Location particlesSpawnLoc = defender.getLocation().add(0, 0.5, 0);
+        int count = 40;
+        double xzOffset = 0.3;
+        double yOffset = 0.6;
+        double speed = 0.02;
+        defender.getWorld().spawnParticle(ParticleAdapter.SPELL.getValue(), particlesSpawnLoc, count, xzOffset, yOffset, xzOffset, speed);
     }
 }

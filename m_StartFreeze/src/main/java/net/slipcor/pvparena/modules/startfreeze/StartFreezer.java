@@ -4,6 +4,7 @@ import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.PlayerStatus;
+import net.slipcor.pvparena.compatibility.EffectTypeAdapter;
 import net.slipcor.pvparena.core.Config;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.runnables.ArenaRunnable;
@@ -15,7 +16,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,7 +39,7 @@ class StartFreezer extends ArenaRunnable implements Listener {
             this.effects.put(player.getName(), player.getActivePotionEffects());
             player.setNoDamageTicks(ticks);
             player.getActivePotionEffects().forEach(potionEffect -> player.removePotionEffect(potionEffect.getType()));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, ticks, -7, false, false, false), true);
+            player.addPotionEffect(new PotionEffect(EffectTypeAdapter.JUMP_BOOST, ticks, -7, false, false, false), true);
             player.setWalkSpeed(0);
         });
         Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
