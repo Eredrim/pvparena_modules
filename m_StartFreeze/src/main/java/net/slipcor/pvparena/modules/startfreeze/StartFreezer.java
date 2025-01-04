@@ -4,7 +4,7 @@ import net.slipcor.pvparena.PVPArena;
 import net.slipcor.pvparena.arena.Arena;
 import net.slipcor.pvparena.arena.ArenaPlayer;
 import net.slipcor.pvparena.arena.PlayerStatus;
-import net.slipcor.pvparena.compatibility.EffectTypeAdapter;
+import net.slipcor.pvparena.compatibility.EntityFreezeUtil;
 import net.slipcor.pvparena.core.Config;
 import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.runnables.ArenaRunnable;
@@ -26,7 +26,6 @@ import static net.slipcor.pvparena.config.Debugger.debug;
 
 class StartFreezer extends ArenaRunnable implements Listener {
 
-    public static final float DEFAULT_WALK_SPEED = 0.2f;
     private final Map<String, Collection<PotionEffect>> effects = new HashMap<>();
 
     StartFreezer(final Arena arena) {
@@ -39,8 +38,7 @@ class StartFreezer extends ArenaRunnable implements Listener {
             this.effects.put(player.getName(), player.getActivePotionEffects());
             player.setNoDamageTicks(ticks);
             player.getActivePotionEffects().forEach(potionEffect -> player.removePotionEffect(potionEffect.getType()));
-            player.addPotionEffect(new PotionEffect(EffectTypeAdapter.JUMP_BOOST, ticks, -7, false, false, false), true);
-            player.setWalkSpeed(0);
+            EntityFreezeUtil.freezePlayer(player);
         });
         Bukkit.getPluginManager().registerEvents(this, PVPArena.getInstance());
     }
@@ -55,7 +53,7 @@ class StartFreezer extends ArenaRunnable implements Listener {
     protected void commit() {
         this.arena.getFighters().forEach(arenaPlayer -> {
             Player player = arenaPlayer.getPlayer();
-            player.setWalkSpeed(DEFAULT_WALK_SPEED);
+            EntityFreezeUtil.unfreezePlayer(player);
             player.addPotionEffects(this.effects.get(player.getName()));
         });
         this.effects.clear();

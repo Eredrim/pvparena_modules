@@ -33,7 +33,7 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.joining;
 import static net.slipcor.pvparena.config.Debugger.debug;
-import static net.slipcor.pvparena.core.VersionUtils.INFINITE_EFFECT_DURATION;
+import static net.slipcor.pvparena.compatibility.Constants.INFINITE_EFFECT_DURATION;
 import static net.slipcor.pvparena.modules.betterclasses.BetterClassDef.*;
 
 public class BetterClasses extends ArenaModule {

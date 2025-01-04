@@ -1,6 +1,7 @@
 package net.slipcor.pvparena.modules.betterclasses;
 
 import net.slipcor.pvparena.PVPArena;
+import net.slipcor.pvparena.compatibility.Constants;
 import net.slipcor.pvparena.core.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.potion.PotionEffect;
@@ -14,7 +15,6 @@ import java.util.Set;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 import static net.slipcor.pvparena.core.CollectionUtils.isNotEmpty;
-import static net.slipcor.pvparena.core.VersionUtils.*;
 
 public class BetterClassDef {
 
@@ -85,7 +85,7 @@ public class BetterClassDef {
             effectMap.forEach((key, value) -> {
                 PotionEffectType effectType = PotionEffectType.getByName(key);
                 if(effectType != null && value instanceof Integer) {
-                    PotionEffect effect = new PotionEffect(effectType, INFINITE_EFFECT_DURATION, (int) value - 1);
+                    PotionEffect effect = new PotionEffect(effectType, Constants.INFINITE_EFFECT_DURATION, (int) value - 1);
                     permEffects.add(effect);
                 } else {
                     PVPArena.getInstance().getLogger().warning(String.format("[BetterClasses] Potion effect %s:%s has an invalid format", key, value));
