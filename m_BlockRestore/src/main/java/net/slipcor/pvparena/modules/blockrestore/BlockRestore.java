@@ -233,6 +233,7 @@ public class BlockRestore extends ArenaModule implements Listener {
         player.sendMessage(StringParser.colorVar("hard", this.isHardModeEnabled())
                 + " | " + StringParser.colorVar("blocks", this.isBlockRestoreEnabled())
                 + " | " + StringParser.colorVar("chests", this.isContainerRestoreEnabled())
+                + " | " + StringParser.colorVar("interactions", this.isInteractionRestoreEnabled())
                 + " | offset " + this.arena.getConfig().getInt(CFG.MODULES_BLOCKRESTORE_OFFSET));
     }
 
@@ -287,20 +288,27 @@ public class BlockRestore extends ArenaModule implements Listener {
             if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 Block clickedBlock = event.getClickedBlock();
                 BlockData clickedBlockData = clickedBlock.getBlockData();
+                PABlockLocation blockLocation = new PABlockLocation(clickedBlock.getLocation());
 
-                if(clickedBlockData instanceof Openable || asList(Material.LEVER, Material.DAYLIGHT_DETECTOR, Material.CAKE).contains(clickedBlock.getType())) {
-                    PABlockLocation blockLocation = new PABlockLocation(clickedBlock.getLocation());
+                boolean isInBattleRegion = this.arena.getRegions().stream()
+                        .filter(reg -> reg.getType() == RegionType.BATTLE)
+                        .anyMatch(reg -> reg.getShape().contains(blockLocation));
 
-                    if(clickedBlockData instanceof Bisected) {
-                        Bisected bisected = (Bisected) clickedBlockData;
+                if(isInBattleRegion) {
 
-                        if(bisected.getHalf() == Bisected.Half.TOP) {
-                            blockLocation.setY(blockLocation.getY() - 1);
+                    if(clickedBlockData instanceof Openable || asList(Material.LEVER, Material.DAYLIGHT_DETECTOR, Material.CAKE).contains(clickedBlock.getType())) {
+
+                        if(clickedBlockData instanceof Bisected) {
+                            Bisected bisected = (Bisected) clickedBlockData;
+
+                            if(bisected.getHalf() == Bisected.Half.TOP) {
+                                blockLocation.setY(blockLocation.getY() - 1);
+                            }
                         }
-                    }
 
-                    if(!this.interactions.containsKey(blockLocation)) {
-                        this.interactions.put(blockLocation, new ArenaBlock(clickedBlock));
+                        if(!this.interactions.containsKey(blockLocation)) {
+                            this.interactions.put(blockLocation, new ArenaBlock(clickedBlock));
+                        }
                     }
                 }
             }
@@ -576,8 +584,8 @@ public class BlockRestore extends ArenaModule implements Listener {
     }
 
     void saveBlockIfInBattleground(Block toCheck) {
-        for (final ArenaRegion shape : this.arena.getRegionsByType(RegionType.BATTLE)) {
-            if (shape.getShape().contains(new PABlockLocation(toCheck.getLocation()))) {
+        for (final ArenaRegion region : this.arena.getRegionsByType(RegionType.BATTLE)) {
+            if (region.getShape().contains(new PABlockLocation(toCheck.getLocation()))) {
                 this.saveBlock(toCheck);
             }
         }
@@ -589,8 +597,8 @@ public class BlockRestore extends ArenaModule implements Listener {
      * @param toCheck Destroyed block to check
      */
     void saveBlockWithPreviousEntryIfInBattleground(Block toCheck) {
-        for (final ArenaRegion shape : this.arena.getRegionsByType(RegionType.BATTLE)) {
-            if (shape.getShape().contains(new PABlockLocation(toCheck.getLocation()))) {
+        for (final ArenaRegion region : this.arena.getRegionsByType(RegionType.BATTLE)) {
+            if (region.getShape().contains(new PABlockLocation(toCheck.getLocation()))) {
                 ArenaBlock blockToAdd = new ArenaBlock(toCheck);
                 if(this.blocks.isEmpty()) {
                     this.blocks.put(System.currentTimeMillis(), Stream.of(blockToAdd).collect(toSet()));
