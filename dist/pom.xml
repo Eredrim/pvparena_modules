@@ -107,12 +107,6 @@
         </dependency>
         <dependency>
             <groupId>net.slipcor.pvpa</groupId>
-            <artifactId>m_handycap</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_itemspawners</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
