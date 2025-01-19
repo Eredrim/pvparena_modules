@@ -62,7 +62,7 @@ public class StartFreeze extends ArenaModule {
 
             this.arena.getConfig().set(CFG.MODULES_STARTFREEZE_TIMER, i);
             this.arena.getConfig().save();
-            this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_STARTFREEZE_TIMER.getNode(), String.valueOf(i));
+            this.arena.msg(sender, MSG.CFG_SET_DONE, CFG.MODULES_STARTFREEZE_TIMER.getNode(), String.valueOf(i));
         }
     }
 

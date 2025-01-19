@@ -204,7 +204,7 @@ public class BlockRestore extends ArenaModule implements Listener {
 
             this.arena.getConfig().set(cfg, !currentValue);
             this.arena.getConfig().save();
-            this.arena.msg(sender, MSG.SET_DONE, cfg.getNode(), String.valueOf(!currentValue));
+            this.arena.msg(sender, MSG.CFG_SET_DONE, cfg.getNode(), String.valueOf(!currentValue));
 
             return;
         }
@@ -224,7 +224,7 @@ public class BlockRestore extends ArenaModule implements Listener {
 
             this.arena.getConfig().set(CFG.MODULES_BLOCKRESTORE_OFFSET, i);
             this.arena.getConfig().save();
-            this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_BLOCKRESTORE_OFFSET.getNode(), String.valueOf(i));
+            this.arena.msg(sender, MSG.CFG_SET_DONE, CFG.MODULES_BLOCKRESTORE_OFFSET.getNode(), String.valueOf(i));
         }
     }
 

@@ -120,7 +120,7 @@ public class AfterMatch extends ArenaModule {
                 if ("off".equals(args[1])) {
                     this.arena.getConfig().set(CFG.MODULES_AFTERMATCH_AFTERMATCH, args[1]);
                     this.arena.getConfig().save();
-                    this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), args[1]);
+                    this.arena.msg(sender, MSG.CFG_SET_DONE, CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), args[1]);
                     return;
                 }
                 this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "off");
@@ -136,7 +136,7 @@ public class AfterMatch extends ArenaModule {
             if ("time".equals(args[1]) || "death".equals(args[1])) {
                 this.arena.getConfig().set(CFG.MODULES_AFTERMATCH_AFTERMATCH, args[1] + ':' + i);
                 this.arena.getConfig().save();
-                this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), args[1] + ':' + i);
+                this.arena.msg(sender, MSG.CFG_SET_DONE, CFG.MODULES_AFTERMATCH_AFTERMATCH.getNode(), args[1] + ':' + i);
                 return;
             }
 

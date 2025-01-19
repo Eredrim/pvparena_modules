@@ -140,7 +140,7 @@ public class ArenaMaps extends ArenaModule {
 
             this.arena.getConfig().set(cfgNode, newValue);
             this.arena.getConfig().save();
-            this.arena.msg(sender, MSG.SET_DONE, cfgNode.getNode(), String.valueOf(newValue));
+            this.arena.msg(sender, MSG.CFG_SET_DONE, cfgNode.getNode(), String.valueOf(newValue));
         }
     }
 

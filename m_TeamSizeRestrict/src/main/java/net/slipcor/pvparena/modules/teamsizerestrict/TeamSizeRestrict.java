@@ -79,7 +79,7 @@ public class TeamSizeRestrict extends ArenaModule {
             try {
                 this.arena.getConfig().setManually(fullPath, Integer.parseInt(args[2]));
                 this.arena.getConfig().save();
-                this.arena.msg(sender, MSG.SET_DONE, fullPath, args[2]);
+                this.arena.msg(sender, MSG.CFG_SET_DONE, fullPath, args[2]);
             } catch (NumberFormatException e) {
                 this.arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[2]);
             }

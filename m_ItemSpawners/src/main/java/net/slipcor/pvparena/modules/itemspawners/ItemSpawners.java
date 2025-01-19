@@ -94,20 +94,20 @@ public class ItemSpawners extends ArenaModule {
                     config.setManually(node, getSerializableItemStacks(item));
                     config.save();
                     this.spawnItemLists.put(itemSpawn.getName(), singletonList(item));
-                    this.arena.msg(sender, Language.MSG.SET_DONE, node, item.getType().name());
+                    this.arena.msg(sender, Language.MSG.CFG_SET_DONE, node, item.getType().name());
 
                 } else if ("inventory".equalsIgnoreCase(args[3])) {
                     final ItemStack[] items = ((Player) sender).getInventory().getContents();
                     config.setManually(node, getSerializableItemStacks(items));
                     config.save();
                     this.spawnItemLists.put(itemSpawn.getName(), Arrays.asList(items));
-                    this.arena.msg(sender, Language.MSG.SET_DONE, node, "inventory");
+                    this.arena.msg(sender, Language.MSG.CFG_SET_DONE, node, "inventory");
 
                 } else {
-                    this.arena.msg(sender, Language.MSG.SET_ITEMS_NOT);
+                    this.arena.msg(sender, Language.MSG.CFG_SET_ITEMS_NOT);
                 }
             } else {
-                this.arena.msg(sender, Language.MSG.SPAWN_UNKNOWN, args[2]);
+                this.arena.msg(sender, Language.MSG.CMD_SPAWN_UNKNOWN, args[2]);
             }
         } else {
             this.arena.msg(sender, Language.MSG.ERROR_COMMAND_UNKNOWN);

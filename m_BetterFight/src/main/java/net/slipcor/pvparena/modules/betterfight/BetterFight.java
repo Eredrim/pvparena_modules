@@ -108,7 +108,7 @@ public class BetterFight extends ArenaModule {
                 config.set(cfgKey, !b);
 
                 config.save();
-                this.arena.msg(sender, MSG.SET_DONE, cfgKey.getNode(), String.valueOf(!b));
+                this.arena.msg(sender, MSG.CFG_SET_DONE, cfgKey.getNode(), String.valueOf(!b));
                 return;
             }
 
@@ -135,7 +135,7 @@ public class BetterFight extends ArenaModule {
                 }
                 onHitItems.add(args[3].toUpperCase());
                 config.set(CFG.MODULES_BETTERFIGHT_ONESHOTITEMS, onHitItems);
-                this.arena.msg(sender, MSG.ADD_DONE, CFG.MODULES_BETTERFIGHT_ONESHOTITEMS.getNode(), args[3].toUpperCase());
+                this.arena.msg(sender, MSG.CFG_ADD_DONE, CFG.MODULES_BETTERFIGHT_ONESHOTITEMS.getNode(), args[3].toUpperCase());
 
             } else if("remove".equalsIgnoreCase(args[2])) {
                 if(!containsIgnoreCase(onHitItems, args[3])) {
@@ -144,7 +144,7 @@ public class BetterFight extends ArenaModule {
                 }
                 onHitItems.removeIf(str -> str.equalsIgnoreCase(args[3]));
                 config.set(CFG.MODULES_BETTERFIGHT_ONESHOTITEMS, onHitItems);
-                this.arena.msg(sender, MSG.ADD_DONE, CFG.MODULES_BETTERFIGHT_ONESHOTITEMS.getNode(), args[3].toUpperCase());
+                this.arena.msg(sender, MSG.CFG_ADD_DONE, CFG.MODULES_BETTERFIGHT_ONESHOTITEMS.getNode(), args[3].toUpperCase());
 
             } else if("sound".equalsIgnoreCase(args[2])) {
                 if (!argCountValid(sender, this.arena, args, new Integer[]{5})) {
@@ -160,7 +160,7 @@ public class BetterFight extends ArenaModule {
                         Sound sound = Sound.valueOf(args[4].toUpperCase());
                         config.setManually(settingPath, sound.name());
                     }
-                    this.arena.msg(sender, MSG.SET_DONE, settingPath, args[4].toUpperCase());
+                    this.arena.msg(sender, MSG.CFG_SET_DONE, settingPath, args[4].toUpperCase());
                 } catch (IllegalArgumentException ignored) {
                     this.arena.msg(sender, MSG.ERROR_INVALID_VALUE, args[3]);
                 }

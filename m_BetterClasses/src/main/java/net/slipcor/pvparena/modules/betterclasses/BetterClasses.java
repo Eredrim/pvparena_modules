@@ -179,13 +179,13 @@ public class BetterClasses extends ArenaModule {
 
             if (NEEDED_EXP_LEVEL_KEY.equalsIgnoreCase(args[3])) {
                 betterClassDef.setNeededEXPLevel(value);
-                this.arena.msg(sender, MSG.SET_DONE, NEEDED_EXP_LEVEL_KEY, String.valueOf(value));
+                this.arena.msg(sender, MSG.CFG_SET_DONE, NEEDED_EXP_LEVEL_KEY, String.valueOf(value));
             } else if (MAX_TEAM_PLAYERS_KEY.equalsIgnoreCase(args[3])) {
                 betterClassDef.setMaxTeamPlayers(value);
-                this.arena.msg(sender, MSG.SET_DONE, MAX_TEAM_PLAYERS_KEY, String.valueOf(value));
+                this.arena.msg(sender, MSG.CFG_SET_DONE, MAX_TEAM_PLAYERS_KEY, String.valueOf(value));
             } else if (MAX_GLOBAL_PLAYERS_KEY.equalsIgnoreCase(args[3])) {
                 betterClassDef.setMaxGlobalPlayers(value);
-                this.arena.msg(sender, MSG.SET_DONE, MAX_GLOBAL_PLAYERS_KEY, String.valueOf(value));
+                this.arena.msg(sender, MSG.CFG_SET_DONE, MAX_GLOBAL_PLAYERS_KEY, String.valueOf(value));
             } else {
                 return;
             }
@@ -200,7 +200,7 @@ public class BetterClasses extends ArenaModule {
             } else {
                 String command = StringParser.joinArray(StringParser.shiftArrayBy(args, 3), " ");
                 betterClassDef.setRespawnCommand(command);
-                this.arena.msg(sender, MSG.SET_DONE, RESPAWN_COMMAND_KEY, command);
+                this.arena.msg(sender, MSG.CFG_SET_DONE, RESPAWN_COMMAND_KEY, command);
             }
             configSection.getParent().createSection(c.getName(), betterClassDef.convertToConfig());
             this.arena.getConfig().save();

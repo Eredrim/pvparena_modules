@@ -117,7 +117,7 @@ public class Walls extends ArenaModule {
 
             this.arena.getConfig().set(CFG.MODULES_WALLS_SECONDS, i);
             this.arena.getConfig().save();
-            this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_WALLS_SECONDS.getNode(), String.valueOf(i));
+            this.arena.msg(sender, MSG.CFG_SET_DONE, CFG.MODULES_WALLS_SECONDS.getNode(), String.valueOf(i));
         } else {
             // setting walls material
             final Material mat;
@@ -131,7 +131,7 @@ public class Walls extends ArenaModule {
 
             this.arena.getConfig().set(CFG.MODULES_WALLS_MATERIAL, mat.name());
             this.arena.getConfig().save();
-            this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_WALLS_MATERIAL.getNode(), mat.name());
+            this.arena.msg(sender, MSG.CFG_SET_DONE, CFG.MODULES_WALLS_MATERIAL.getNode(), mat.name());
         }
     }
 

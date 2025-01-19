@@ -74,7 +74,7 @@ public class BanKick extends ArenaModule {
     public void checkJoin(Player player) throws GameplayException {
         if (this.tempBanList.contains(player.getName()) ||
                 (this.permBanList.contains(player.getName()) && !this.tempUnbanList.contains(player.getName()))) {
-            throw new GameplayException(Language.parse(MSG.MODULE_BANVOTE_YOUBANNED, this.arena.getName()));
+            throw new GameplayException(Language.parse(MSG.MODULE_BANKICK_YOUBANNED, this.arena.getName()));
         }
     }
 
@@ -109,7 +109,7 @@ public class BanKick extends ArenaModule {
         if (player != null) {
             playerName = player.getName();
         } else {
-            this.arena.msg(sender, MSG.MODULE_BANVOTE_NOTONLINE, args[1]);
+            this.arena.msg(sender, MSG.MODULE_BANKICK_NOTONLINE, args[1]);
             return;
         }
 
@@ -170,9 +170,9 @@ public class BanKick extends ArenaModule {
         this.permBanList.add(player);
         this.tempUnbanList.remove(player);
         if (admin != null) {
-            this.arena.msg(admin, MSG.MODULE_BANVOTE_BANNED, player);
+            this.arena.msg(admin, MSG.MODULE_BANKICK_BANNED, player);
         }
-        this.tryNotify(Language.parse(MSG.MODULE_BANVOTE_YOUBANNED, this.arena.getName()));
+        this.tryNotify(Language.parse(MSG.MODULE_BANKICK_YOUBANNED, this.arena.getName()));
         this.arena.getConfig().setManually("bans", this.getPermBanList());
         this.arena.getConfig().save();
     }
@@ -180,18 +180,18 @@ public class BanKick extends ArenaModule {
     void doTempBan(final CommandSender admin, final String player) {
         this.tempBanList.add(player);
         if (admin != null) {
-            this.arena.msg(admin, MSG.MODULE_BANVOTE_BANNED, player);
+            this.arena.msg(admin, MSG.MODULE_BANKICK_BANNED, player);
         }
-        this.tryNotify(Language.parse(MSG.MODULE_BANVOTE_YOUBANNED, this.arena.getName()));
+        this.tryNotify(Language.parse(MSG.MODULE_BANKICK_YOUBANNED, this.arena.getName()));
     }
 
     void doUnban(final CommandSender admin, final String player) {
         this.permBanList.remove(player);
         this.tempBanList.remove(player);
         if (admin != null) {
-            this.arena.msg(admin, MSG.MODULE_BANVOTE_UNBANNED, player);
+            this.arena.msg(admin, MSG.MODULE_BANKICK_UNBANNED, player);
         }
-        this.tryNotify(Language.parse(MSG.MODULE_BANVOTE_YOUUNBANNED, this.arena.getName()));
+        this.tryNotify(Language.parse(MSG.MODULE_BANKICK_YOUUNBANNED, this.arena.getName()));
         this.arena.getConfig().setManually("bans", this.getPermBanList());
         this.arena.getConfig().save();
     }
@@ -199,9 +199,9 @@ public class BanKick extends ArenaModule {
     void doTempUnban(final CommandSender admin, final String player) {
         this.tempUnbanList.add(player);
         if (admin != null) {
-            this.arena.msg(admin, MSG.MODULE_BANVOTE_UNBANNED, player);
+            this.arena.msg(admin, MSG.MODULE_BANKICK_UNBANNED, player);
         }
-        this.tryNotify(Language.parse(MSG.MODULE_BANVOTE_YOUUNBANNED, this.arena.getName()));
+        this.tryNotify(Language.parse(MSG.MODULE_BANKICK_YOUUNBANNED, this.arena.getName()));
     }
 
     private long parseStringToSeconds(final String string) {
@@ -236,8 +236,8 @@ public class BanKick extends ArenaModule {
             return;
         }
         this.arena.playerLeave(p, CFG.TP_EXIT, true, true, false);
-        this.arena.msg(p, MSG.MODULE_BANVOTE_YOUKICKED, this.arena.getName());
-        this.arena.msg(sender, MSG.MODULE_BANVOTE_KICKED, string);
+        this.arena.msg(p, MSG.MODULE_BANKICK_YOUKICKED, this.arena.getName());
+        this.arena.msg(sender, MSG.MODULE_BANKICK_KICKED, string);
     }
 
     private void tryNotify(final String string) {

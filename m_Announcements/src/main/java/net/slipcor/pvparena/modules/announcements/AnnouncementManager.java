@@ -88,7 +88,7 @@ public class AnnouncementManager extends ArenaModule {
                     this.arena.getConfig().set(cfgEntry, !b);
                     this.arena.getConfig().save();
 
-                    this.arena.msg(sender, MSG.SET_DONE, t.name(), String.valueOf(!b));
+                    this.arena.msg(sender, MSG.CFG_SET_DONE, t.name(), String.valueOf(!b));
                     return;
                 }
             }

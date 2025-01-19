@@ -12,7 +12,7 @@ public class WallsRunner extends ArenaRunnable {
     private final Walls module;
 
     public WallsRunner(final Walls module, final Arena arena, final int seconds) {
-        super(MSG.TIMER_WALLS.getNode(), seconds, null, arena, false);
+        super(MSG.MODULE_WALLS_TIMER.getNode(), seconds, null, arena, false);
         this.module = module;
     }
 

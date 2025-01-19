@@ -122,7 +122,7 @@ public class PAWE extends ArenaModule {
                 boolean b = this.arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOSAVE);
                 this.arena.getConfig().set(CFG.MODULES_WORLDEDIT_AUTOSAVE, !b);
                 this.arena.getConfig().save();
-                this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_WORLDEDIT_AUTOSAVE.getNode(), String.valueOf(!b));
+                this.arena.msg(sender, MSG.CFG_SET_DONE, CFG.MODULES_WORLDEDIT_AUTOSAVE.getNode(), String.valueOf(!b));
                 return;
             }
 
@@ -131,7 +131,7 @@ public class PAWE extends ArenaModule {
                 boolean b = this.arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOLOAD);
                 this.arena.getConfig().set(CFG.MODULES_WORLDEDIT_AUTOLOAD, !b);
                 this.arena.getConfig().save();
-                this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_WORLDEDIT_AUTOLOAD.getNode(), String.valueOf(!b));
+                this.arena.msg(sender, MSG.CFG_SET_DONE, CFG.MODULES_WORLDEDIT_AUTOLOAD.getNode(), String.valueOf(!b));
                 return;
             }
 

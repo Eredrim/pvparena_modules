@@ -153,7 +153,7 @@ public class PowerUps extends ArenaModule {
                     boolean b = this.arena.getConfig().getBoolean(CFG.MODULES_POWERUPS_DROPSPAWN);
                     this.arena.getConfig().set(CFG.MODULES_POWERUPS_DROPSPAWN, !b);
                     this.arena.getConfig().save();
-                    this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_POWERUPS_DROPSPAWN.getNode(), String.valueOf(!b));
+                    this.arena.msg(sender, MSG.CFG_SET_DONE, CFG.MODULES_POWERUPS_DROPSPAWN.getNode(), String.valueOf(!b));
                 } else {
                     this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], "dropspawn");
                 }
@@ -167,8 +167,8 @@ public class PowerUps extends ArenaModule {
                         this.arena.getConfig().save();
                         this.powerupSpawnTrigger = trigger;
                         this.powerupFreq = freq;
-                        this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_POWERUPS_USAGE_TRIGGER.getNode(), trigger.name());
-                        this.arena.msg(sender, MSG.SET_DONE, CFG.MODULES_POWERUPS_USAGE_FREQ.getNode(), freq);
+                        this.arena.msg(sender, MSG.CFG_SET_DONE, CFG.MODULES_POWERUPS_USAGE_TRIGGER.getNode(), trigger.name());
+                        this.arena.msg(sender, MSG.CFG_SET_DONE, CFG.MODULES_POWERUPS_USAGE_FREQ.getNode(), freq);
                     } else {
                         this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], PowerupSpawnTrigger.valuesToString());
                     }
