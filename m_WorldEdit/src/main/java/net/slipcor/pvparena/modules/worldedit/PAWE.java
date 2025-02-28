@@ -402,12 +402,21 @@ public class PAWE extends ArenaModule {
         try {
             Operations.complete(extentCopy);
             ClipboardFormat format = BuiltInClipboardFormat.SPONGE_SCHEMATIC;
-            ClipboardWriter writer = format.getWriter(new FileOutputStream(new File(this.loadPath, regionName + ".schem")));
+            this.createSchematicDirIfNeeded();
+            final File schemFile = new File(this.loadPath, regionName + ".schem");
+            ClipboardWriter writer = format.getWriter(new FileOutputStream(schemFile));
             writer.write(clipboard);
             writer.close();
             session.close();
         } catch (WorldEditException | IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void createSchematicDirIfNeeded() {
+        File file = new File(this.loadPath);
+        if (!file.exists()) {
+            file.mkdirs();
         }
     }
 }
