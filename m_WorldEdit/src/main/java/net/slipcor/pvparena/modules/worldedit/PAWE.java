@@ -49,6 +49,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -360,17 +361,13 @@ public class PAWE extends ArenaModule {
     public void reset(final boolean force) {
         if (this.needsLoading && this.arena.getConfig().getBoolean(CFG.MODULES_WORLDEDIT_AUTOLOAD)) {
             List<String> regions = this.arena.getConfig().getStringList(CFG.MODULES_WORLDEDIT_REGIONS.getNode(), new ArrayList<>());
-            if (!regions.isEmpty()) {
-                for (String regionName : regions) {
-                    ArenaRegion region = this.arena.getRegion(regionName);
-                    if (region != null) {
-                        this.load(region);
-                    }
-                }
-                return;
-            }
-            for (final ArenaRegion ars : this.arena.getRegionsByType(RegionType.BATTLE)) {
-                this.load(ars);
+            if (regions.isEmpty()) {
+                this.arena.getRegionsByType(RegionType.BATTLE).forEach(this::load);
+            } else {
+                regions.stream()
+                        .map(regionName -> this.arena.getRegion(regionName))
+                        .filter(Objects::nonNull)
+                        .forEach(this::load);
             }
         }
         this.needsLoading = false;
