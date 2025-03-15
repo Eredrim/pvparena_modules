@@ -34,7 +34,7 @@
         <dependency>
             <groupId>net.milkbowl.vault</groupId>
             <artifactId>VaultAPI</artifactId>
-            <version>1.5</version>
+            <version>1.7</version>
             <type>jar</type>
         </dependency>
     </dependencies>

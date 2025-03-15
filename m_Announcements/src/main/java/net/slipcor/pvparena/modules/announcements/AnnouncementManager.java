@@ -14,7 +14,6 @@ import net.slipcor.pvparena.core.StringParser;
 import net.slipcor.pvparena.loadables.ArenaModule;
 import net.slipcor.pvparena.managers.PermissionManager;
 import net.slipcor.pvparena.managers.TeamManager;
-import net.slipcor.pvparena.modules.WarmupJoin;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -127,7 +126,7 @@ public class AnnouncementManager extends ArenaModule {
 
         debug(player, "parseJoin ... ");
         ArenaPlayer ap = ArenaPlayer.fromPlayer(player);
-        if (ap.getStatus() == PlayerStatus.WARM || !WarmupJoin.didNotAnnounceYet(this.arena)) {
+        if (ap.getStatus() == PlayerStatus.WARM) {
             debug(player, "skipping because we already did!");
             return;
         }

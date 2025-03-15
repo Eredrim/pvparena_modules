@@ -87,12 +87,12 @@
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_duel</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_eventactions</artifactId>
@@ -123,12 +123,12 @@
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_points</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_powerups</artifactId>
@@ -153,7 +153,7 @@
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-<!--        <dependency>
+        <!--<dependency>
             <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_skins</artifactId>
             <version>${project.version}</version>
@@ -195,24 +195,24 @@
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_turrets</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_vault</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_walls</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>net.slipcor.pvpa</groupId>
             <artifactId>m_worldedit</artifactId>
