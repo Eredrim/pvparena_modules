@@ -77,6 +77,11 @@ public class EventActions extends ArenaModule {
 
         for (String item : actionsForEvent) {
 
+            if (item.contains("%allplayers%")) {
+                // ignore %allplayers% here, as we already replaced it above
+                continue;
+            }
+
             for (int pos=0; pos<replacements.length/2; pos+=2) {
                 if (replacements[pos] == null || replacements[pos+1] == null) {
                     continue;
