@@ -267,6 +267,11 @@ public class BetterClasses extends ArenaModule {
     }
 
     @Override
+    public void configParse(YamlConfiguration config) {
+        this.initConfig();
+    }
+
+    @Override
     public void initConfig() {
         YamlConfiguration cfg = this.arena.getConfig().getYamlConfiguration();
         this.arena.getClasses().forEach(c -> {
