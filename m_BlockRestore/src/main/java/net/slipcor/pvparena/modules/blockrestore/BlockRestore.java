@@ -350,6 +350,8 @@ public class BlockRestore extends ArenaModule implements Listener {
         this.listeners.forEach(HandlerList::unregisterAll);
         this.listening = false;
 
+        this.arena.setResetting(true);
+
         if (this.isBlockRestoreEnabled() && !this.blocks.isEmpty()) {
             debug("resetting blocks");
             try {
@@ -383,9 +385,11 @@ public class BlockRestore extends ArenaModule implements Listener {
                 this.interactions.values().forEach(ArenaBlock::reset);
                 this.interactions.clear();
                 this.restoringInteractions = false;
+                this.updateResettingStatusIfNeeded();
             }
         }
 
+        this.updateResettingStatusIfNeeded();
         this.allBlockLocations.clear();
     }
 
@@ -395,6 +399,7 @@ public class BlockRestore extends ArenaModule implements Listener {
     void finishBlockRestore() {
         this.restoringBlocks = false;
         HandlerList.unregisterAll(this.restorationListener);
+        this.updateResettingStatusIfNeeded();
     }
 
     /**
@@ -402,10 +407,12 @@ public class BlockRestore extends ArenaModule implements Listener {
      */
     void finishContainerRestore() {
         this.restoringContainers = false;
+        this.updateResettingStatusIfNeeded();
     }
 
     void finishInteractionRestore() {
         this.restoringInteractions = false;
+        this.updateResettingStatusIfNeeded();
     }
 
     /**
@@ -606,6 +613,12 @@ public class BlockRestore extends ArenaModule implements Listener {
                     this.blocks.lastEntry().getValue().add(blockToAdd);
                 }
             }
+        }
+    }
+
+    private void updateResettingStatusIfNeeded() {
+        if (!(this.restoringBlocks || this.restoringContainers || this.restoringInteractions)) {
+            this.arena.setResetting(false);
         }
     }
 }
