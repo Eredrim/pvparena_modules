@@ -337,7 +337,7 @@ public class PowerupEffect {
     }
 
     private void applyHealthEffect(Player player) {
-        double maxHealth = player.getAttribute(AttributeAdapter.MAX_HEALTH.getValue()).getBaseValue();
+        double maxHealth = player.getAttribute(AttributeAdapter.MAX_HEALTH.getValue()).getValue();
 
         if (this.diff != 0) {
             double newHealth = Math.max(0, player.getHealth() + this.diff); // Health can't be lower than 0
