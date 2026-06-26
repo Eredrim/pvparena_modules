@@ -7,22 +7,22 @@ import net.slipcor.pvparena.core.Language;
 import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.runnables.ArenaRunnable;
 
-public class WallsRunner extends ArenaRunnable {
+import static net.slipcor.pvparena.config.Debugger.debug;
+
+public class WallsTimer extends ArenaRunnable {
 
     private final Walls module;
 
-    public WallsRunner(final Walls module, final Arena arena, final int seconds) {
+    public WallsTimer(final Walls module, final Arena arena, final int seconds) {
         super(MSG.MODULE_WALLS_TIMER.getNode(), seconds, null, arena, false);
         this.module = module;
+        debug(this.module.getArena(), this.module, "WallTimer START");
     }
 
     @Override
     protected void commit() {
-
-        if (this.module != null) {
-            this.module.removeWalls();
-            this.module.runnable = null;
-        }
+        debug(this.module.getArena(), this.module, "WallTimer END");
+        this.module.removeWallsAsync();
     }
 
     @Override

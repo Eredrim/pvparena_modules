@@ -1,29 +1,30 @@
 package net.slipcor.pvparena.modules.walls;
 
-import net.slipcor.pvparena.arena.Arena;
-import net.slipcor.pvparena.commands.AbstractArenaCommand;
-import net.slipcor.pvparena.commands.CommandTree;
-import net.slipcor.pvparena.core.Config;
+import net.slipcor.pvparena.PVPArena;
+import net.slipcor.pvparena.arena.ArenaTeam;
+import net.slipcor.pvparena.classes.PABlockLocation;
 import net.slipcor.pvparena.core.Config.CFG;
-import net.slipcor.pvparena.core.Language;
-import net.slipcor.pvparena.core.Language.MSG;
 import net.slipcor.pvparena.loadables.ArenaModule;
-import net.slipcor.pvparena.managers.PermissionManager;
-import net.slipcor.pvparena.regions.ArenaRegion;
+import net.slipcor.pvparena.loadables.ArenaRegionShape;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import static net.slipcor.pvparena.config.Debugger.debug;
+import static net.slipcor.pvparena.config.Debugger.trace;
+import static net.slipcor.pvparena.core.StringUtils.startsWithIgnoreCase;
 
 public class Walls extends ArenaModule {
-    WallsRunner runnable;
-    private boolean needsReset = false;
-
+    private final Deque<PABlockLocation> wallBlockLocations = new ArrayDeque<>();
+    private WallsTimer wallsTimer;
+    private WallsBuilder wallsBuilder;
+    private WallsRemover wallsRemover;
+    private Deque<Block> placedWallBlocks = new ConcurrentLinkedDeque<>();
 
     public Walls() {
         super("Walls");
@@ -35,172 +36,122 @@ public class Walls extends ArenaModule {
     }
 
     @Override
-    public boolean checkCommand(final String s) {
-        return "wallseconds".equals(s) || "wallmaterial".equals(s) || "!ww".equals(s) || "!wm".equals(s);
-    }
-
-    @Override
-    public List<String> getMain() {
-        return Arrays.asList("wallseconds", "wallmaterial");
-    }
-
-    @Override
-    public List<String> getShort() {
-        return Arrays.asList("!ww", "!wm");
-    }
-
-    @Override
-    public CommandTree<String> getSubs(final Arena arena) {
-        final CommandTree<String> result = new CommandTree<>(null);
-        result.define(new String[]{"{Material}"});
-        return result;
-    }
-
-    private void createWalls() {
-        Material mat;
-        try {
-            mat = Material.getMaterial(this.arena.getConfig().getString(CFG.MODULES_WALLS_MATERIAL));
-        } catch (final Exception e) {
-            mat = Material.SAND;
+    public void parseJoin(Player player, ArenaTeam team) {
+        if (this.wallBlockLocations.isEmpty()) {
+            this.loadWallBlockLocations();
         }
-        debug("material: {}", mat);
-        debug("replacing the wall for the following regions:");
+    }
 
-        for (final ArenaRegion region : this.arena.getRegions()) {
-            if (region.getRegionName().toLowerCase().contains("wall")) {
-                debug(region.getRegionName());
-                final World world = region.getWorld();
-                final int x1 = region.getShape().getMinimumLocation().getX();
-                final int y1 = region.getShape().getMinimumLocation().getY();
-                final int z1 = region.getShape().getMinimumLocation().getZ();
-
-                final int x2 = region.getShape().getMaximumLocation().getX();
-                final int y2 = region.getShape().getMaximumLocation().getY();
-                final int z2 = region.getShape().getMaximumLocation().getZ();
-
-                for (int a = x1; a <= x2; a++) {
-                    for (int b = y1; b <= y2; b++) {
-                        for (int c = z1; c <= z2; c++) {
-                            Block block = world.getBlockAt(a, b, c);
-                            if (block.getType() == Material.AIR) {
-                                block.setType(mat);
-                            }
-                        }
-                    }
-                }
+    private void loadWallBlockLocations() {
+        long startTimestamp = System.currentTimeMillis();
+        trace(this.arena, this, "Start loading walls block locations");
+        this.arena.getRegions().forEach(region -> {
+            if (startsWithIgnoreCase(region.getRegionName(), "wall")) {
+                ArenaRegionShape shape = region.getShape();
+                shape.getAllBlocksOrdered().forEach(this.wallBlockLocations::push);
             }
-        }
-    }
-
-    @Override
-    public void commitCommand(final CommandSender sender, final String[] args) {
-        // !sf 5
-
-        if (!PermissionManager.hasAdminPerm(sender) && !PermissionManager.hasBuilderPerm(sender, this.arena)) {
-            this.arena.msg(sender, MSG.ERROR_NOPERM, Language.parse(MSG.ERROR_NOPERM_X_ADMIN));
-            return;
-        }
-
-        if (!AbstractArenaCommand.argCountValid(sender, this.arena, args, new Integer[]{2})) {
-            return;
-        }
-
-        if ("!ww".equals(args[0]) || "wallseconds".equals(args[0])) {
-            // setting walls seconds
-            final int i;
-            try {
-                i = Integer.parseInt(args[1]);
-            } catch (final Exception e) {
-                this.arena.msg(sender, MSG.ERROR_NOT_NUMERIC, args[1]);
-                return;
-            }
-
-            this.arena.getConfig().set(CFG.MODULES_WALLS_SECONDS, i);
-            this.arena.getConfig().save();
-            this.arena.msg(sender, MSG.CFG_SET_DONE, CFG.MODULES_WALLS_SECONDS.getNode(), String.valueOf(i));
-        } else {
-            // setting walls material
-            final Material mat;
-            try {
-                mat = Material.getMaterial(args[1].toUpperCase());
-                debug("wall material: {}", mat);
-            } catch (final Exception e) {
-                this.arena.msg(sender, MSG.ERROR_MAT_NOT_FOUND, args[1]);
-                return;
-            }
-
-            this.arena.getConfig().set(CFG.MODULES_WALLS_MATERIAL, mat.name());
-            this.arena.getConfig().save();
-            this.arena.msg(sender, MSG.CFG_SET_DONE, CFG.MODULES_WALLS_MATERIAL.getNode(), mat.name());
-        }
+        });
+        long duration = System.currentTimeMillis() - startTimestamp;
+        trace(this.arena, this, "End loading walls block locations - Duration: {}ms - Size: {} blocks", duration, this.wallBlockLocations.size());
     }
 
     @Override
     public void displayInfo(final CommandSender sender) {
-        sender.sendMessage("seconds: " + this.arena.getConfig().getInt(CFG.MODULES_WALLS_SECONDS) +
-                "material: " + this.arena.getConfig().getString(CFG.MODULES_WALLS_MATERIAL));
+        sender.sendMessage("seconds: %d, material: %s".formatted(
+                this.arena.getConfig().getInt(CFG.MODULES_WALLS_SECONDS),
+                this.arena.getConfig().getString(CFG.MODULES_WALLS_MATERIAL))
+        );
     }
 
     @Override
     public void parseStart() {
-        this.runnable = new WallsRunner(this, this.arena, this.arena.getConfig().getInt(CFG.MODULES_WALLS_SECONDS));
-        this.createWalls();
+        if (this.wallsTimer == null && this.wallsBuilder == null) {
+            this.wallsTimer = new WallsTimer(this, this.arena, this.arena.getConfig().getInt(CFG.MODULES_WALLS_SECONDS));
+            debug(this.arena, this, "WallTimer START");
+
+            this.wallsBuilder = new WallsBuilder(this, this.getWallMaterial(), this.wallBlockLocations);
+            this.wallsBuilder.runTaskTimer(PVPArena.getInstance(), 0, 1);
+            debug(this.arena, this, "WallBuilder START");
+        }
     }
 
     @Override
     public void reset(final boolean force) {
-        debug("resetting WALLS");
-        if (this.runnable != null) {
-            this.runnable.cancel();
-            if (this.arena.getConfig().getBoolean(Config.CFG.MODULES_WALLS_SCOREBOARDCOUNTDOWN)) {
-                this.arena.getScoreboard().removeCustomEntry(this, 99);
-                this.arena.getScoreboard().removeCustomEntry(this, 98);
+        debug(this.arena, this, "call reset(), force mode: {}", force);
+        boolean needsReset = false;
+        this.wallBlockLocations.clear();
+
+        if (this.wallsBuilder != null) {
+            if (!this.wallsBuilder.isCancelled()) {
+                this.wallsBuilder.cancel();
+                needsReset = true;
+            }
+            this.wallsBuilder = null;
+        }
+
+        if (this.wallsTimer != null) {
+            if (!this.wallsTimer.isCancelled()) {
+                this.wallsTimer.cancel();
+                needsReset = true;
+            }
+            this.wallsTimer = null;
+        }
+
+        if (needsReset) {
+            if (force) {
+                if (this.wallsRemover != null && !this.wallsRemover.isCancelled()) {
+                    this.wallsTimer.cancel();
+                }
+                this.forceRemoveWalls();
+            } else {
+                if (this.wallsRemover == null) {
+                    this.wallsRemover = new WallsRemover(this, this.placedWallBlocks);
+                    this.wallsRemover.runTaskTimer(PVPArena.getInstance(), 0, 1);
+                    debug(this.arena, this, "WallRemover START (during reset)");
+                    this.arena.setResetting(true);
+                }
+                // Else - removal is already in progress
             }
         }
-        if (!this.needsReset) {
-            debug("[WorldEdit] we did not start yet, no reset needed!");
-            return;
-        }
-        this.needsReset = false;
-        this.runnable = null;
-        this.createWalls();
     }
 
-    public void removeWalls() {
-        Material mat;
+    void setPlacedWallBlocks(ConcurrentLinkedDeque<Block> blocks) {
+        debug(this.arena, this, "WallBuilder END");
+        this.placedWallBlocks = blocks;
+    }
+
+    void removeWallsAsync() {
+        debug(this.arena, this, "WallTimer END");
+        this.wallsTimer = null;
+        if (this.wallsBuilder != null && !this.wallsBuilder.isCancelled()) {
+            this.wallsBuilder.cancel();
+        }
+        this.wallsBuilder = null;
+        this.wallsRemover = new WallsRemover(this, this.placedWallBlocks);
+        this.wallsRemover.runTaskTimer(PVPArena.getInstance(), 0, 1);
+        debug(this.arena, this, "WallRemover START");
+    }
+
+    void finalizeWallsRemoval() {
+        debug(this.arena, this, "WallRemover END");
+        this.wallsRemover = null;
+        this.arena.setResetting(false);
+        this.placedWallBlocks.clear();
+    }
+
+    private void forceRemoveWalls() {
+        debug(this.arena, this, "Running Force Removal");
+        while (!this.placedWallBlocks.isEmpty()) {
+            Block block = this.placedWallBlocks.poll();
+            block.setType(Material.AIR);
+        }
+    }
+
+    private Material getWallMaterial() {
         try {
-            mat = Material.getMaterial(this.arena.getConfig().getString(CFG.MODULES_WALLS_MATERIAL));
+            return this.arena.getConfig().getMaterial(CFG.MODULES_WALLS_MATERIAL, Material.SAND);
         } catch (final Exception e) {
-            mat = Material.SAND;
-        }
-        for (final ArenaRegion region : this.arena.getRegions()) {
-
-            if (region.getRegionName().toLowerCase().contains("wall")) {
-                final World world = region.getWorld();
-                final int x1 = region.getShape().getMinimumLocation().getX();
-                final int y1 = region.getShape().getMinimumLocation().getY();
-                final int z1 = region.getShape().getMinimumLocation().getZ();
-
-                final int x2 = region.getShape().getMaximumLocation().getX();
-                final int y2 = region.getShape().getMaximumLocation().getY();
-                final int z2 = region.getShape().getMaximumLocation().getZ();
-
-                for (int a = x1; a <= x2; a++) {
-                    for (int b = y1; b <= y2; b++) {
-                        for (int c = z1; c <= z2; c++) {
-                            Block block = world.getBlockAt(a, b, c);
-                            if (block.getType() == mat) {
-                                block.setType(Material.AIR);
-                            }
-                        }
-                    }
-                }
-                this.needsReset = true;
-            }
-        }
-        if (this.arena.getConfig().getBoolean(Config.CFG.MODULES_WALLS_SCOREBOARDCOUNTDOWN)) {
-            this.arena.getScoreboard().removeCustomEntry(this, 99);
-            this.arena.getScoreboard().removeCustomEntry(this, 98);
+            return Material.SAND;
         }
     }
 }
