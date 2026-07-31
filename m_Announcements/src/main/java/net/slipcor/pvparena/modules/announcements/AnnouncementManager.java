@@ -92,7 +92,7 @@ public class AnnouncementManager extends ArenaModule {
                 }
             }
 
-            final String list = StringParser.joinArray(Announcement.type.values(), ", ");
+            final String list = StringParser.join(", ", Announcement.type.values());
             this.arena.msg(sender, MSG.ERROR_ARGUMENT, args[1], list);
         }
     }

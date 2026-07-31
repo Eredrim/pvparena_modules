@@ -198,7 +198,7 @@ public class BetterClasses extends ArenaModule {
                 betterClassDef.setRespawnCommand(null);
                 this.arena.msg(sender, MSG.MODULE_BETTERCLASSES_RESPAWNCOMMAND_REMOVED, RESPAWN_COMMAND_KEY, c.getName());
             } else {
-                String command = StringParser.joinArray(StringParser.shiftArrayBy(args, 3), " ");
+                String command = String.join(" ", StringParser.shiftArrayBy(args, 3));
                 betterClassDef.setRespawnCommand(command);
                 this.arena.msg(sender, MSG.CFG_SET_DONE, RESPAWN_COMMAND_KEY, command);
             }
