@@ -138,9 +138,7 @@ public class FlySpectate extends ArenaModule {
         TeleportManager.teleportPlayerToRandomSpawn(this.arena, arenaPlayer, SpawnManager.getPASpawnsStartingWith(this.arena, PASpawn.SPECTATOR));
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(PVPArena.getInstance(), () -> {
-            if (this.arena.getConfig().getGameMode(CFG.GENERAL_GAMEMODE) != null) {
-                player.setGameMode(GameMode.CREATIVE);
-            }
+            player.setGameMode(GameMode.SURVIVAL);
             player.setAllowFlight(true);
             player.setFlying(true);
             player.setCollidable(false);
